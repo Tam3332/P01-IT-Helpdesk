@@ -1,0 +1,3 @@
+body { margin: 0; background: #f5f7fc; }
+.page-pad { padding: 24px; }
+@media (max-width: 768px) { .page-pad { padding: 12px; } }
