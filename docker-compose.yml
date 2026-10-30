@@ -1,0 +1,145 @@
+# P01 SecDesk - chạy toàn bộ hệ thống: PostgreSQL, Backend, Frontend, Nginx gateway (HTTPS)
+# Dựa trên bản của Nhi (T2-04), điều chỉnh để tích hợp Frontend (T2-07). Các chỗ khác bản gốc có ghi "[ĐỔI]".
+# Cấu trúc repo giả định: ./src/backend (pom.xml, src/), ./src/frontend (package.json), ./database, ./nginx
+
+services:
+  # Database - PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: p01-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-p01_db}
+      POSTGRES_USER: ${POSTGRES_USER:-p01_admin}
+      # [ĐỔI] Bắt buộc đặt trong .env, không còn mật khẩu mặc định nằm trong file
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Hãy đặt POSTGRES_PASSWORD trong file .env}
+    volumes:
+      # [ĐỔI] Postgres 18 lưu dữ liệu theo thư mục phiên bản, nên mount ở /var/lib/postgresql và bỏ PGDATA tùy chỉnh
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/init_data.sql:/docker-entrypoint-initdb.d/02-init_data.sql:ro
+      # Tài khoản demo cho lab. Bỏ dòng dưới nếu Backend tự tạo tài khoản.
+      - ./database/init_demo_users.sql:/docker-entrypoint-initdb.d/03-init_demo_users.sql:ro
+    networks:
+      - p01-db # [ĐỔI] chỉ backend vào được DB (không publish cổng 5432)
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-p01_admin} -d ${POSTGRES_DB:-p01_db}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot 3 Backend - chỉ nhận request từ Nginx
+  backend:
+    build:
+      context: ./src/backend # [ĐỔI] thư mục chứa pom.xml và src/ của Spring Boot
+      dockerfile: Dockerfile
+    image: p01-backend:latest
+    container_name: p01-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-p01_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-p01_admin}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Hãy đặt POSTGRES_PASSWORD trong file .env}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-validate}
+      # [ĐỔI] Bắt buộc đặt trong .env; chuỗi mẫu cũ là khóa phổ biến trong tài liệu hướng dẫn, ai cũng biết
+      JWT_SECRET: ${JWT_SECRET:?Hãy đặt JWT_SECRET trong file .env (openssl rand -hex 32)}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-900000}
+      FILE_UPLOAD_DIR: /app/uploads
+      FILE_UPLOAD_MAX_SIZE: 10MB
+      # [ĐỔI] Khớp SRS HD04: jpg, jpeg, png, gif, pdf, docx, xlsx, txt, log
+      FILE_UPLOAD_ALLOWED_EXTENSIONS: ${FILE_UPLOAD_ALLOWED_EXTENSIONS:-jpg,jpeg,png,gif,pdf,docx,xlsx,txt,log}
+      SECURITY_LOG_DIR: /app/logs
+      SERVER_PORT: 8080
+    volumes:
+      - uploads_data:/app/uploads
+      - audit_logs:/app/logs # [ĐỔI] tách khỏi log của Nginx
+    networks:
+      - p01-back # nhận request từ Nginx
+      - p01-db # kết nối PostgreSQL
+    expose:
+      - "8080"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/actuator/health",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 40s
+      retries: 3
+
+  # ReactJS Frontend - build bằng Vite rồi phục vụ file tĩnh bằng Nginx trong container
+  frontend:
+    build: # [ĐỔI] bản gốc chỉ chạy nginx rỗng, chưa có giao diện
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_USE_MOCK: ${VITE_USE_MOCK:-true} # true = dữ liệu giả; đổi false khi Backend sẵn sàng
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+    image: p01-frontend:latest
+    container_name: p01-frontend
+    restart: unless-stopped
+    networks:
+      - p01-front
+    expose:
+      - "80"
+
+  # Nginx Security Gateway - cổng duy nhất ra ngoài, xử lý TLS và rate limit
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: p01-gateway
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      # [ĐỔI] Chỉ mở cổng 443 ra ngoài (SDD §8). Muốn có chuyển hướng HTTP→HTTPS thì thêm "80:80" lại.
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx # [ĐỔI] tách khỏi audit log của Backend
+    networks:
+      - p01-public
+      - p01-front
+      - p01-back
+
+# [ĐỔI] Tách mạng front/back thay cho một mạng p01-internal dùng chung (nguyên tắc đặc quyền tối thiểu):
+#   nginx ─ p01-front ─ frontend         frontend không chạm được backend hay DB
+#   nginx ─ p01-back  ─ backend          chỉ nginx gọi được backend
+#   backend ─ p01-db  ─ postgres         chỉ backend gọi được DB
+networks:
+  p01-public:
+    driver: bridge
+
+  # internal: true ngăn container trong mạng tự kết nối ra internet
+  p01-front:
+    driver: bridge
+    internal: true
+
+  p01-back:
+    driver: bridge
+    internal: true
+
+  p01-db:
+    driver: bridge
+    internal: true
+
+volumes:
+  pgdata:
+  uploads_data: # tệp đính kèm ticket (IA-HD03)
+  audit_logs: # audit log JSON Lines cho Monitoring (IA-HD04/05)
+  nginx_logs:

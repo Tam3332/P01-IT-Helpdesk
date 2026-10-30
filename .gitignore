@@ -1,0 +1,28 @@
+# Environment variables - never commit real secrets
+.env
+.env.*
+!.env.example
+
+# Docker local override
+docker-compose.override.yml
+
+# SSL private keys and certificates
+nginx/ssl/*.key
+nginx/ssl/*.crt
+
+# Node.js dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE and operating system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

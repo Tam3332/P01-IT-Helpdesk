@@ -1,0 +1,6 @@
+# Chỉ để thử Frontend + DB khi Backend chưa có code. Sao chép thành docker-compose.override.yml (KHÔNG commit).
+# Frontend nằm trong mạng internal nên phải nối thêm p01-public thì mới mở được cổng ra máy.
+services:
+  frontend:
+    ports: ["8081:80"]
+    networks: [p01-public]
