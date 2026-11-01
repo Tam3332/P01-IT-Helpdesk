@@ -4,6 +4,7 @@
 -- Tác giả: Nhóm 2 - FPT University OJT Fall 2026
 -- =============================================================================
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. BẢNG VAI TRÒ (ROLES)
 CREATE TABLE IF NOT EXISTS roles (
@@ -70,7 +71,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     impact_level VARCHAR(20) NOT NULL CHECK (impact_level IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
     priority VARCHAR(20) NOT NULL CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
     status VARCHAR(30) NOT NULL DEFAULT 'NEW' 
-        CHECK (status IN ('NEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REOPENED')),
+        CHECK (status IN ('NEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REOPENED', 'REOPEN_PENDING')),
     requester_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     current_assignee_id BIGINT NULL REFERENCES users(id) ON DELETE SET NULL,
     response_deadline TIMESTAMPTZ NOT NULL,
