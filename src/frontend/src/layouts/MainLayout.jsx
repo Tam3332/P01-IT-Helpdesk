@@ -1,46 +1,121 @@
-import { useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Layout, Menu, Dropdown, Avatar, Button, Drawer, Grid, Tag } from 'antd'
-import { MenuOutlined, LogoutOutlined } from '@ant-design/icons'
+import { useEffect, useState } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import Icon from '@/components/Icon'
 import { useAuth } from '@/context/AuthContext'
-import { MENU_BY_ROLE } from '@/config/menu'
 import { ROLE_LABEL } from '@/config/constants'
+import { NAV, findNavItem, ticketListItem } from '@/config/nav'
+import { initials } from '@/utils/format'
 
-const { Sider, Header, Content } = Layout
-
+// Khung chung: sidebar + topbar + vùng nội dung, y hệt prototype. Dưới 900px sidebar thành drawer.
 export default function MainLayout() {
   const { user, logout } = useAuth()
-  const navigate = useNavigate()
   const { pathname } = useLocation()
-  const screens = Grid.useBreakpoint()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const isMobile = !screens.md
-  const items = MENU_BY_ROLE[user.role] ?? []
-  // chọn mục menu dài nhất khớp với đường dẫn hiện tại
-  const selected = items.map((i) => i.key).filter((k) => pathname === k || pathname.startsWith(k + '/')).sort((a, b) => b.length - a.length)[0]
+  const items = NAV[user.role] || []
+  const current = findNavItem(user.role, pathname)
 
-  const menu = (
-    <Menu mode="inline" selectedKeys={selected ? [selected] : []} items={items}
-      onClick={({ key }) => { navigate(key); setOpen(false) }} />
-  )
-  const brand = <div style={{ padding: 16, fontWeight: 700, fontSize: 18, color: '#3157D5' }}>IT Helpdesk</div>
+  // Đổi trang thì đóng drawer; khoá cuộn nền khi drawer mở
+  useEffect(() => setOpen(false), [pathname])
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  const isDetail = /\/tickets\/(?!new$)[^/]+$/.test(pathname)
+  const list = ticketListItem(user.role)
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {!isMobile && <Sider width={240} theme="light">{brand}{menu}</Sider>}
-      {isMobile && <Drawer placement="left" open={open} onClose={() => setOpen(false)} size={260} styles={{ body: { padding: 0 } }} title="IT Helpdesk">{menu}</Drawer>}
-      <Layout>
-        <Header style={{ background: '#fff', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {isMobile ? <Button type="text" icon={<MenuOutlined />} onClick={() => setOpen(true)} /> : <span />}
-          <Dropdown menu={{ items: [{ key: 'out', icon: <LogoutOutlined />, label: 'Đăng xuất', onClick: () => { logout(); navigate('/login') } }] }}>
-            <span style={{ cursor: 'pointer' }}>
-              <Avatar style={{ background: '#3157D5', marginRight: 8 }}>{user.fullName[0]}</Avatar>
-              {!isMobile && user.fullName} <Tag style={{ marginLeft: 6 }}>{ROLE_LABEL[user.role]}</Tag>
-            </span>
-          </Dropdown>
-        </Header>
-        <Content className="page-pad"><Outlet /></Content>
-      </Layout>
-    </Layout>
+    <div className="shell">
+      <div className={`veil ${open ? 'on' : ''}`} onClick={() => setOpen(false)} />
+      <aside className={`sidebar ${open ? 'open' : ''}`} aria-label="Điều hướng">
+        <div className="brand">
+          <div className="logo">H</div>
+          <div>
+            <b>Helpdesk</b>
+            <span>Hỗ trợ CNTT nội bộ</span>
+          </div>
+        </div>
+        <div className="rolechip">
+          <Icon name="shield" />
+          <div>
+            <small>Vai trò</small>
+            <b>{ROLE_LABEL[user.role]}</b>
+          </div>
+        </div>
+        <div className="navlabel">Điều hướng</div>
+        <nav className="nav">
+          {items.map((i) => (
+            <button
+              key={i.path}
+              type="button"
+              className={i.sub ? 'sub' : ''}
+              aria-current={current?.path === i.path ? 'page' : undefined}
+              onClick={() => navigate(i.path)}
+            >
+              <Icon name={i.icon} />
+              {i.label}
+            </button>
+          ))}
+        </nav>
+        <div className="sbfoot">
+          <div className="who">
+            <div className="av">{initials(user.fullName)}</div>
+            <div style={{ minWidth: 0 }}>
+              <b style={{ display: 'block', fontSize: 13 }}>{user.fullName}</b>
+              <span className="sm muted" style={{ overflowWrap: 'anywhere' }}>
+                {user.email}
+              </span>
+            </div>
+          </div>
+          <button type="button" className="btn block sm" onClick={logout}>
+            <Icon name="logout" />
+            Đăng xuất
+          </button>
+        </div>
+      </aside>
+
+      <div className="main">
+        <header className="topbar">
+          <button type="button" className="iconbtn burger" aria-label="Mở menu" onClick={() => setOpen(true)}>
+            <Icon name="menu" />
+          </button>
+          <div className="crumb">
+            <span className="root">Helpdesk</span>
+            <span className="root">/</span>
+            {isDetail && list ? (
+              <>
+                <Link to={list.path} style={{ color: 'inherit' }}>
+                  {list.label}
+                </Link>
+                <span>/</span>
+                <b>Chi tiết ticket</b>
+              </>
+            ) : (
+              <>
+                {current?.sub && (
+                  <>
+                    <span>Cài đặt hệ thống</span>
+                    <span>/</span>
+                  </>
+                )}
+                <b>{current?.label || 'Không tìm thấy'}</b>
+              </>
+            )}
+          </div>
+        </header>
+        <main className="content">
+          <Outlet />
+        </main>
+      </div>
+    </div>
   )
 }
