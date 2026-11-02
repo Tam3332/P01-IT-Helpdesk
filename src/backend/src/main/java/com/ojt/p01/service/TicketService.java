@@ -1,6 +1,8 @@
 package com.ojt.p01.service;
 
 import com.ojt.p01.dto.request.CreateTicketRequest;
+import com.ojt.p01.dto.response.PageResponse;
+import com.ojt.p01.dto.response.TicketDetailResponse;
 import com.ojt.p01.dto.response.TicketResponse;
 import com.ojt.p01.entity.SLAConfig;
 import com.ojt.p01.entity.Ticket;
@@ -12,6 +14,11 @@ import com.ojt.p01.repository.SLAConfigRepository;
 import com.ojt.p01.repository.TicketCategoryRepository;
 import com.ojt.p01.repository.TicketRepository;
 import com.ojt.p01.repository.UserRepository;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -19,9 +26,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Service xử lý nghiệp vụ Ticket (Task T3).
+ * Service xử lý nghiệp vụ Ticket (Task T3 Tạo vé, Task T4 Danh sách & Chi tiết vé).
  */
 @Service
 public class TicketService {
@@ -42,21 +51,9 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // Tạo ticket mới (POST /api/v1/tickets)
+    // Task T3: Tạo ticket mới (POST /api/v1/tickets)
     // -------------------------------------------------------------------------
 
-    /**
-     * Tạo ticket mới theo luồng:
-     * 1. Lấy người dùng đang đăng nhập từ SecurityContext
-     * 2. Kiểm tra danh mục tồn tại
-     * 3. Tính priority = impactLevel (§1 SRS — quy tắc sơ bộ)
-     * 4. Tra SLA config theo priority → tính response_deadline & resolution_deadline
-     * 5. Sinh ticket_number duy nhất theo định dạng HD-YYYY-XXXX
-     * 6. Lưu vào DB với status = NEW
-     *
-     * @param request DTO từ request body (đã validate)
-     * @return TicketResponse — thông tin vé vừa tạo
-     */
     @Transactional
     public TicketResponse createTicket(CreateTicketRequest request) {
 
@@ -104,14 +101,85 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // Helper: Lấy user đang đăng nhập từ SecurityContext
+    // Task T4: Lấy danh sách ticket có phân trang & lọc theo Role (GET /api/v1/tickets)
     // -------------------------------------------------------------------------
 
     /**
-     * Lấy User entity của người đang đăng nhập.
-     * Sau khi Cường implement JWT (task C4), Authentication.getName() sẽ trả về username.
-     * Hiện tại nếu chưa có auth → throw UNAUTHENTICATED.
+     * Lấy danh sách ticket có phân quyền và bộ lọc:
+     * - EMPLOYEE: chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
+     * - IT_STAFF, IT_MANAGER, ADMIN: xem được tất cả vé trong hệ thống.
+     *
+     * @param page     Số trang (0-indexed)
+     * @param size     Kích thước trang
+     * @param status   Lọc trạng thái (tùy chọn: NEW, ASSIGNED, ...)
+     * @param priority Lọc độ ưu tiên (tùy chọn: LOW, MEDIUM, ...)
      */
+    @Transactional(readOnly = true)
+    public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority) {
+        User currentUser = getCurrentUser();
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
+
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Specification<Ticket> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 1. Phân quyền theo Role: EMPLOYEE chỉ xem vé của chính mình
+            if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
+                predicates.add(cb.equal(root.get("requester").get("id"), currentUser.getId()));
+            }
+
+            // 2. Bộ lọc trạng thái (nếu có)
+            if (status != null && !status.isBlank()) {
+                predicates.add(cb.equal(root.get("status"), status.trim().toUpperCase()));
+            }
+
+            // 3. Bộ lọc mức độ ưu tiên (nếu có)
+            if (priority != null && !priority.isBlank()) {
+                predicates.add(cb.equal(root.get("priority"), priority.trim().toUpperCase()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<TicketResponse> pageResult = ticketRepository.findAll(spec, pageRequest)
+                .map(this::toResponse);
+
+        return PageResponse.from(pageResult);
+    }
+
+    // -------------------------------------------------------------------------
+    // Task T4: Xem chi tiết 1 ticket (GET /api/v1/tickets/{ticketNumber})
+    // -------------------------------------------------------------------------
+
+    /**
+     * Xem thông tin chi tiết một vé cụ thể.
+     * Ràng buộc bảo mật (chống IDOR - IA-HD01, IA-HD02):
+     * - EMPLOYEE chỉ được mở vé do chính mình tạo ra. Nếu truy cập vé người khác -> 403 FORBIDDEN.
+     * - IT_STAFF, IT_MANAGER, ADMIN được phép xem mọi vé.
+     *
+     * @param ticketNumber Mã vé (ví dụ: HD-2026-0001)
+     */
+    @Transactional(readOnly = true)
+    public TicketDetailResponse getTicketDetail(String ticketNumber) {
+        Ticket ticket = ticketRepository.findByTicketNumber(ticketNumber)
+                .orElseThrow(() -> new AppException(ErrorCode.TICKET_NOT_FOUND));
+
+        User currentUser = getCurrentUser();
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
+
+        // Kiểm tra quyền hạn: EMPLOYEE chỉ được xem vé của mình
+        if ("EMPLOYEE".equalsIgnoreCase(roleName) && !ticket.getRequester().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Bạn không có quyền truy cập thông tin vé này");
+        }
+
+        return toDetailResponse(ticket);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helper: Lấy user đang đăng nhập từ SecurityContext
+    // -------------------------------------------------------------------------
+
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -121,7 +189,7 @@ public class TicketService {
                     .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
         }
 
-        // DEV FALLBACK: Khi chua co JWT tu Cuong (task C4), fallback user demo 'employee' de test tao ve
+        // DEV FALLBACK: Khi chưa có JWT từ Cường (task C4), fallback user demo 'employee'
         return userRepository.findByUsername("employee")
                 .orElseGet(() -> userRepository.findAll().stream().findFirst()
                         .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED, "No users available for demo fallback")));
@@ -131,12 +199,6 @@ public class TicketService {
     // Helper: Sinh mã vé HD-YYYY-XXXX
     // -------------------------------------------------------------------------
 
-    /**
-     * Sinh ticket_number duy nhất theo định dạng HD-YYYY-XXXX.
-     * Ví dụ: HD-2026-0001, HD-2026-0002, ...
-     * Thuật toán: đếm số ticket đã có trong năm → sequence tiếp theo.
-     * Retry tối đa 10 lần nếu bị race condition (2 request cùng lúc).
-     */
     private String generateTicketNumber() {
         int year = Year.now().getValue();
         String yearPrefix = "HD-" + year + "-";
@@ -147,23 +209,17 @@ public class TicketService {
             if (!ticketRepository.existsByTicketNumber(candidate)) {
                 return candidate;
             }
-            // Nếu đã tồn tại (race condition) → thử số tiếp theo
         }
 
-        // Fallback an toàn: dùng timestamp nếu retry đều thất bại
         return yearPrefix + System.currentTimeMillis();
     }
-
-    // -------------------------------------------------------------------------
-    // Helper: Convert hours → minutes (dùng OffsetDateTime.plusMinutes)
-    // -------------------------------------------------------------------------
 
     private long toMinutes(double hours) {
         return Math.round(hours * 60);
     }
 
     // -------------------------------------------------------------------------
-    // Helper: Map Ticket entity → TicketResponse DTO
+    // Helper: Map Ticket entity -> TicketResponse / TicketDetailResponse DTO
     // -------------------------------------------------------------------------
 
     private TicketResponse toResponse(Ticket ticket) {
@@ -180,6 +236,41 @@ public class TicketService {
                 ticket.getResponseDeadline(),
                 ticket.getResolutionDeadline(),
                 ticket.getCreatedAt()
+        );
+    }
+
+    private TicketDetailResponse toDetailResponse(Ticket ticket) {
+        User assignee = ticket.getCurrentAssignee();
+        return new TicketDetailResponse(
+                ticket.getId(),
+                ticket.getTicketNumber(),
+                ticket.getTitle(),
+                ticket.getDescription(),
+                ticket.getCategory().getId(),
+                ticket.getCategory().getCategoryCode(),
+                ticket.getCategory().getCategoryName(),
+                ticket.getImpactLevel(),
+                ticket.getPriority(),
+                ticket.getStatus(),
+                ticket.getRequester().getId(),
+                ticket.getRequester().getFullName(),
+                ticket.getRequester().getEmail(),
+                ticket.getRequester().getDepartment(),
+                assignee != null ? assignee.getId() : null,
+                assignee != null ? assignee.getFullName() : null,
+                assignee != null ? assignee.getEmail() : null,
+                ticket.getResponseDeadline(),
+                ticket.getResolutionDeadline(),
+                ticket.getIsSlaBreached(),
+                ticket.getFirstRespondedAt(),
+                ticket.getResolvedAt(),
+                ticket.getClosedAt(),
+                ticket.getReopenedAt(),
+                ticket.getReopenCount(),
+                ticket.getReopenReason(),
+                ticket.getResolutionNote(),
+                ticket.getCreatedAt(),
+                ticket.getUpdatedAt()
         );
     }
 }
