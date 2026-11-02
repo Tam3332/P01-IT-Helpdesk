@@ -5,7 +5,7 @@
 services:
   # Database - PostgreSQL
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: p01-db
     restart: unless-stopped
     environment:
@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Hãy đặt POSTGRES_PASSWORD trong file .env}
     volumes:
       # [ĐỔI] Postgres 18 lưu dữ liệu theo thư mục phiên bản, nên mount ở /var/lib/postgresql và bỏ PGDATA tùy chỉnh
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
       - ./database/init_data.sql:/docker-entrypoint-initdb.d/02-init_data.sql:ro
       # Tài khoản demo cho lab. Bỏ dòng dưới nếu Backend tự tạo tài khoản.
