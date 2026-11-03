@@ -1113,6 +1113,59 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
 
+  # ================= DASHBOARD =================
+  /dashboard/stats:
+    get:
+      tags: [Dashboard]
+      summary: Thống kê tổng hợp số lượng vé, vi phạm SLA, hiệu năng (HD14)
+      description: >
+        Trả về thống kê tổng quan: tổng số vé theo trạng thái, số vé vi phạm SLA,
+        thời gian xử lý trung bình. Dành riêng cho IT_MANAGER.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Thống kê tổng hợp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatsResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /dashboard/sla-monitor:
+    get:
+      tags: [Dashboard]
+      summary: Giám sát vé sắp chạm ngưỡng cảnh báo 80% hoặc quá hạn SLA (HD12, HD14)
+      description: >
+        Danh sách vé đang tiến gần đến ngưỡng SLA (>= 80% thời gian deadline)
+        hoặc đã vi phạm SLA (is_sla_breached = true). Dành riêng cho IT_MANAGER.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: breachedOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: "true = chỉ lấy vé đã vi phạm SLA; false = lấy cả vé sắp vi phạm"
+      responses:
+        '200':
+          description: Danh sách vé cần giám sát SLA
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SLAMonitorItem'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -1121,6 +1174,65 @@ components:
       bearerFormat: JWT
 
   schemas:
+    DashboardStatsResponse:
+      type: object
+      description: Thống kê tổng hợp cho IT_MANAGER (HD14)
+      properties:
+        totalTickets:
+          type: integer
+          description: Tổng số vé trong hệ thống
+        byStatus:
+          type: object
+          description: Số lượng vé theo từng trạng thái
+          additionalProperties:
+            type: integer
+          example:
+            NEW: 5
+            ASSIGNED: 3
+            IN_PROGRESS: 2
+            RESOLVED: 8
+            CLOSED: 12
+        slaBreachedCount:
+          type: integer
+          description: Số vé đã vi phạm SLA
+        slaBreachedPct:
+          type: number
+          format: double
+          description: "% vé vi phạm SLA trên tổng số"
+        avgResolutionHours:
+          type: number
+          format: double
+          description: Thời gian giải quyết trung bình (giờ)
+
+    SLAMonitorItem:
+      type: object
+      description: Thông tin vé cần giám sát SLA (HD12)
+      properties:
+        ticketId:
+          type: integer
+        ticketNumber:
+          type: string
+          example: HD-2026-0001
+        title:
+          type: string
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        status:
+          type: string
+        resolutionDeadline:
+          type: string
+          format: date-time
+        slaUsedPct:
+          type: number
+          format: double
+          description: "% thời gian SLA đã dùng (>= 80 = cảnh báo, >= 100 = vi phạm)"
+        isSlaBreached:
+          type: boolean
+        assigneeName:
+          type: string
+          nullable: true
+
     ReopenRequestDTO:
       type: object
       description: Bản ghi yêu cầu mở lại ticket, tương ứng bảng reopen_requests trong ERD
