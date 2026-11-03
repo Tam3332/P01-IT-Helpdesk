@@ -8,5 +8,6 @@ public record CategoryResponse(
         Integer id,
         String categoryCode,
         String categoryName,
+        String description,
         String defaultPriority
 ) {}

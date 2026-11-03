@@ -60,14 +60,19 @@ public class TicketService {
         // 1. Lấy user đang đăng nhập
         User requester = getCurrentUser();
 
-        // 2. Kiểm tra danh mục
+        // 2. Kiểm tra danh mục tồn tại
         TicketCategory category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // 3. Tính priority = impactLevel (quy tắc sơ bộ §1 SRS)
+        // 3. UC-02 5a: Chặn danh mục đã bị vô hiệu hóa (isActive = false)
+        if (Boolean.FALSE.equals(category.getIsActive())) {
+            throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
+        }
+
+        // 4. Tính priority = impactLevel (quy tắc sơ bộ ở SRS)
         String priority = request.impactLevel();
 
-        // 4. Tra SLA config + tính deadline
+        // 5. Tra SLA config + tính deadline
         SLAConfig slaConfig = slaConfigRepository.findByPriorityLevel(priority)
                 .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
 
@@ -77,10 +82,10 @@ public class TicketService {
         OffsetDateTime resolutionDeadline = now.plusMinutes(
                 toMinutes(slaConfig.getResolutionTimeHours().doubleValue()));
 
-        // 5. Sinh ticket_number duy nhất: HD-YYYY-XXXX
+        // 6. Sinh ticket_number duy nhất: HD-YYYY-XXXX
         String ticketNumber = generateTicketNumber();
 
-        // 6. Tạo và lưu entity
+        // 7. Tạo và lưu entity
         Ticket ticket = new Ticket();
         ticket.setTicketNumber(ticketNumber);
         ticket.setTitle(request.title());
@@ -106,8 +111,9 @@ public class TicketService {
 
     /**
      * Lấy danh sách ticket có phân quyền và bộ lọc:
-     * - EMPLOYEE: chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
-     * - IT_STAFF, IT_MANAGER, ADMIN: xem được tất cả vé trong hệ thống.
+     * - EMPLOYEE   : chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
+     * - IT_STAFF   : xem vé được giao cho mình (assignee) + tất cả vé trạng thái NEW.
+     * - IT_MANAGER, ADMIN: xem được tất cả vé trong hệ thống.
      *
      * @param page     Số trang (0-indexed)
      * @param size     Kích thước trang
@@ -124,17 +130,25 @@ public class TicketService {
         Specification<Ticket> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. Phân quyền theo Role: EMPLOYEE chỉ xem vé của chính mình
+            // 1. Phân quyền theo Role
             if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
+                // EMPLOYEE chỉ thấy vé của chính mình
                 predicates.add(cb.equal(root.get("requester").get("id"), currentUser.getId()));
+
+            } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
+                // IT_STAFF thấy: vé được giao cho mình HOẶC vé NEW chưa được giao
+                Predicate assignedToMe = cb.equal(root.get("currentAssignee").get("id"), currentUser.getId());
+                Predicate isNew = cb.equal(root.get("status"), "NEW");
+                predicates.add(cb.or(assignedToMe, isNew));
             }
+            // IT_MANAGER, ADMIN: không thêm filter → thấy tất cả
 
             // 2. Bộ lọc trạng thái (nếu có)
             if (status != null && !status.isBlank()) {
                 predicates.add(cb.equal(root.get("status"), status.trim().toUpperCase()));
             }
 
-            // 3. Bộ lọc mức độ ưu tiên (nếu có)
+            // 3. Bộ lọc độ ưu tiên (nếu có)
             if (priority != null && !priority.isBlank()) {
                 predicates.add(cb.equal(root.get("priority"), priority.trim().toUpperCase()));
             }
@@ -154,8 +168,11 @@ public class TicketService {
 
     /**
      * Xem thông tin chi tiết một vé cụ thể.
-     * Ràng buộc bảo mật (chống IDOR - IA-HD01, IA-HD02):
-     * - EMPLOYEE chỉ được mở vé do chính mình tạo ra. Nếu truy cập vé người khác -> 403 FORBIDDEN.
+     *
+     * Ràng buộc bảo mật chống IDOR (IA-HD01, IA-HD02):
+     * - EMPLOYEE chỉ được mở vé do chính mình tạo ra.
+     *   Nếu truy cập vé người khác → 404 (SRS P1, HD05, UC-04 4a).
+     *   Lý do trả 404 (không phải 403): tránh lộ thông tin "vé đó tồn tại".
      * - IT_STAFF, IT_MANAGER, ADMIN được phép xem mọi vé.
      *
      * @param ticketNumber Mã vé (ví dụ: HD-2026-0001)
@@ -168,16 +185,17 @@ public class TicketService {
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
-        // Kiểm tra quyền hạn: EMPLOYEE chỉ được xem vé của mình
-        if ("EMPLOYEE".equalsIgnoreCase(roleName) && !ticket.getRequester().getId().equals(currentUser.getId())) {
-            throw new AppException(ErrorCode.FORBIDDEN, "Bạn không có quyền truy cập thông tin vé này");
+        // EMPLOYEE cố truy cập vé người khác → trả 404 (không phải 403)
+        if ("EMPLOYEE".equalsIgnoreCase(roleName)
+                && !ticket.getRequester().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.TICKET_NOT_FOUND);
         }
 
         return toDetailResponse(ticket);
     }
 
     // -------------------------------------------------------------------------
-    // Helper: Lấy user đang đăng nhập từ SecurityContext
+    // Helper: Lấy user đang đăng nhập từ SecurityContext (Cường đã làm JWT Filter C4)
     // -------------------------------------------------------------------------
 
     private User getCurrentUser() {
@@ -189,10 +207,8 @@ public class TicketService {
                     .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
         }
 
-        // DEV FALLBACK: Khi chưa có JWT từ Cường (task C4), fallback user demo 'employee'
-        return userRepository.findByUsername("employee")
-                .orElseGet(() -> userRepository.findAll().stream().findFirst()
-                        .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED, "No users available for demo fallback")));
+        // Không có JWT hợp lệ → 401
+        throw new AppException(ErrorCode.UNAUTHENTICATED);
     }
 
     // -------------------------------------------------------------------------
