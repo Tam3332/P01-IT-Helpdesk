@@ -11,10 +11,7 @@
     "format": "prettier --write \"src/**/*.{js,jsx,css}\""
   },
   "dependencies": {
-    "@ant-design/icons": "^6.3.4",
-    "antd": "^6.6.8",
     "axios": "^1.20.0",
-    "dayjs": "^1.11.23",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.4"
