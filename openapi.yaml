@@ -292,7 +292,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
         '422':
-          description: Ticket đã CLOSED hoặc đang REOPEN_PENDING chờ duyệt, không phân công được (BR-HD-04)
+          description: Ticket đã CLOSED hoặc đang REOPEN_PENDING chờ duyệt, hoặc người được giao không phải IT Staff đang hoạt động (BR-HD-04, UC-06 3a, BR-HD-05)
 
   /tickets/{id}/status:
     patch:
@@ -420,10 +420,8 @@ paths:
           $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
-        '409':
-          description: Ticket này đang có một yêu cầu mở lại đang chờ duyệt (PENDING), không thể gửi thêm
         '422':
-          description: Ticket không ở trạng thái RESOLVED hoặc đã quá 7 ngày (168 giờ) kể từ lúc Resolved
+          description: Ticket không ở trạng thái RESOLVED, đã quá 7 ngày (168 giờ) kể từ lúc Resolved, hoặc đang có yêu cầu mở lại chờ duyệt (PENDING) (BR-HD-04)
 
   /reopen-requests:
     get:
@@ -808,6 +806,7 @@ paths:
     post:
       tags: [Categories & SLA]
       summary: Tạo mới danh mục sự cố (ADMIN) (HD02, UC-10)
+      description: Trùng mã/tên danh mục hoặc để trống tên → 400 (SRS UC-10 3a).
       security:
         - BearerAuth: []
       requestBody:
@@ -841,8 +840,6 @@ paths:
           $ref: '#/components/responses/401Unauthorized'
         '403':
           $ref: '#/components/responses/403Forbidden'
-        '409':
-          description: "Mã hoặc tên danh mục đã tồn tại (SRS HD02: 'tạo loại yêu cầu mới với tên duy nhất')"
 
   /admin/sla-configs:
     get:
@@ -939,6 +936,7 @@ paths:
     post:
       tags: [Admin & Users]
       summary: Tạo tài khoản mới (ADMIN) (SRS §2 System Admin)
+      description: Trùng username hoặc email → 400 (cùng quy ước lỗi trùng dữ liệu của SRS UC-10 3a).
       security:
         - BearerAuth: []
       requestBody:
@@ -982,8 +980,6 @@ paths:
           $ref: '#/components/responses/401Unauthorized'
         '403':
           $ref: '#/components/responses/403Forbidden'
-        '409':
-          description: Username hoặc email đã tồn tại (UNIQUE, SDD §3)
 
   /admin/users/{userId}/role:
     patch:
