@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: p01-backend
+  # Tắt user tạm Spring tự sinh ("Using generated security password"): hệ thống xác thực bằng JWT
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 

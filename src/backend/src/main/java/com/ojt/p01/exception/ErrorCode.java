@@ -35,12 +35,12 @@ public enum ErrorCode {
     // -------------------------------------------------------------------------
     // Ticket state machine
     // -------------------------------------------------------------------------
-    INVALID_STATUS_TRANSITION  ("INVALID_STATUS_TRANSITION", "Chuyển trạng thái vé không hợp lệ", HttpStatus.BAD_REQUEST),
+    INVALID_STATUS_TRANSITION  ("INVALID_STATUS_TRANSITION", "Chuyển trạng thái vé không hợp lệ", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-07 2a, SDD §6.5 bước 5
 
     // -------------------------------------------------------------------------
     // Admin — Category & SLAConfig
     // -------------------------------------------------------------------------
-    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.CONFLICT),
+    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: SRS UC-10 3a (nhóm không dùng 409)
     SLA_INVALID_HOURS          ("SLA_INVALID_HOURS", "Thời gian SLA phải lớn hơn 0", HttpStatus.BAD_REQUEST);
 
     private final String code;

@@ -3,6 +3,7 @@ package com.ojt.p01.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ojt.p01.common.ApiResponse;
 import com.ojt.p01.security.JwtAuthenticationFilter;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +24,8 @@ import java.nio.charset.StandardCharsets;
  * Cấu hình Spring Security 6 (Stateless JWT).
  *
  * Access Matrix (SRS §02 §5, SDD §4.2):
- * - /api/v1/auth/**                   → public (login)
+ * - POST /api/v1/auth/login          → public (API public duy nhất, SDD §6.2)
+ * - /api/v1/auth/me, /auth/logout    → cần token
  * - /api/v1/categories                → tất cả đã xác thực
  * - /api/v1/tickets/**                → tất cả đã xác thực
  * - /api/v1/admin/sla-configs GET     → IT_MANAGER + ADMIN
@@ -71,8 +73,12 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
 
+                // Trang lỗi nội bộ của Spring (forward tới /error): cho qua để giữ đúng mã lỗi gốc
+                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+
                 // --- Public ---
-                .requestMatchers("/api/v1/auth/**").permitAll()
+                // SDD §6.2: chỉ POST /api/v1/auth/login không cần token; /auth/me và /auth/logout bắt buộc token
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                 // --- SLAConfig: GET cho IT_MANAGER + ADMIN, PUT chỉ ADMIN ---
