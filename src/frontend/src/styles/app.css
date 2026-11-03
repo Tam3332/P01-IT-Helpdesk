@@ -201,3 +201,12 @@ td.tt{min-width:210px;font-weight:500;color:var(--text)}td.nw{white-space:nowrap
   .pop{position:fixed;left:16px;right:16px;top:64px;width:auto;max-width:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* bổ sung cho trạng thái REOPENED / REOPEN_PENDING (prototype chưa có) và phân trang */
+.b-Reopened{background:var(--warn-bg);color:var(--warn)}
+.b-ReopenPending{background:var(--vio-bg);color:var(--vio)}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 20px;flex-wrap:wrap;border-top:1px solid var(--border)}
+.pager .btns{display:flex;gap:6px}
+.btn[disabled],.btn:disabled{opacity:.5;cursor:not-allowed}
+.in[disabled],.sel[disabled],.ta[disabled]{opacity:.6}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}

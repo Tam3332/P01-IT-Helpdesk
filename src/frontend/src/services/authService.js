@@ -1,16 +1,11 @@
-import apiClient, { unwrap } from './apiClient'
+import api, { unwrap } from './apiClient'
 
-// POST /auth/login  { email, password } -> LoginResponse { accessToken, tokenType, expiresIn, user }
+// LoginResponse: openapi để accessToken ở cấp ngoài cùng, backend có thể bọc trong data.
 export async function login(email, password) {
-  return unwrap(await apiClient.post('/auth/login', { email, password }))
+  const res = await api.post('/auth/login', { email, password })
+  const body = res.data
+  return body?.accessToken ? body : unwrap(res)
 }
 
-// GET /auth/me -> UserResponse (xác nhận token còn hiệu lực, lấy thông tin tài khoản hiện tại)
-export async function fetchMe() {
-  return unwrap(await apiClient.get('/auth/me'))
-}
-
-// POST /auth/logout: đưa token vào blacklist phía Backend (ADR-02)
-export async function logout() {
-  await apiClient.post('/auth/logout')
-}
+export const fetchMe = async () => unwrap(await api.get('/auth/me'))
+export const logout = async () => api.post('/auth/logout')

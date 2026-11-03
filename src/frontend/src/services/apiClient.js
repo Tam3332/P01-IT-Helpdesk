@@ -2,33 +2,61 @@ import axios from 'axios'
 import { API_BASE_URL, STORAGE_KEYS } from '@/config/constants'
 import { emitForbidden, emitUnauthorized } from './authEvents'
 
-const apiClient = axios.create({ baseURL: API_BASE_URL, timeout: 15000 })
+const api = axios.create({ baseURL: API_BASE_URL, timeout: 15000 })
 
-apiClient.interceptors.request.use((config) => {
+api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem(STORAGE_KEYS.token)
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-apiClient.interceptors.response.use(
+api.interceptors.response.use(
   (res) => res,
   (err) => {
     const status = err.response?.status
-    // Đăng nhập sai cũng trả 401 nhưng đó là lỗi của form, không phải hết phiên
-    const isLogin = err.config?.url?.includes('/auth/login')
-    if (status === 401 && !isLogin) emitUnauthorized()
+    const url = err.config?.url || ''
+    if (status === 401 && !url.includes('/auth/login')) emitUnauthorized()
     if (status === 403) emitForbidden()
     return Promise.reject(err)
   },
 )
 
-// Bóc dữ liệu theo ApiResponse<T> { success, message, data, timestamp } (SDD §4.2)
-export const unwrap = (res) => res.data?.data ?? res.data
+export default api
 
-// Lấy thông báo lỗi cho người dùng từ ErrorResponse { success:false, error:{ code, message, details } }
-export function apiError(err, fallback = 'Có lỗi xảy ra, vui lòng thử lại.') {
-  if (!err.response) return 'Không kết nối được máy chủ. Vui lòng thử lại sau.'
-  return err.response.data?.error?.message || fallback
+// Bóc dữ liệu. Chấp nhận cả hai kiểu phản hồi đang có trong dự án:
+//  - SDD/openapi: { success, message, data, timestamp }  (riêng LoginResponse có accessToken ở ngoài)
+//  - Backend tri/be hiện tại: { code, message, data, timestamp }
+export function unwrap(res) {
+  const body = res?.data
+  if (body && typeof body === 'object' && 'data' in body) return body.data
+  return body
 }
 
-export default apiClient
+// Lấy thông điệp lỗi từ cả hai kiểu: { error: { code, message, details } } hoặc { code, message }
+export function apiError(err, fallback = 'Đã xảy ra lỗi. Vui lòng thử lại.') {
+  if (!err?.response) return 'Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.'
+  const body = err.response.data
+  const e = body?.error
+  const details = Array.isArray(e?.details) ? e.details : body?.data && typeof body.data === 'object' && !Array.isArray(body.data) ? Object.values(body.data) : []
+  const msg = e?.message || body?.message
+  if (details.length) return `${msg ? msg + ': ' : ''}${details.join('; ')}`
+  return msg || fallback
+}
+
+export const httpStatus = (err) => err?.response?.status
+
+// Trang kết quả -> dạng thống nhất { content, page, size, totalElements, totalPages }.
+// openapi dùng page/size, backend tri/be dùng pageNo/pageSize.
+export function normalizePage(p) {
+  const content = Array.isArray(p) ? p : p?.content || []
+  return {
+    content,
+    page: p?.page ?? p?.pageNo ?? 0,
+    size: p?.size ?? p?.pageSize ?? content.length,
+    totalElements: p?.totalElements ?? content.length,
+    totalPages: p?.totalPages ?? 1,
+  }
+}
+
+// Bỏ tham số rỗng trước khi gửi query
+export const clean = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '' && v != null))
