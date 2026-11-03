@@ -12,6 +12,10 @@ public enum ErrorCode {
     UNAUTHORIZED(1004, "Unauthorized access", HttpStatus.UNAUTHORIZED),
     FORBIDDEN(1005, "Access denied", HttpStatus.FORBIDDEN),
 
+    // Auth errors (Task C2, SRS UC-01)
+    INVALID_CREDENTIALS(3001, "Email hoặc mật khẩu không đúng", HttpStatus.UNAUTHORIZED),
+    ACCOUNT_DISABLED(3002, "Tài khoản đã bị khóa, vui lòng liên hệ Admin", HttpStatus.FORBIDDEN),
+
     // Ticket errors
     TICKET_NOT_FOUND(2001, "Ticket not found", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_FOUND(2002, "Category not found", HttpStatus.NOT_FOUND),
