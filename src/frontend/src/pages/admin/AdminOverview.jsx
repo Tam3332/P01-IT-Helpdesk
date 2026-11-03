@@ -34,31 +34,14 @@ export default function AdminOverview() {
         <Kpi label="Trạng thái" value={STATUS_KEYS.length} tone="vio" icon="layers" />
         <Kpi label="Bản ghi nhật ký" value={d.loading ? '…' : v.logs} tone="neu" icon="file" />
       </div>
-      <div className="banner info">
-        <Icon name="shield" />
-        <div className="grow">
-          Quản trị viên không xử lý ticket (phân tách nhiệm vụ). Menu bên trái chỉ có quản lý người
-          dùng, cấu hình hệ thống và nhật ký chỉ đọc.
-        </div>
-      </div>
+      <div className="banner info"><Icon name="shield" /><div className="grow">Quản trị viên không xử lý ticket (phân tách nhiệm vụ). Menu bên trái chỉ có quản lý người dùng, cấu hình hệ thống và nhật ký chỉ đọc.</div></div>
       <section className="card">
-        <div className="ch">
-          <h2>Truy cập nhanh</h2>
-        </div>
+        <div className="ch"><h2>Truy cập nhanh</h2></div>
         <div className="cb">
           <div className="acts">
-            <button type="button" className="btn pri" onClick={() => navigate('/admin/users')}>
-              <Icon name="users" />
-              Người dùng
-            </button>
-            <button type="button" className="btn" onClick={() => navigate('/admin/settings')}>
-              <Icon name="sliders" />
-              Cài đặt hệ thống
-            </button>
-            <button type="button" className="btn" onClick={() => navigate('/admin/audit-logs')}>
-              <Icon name="file" />
-              Nhật ký hệ thống
-            </button>
+            <button type="button" className="btn pri" onClick={() => navigate('/admin/users')}><Icon name="users" />Người dùng</button>
+            <button type="button" className="btn" onClick={() => navigate('/admin/settings')}><Icon name="sliders" />Cài đặt hệ thống</button>
+            <button type="button" className="btn" onClick={() => navigate('/admin/audit-logs')}><Icon name="file" />Nhật ký hệ thống</button>
           </div>
         </div>
       </section>

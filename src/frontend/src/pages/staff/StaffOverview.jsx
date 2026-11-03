@@ -25,18 +25,8 @@ export default function StaffOverview() {
           <div className="kpis">
             <Kpi label="Ticket được giao" value={d.data.total} tone="primary" icon="inbox" />
             <Kpi label="Đang mở" value={open.length} tone="info" icon="clock" />
-            <Kpi
-              label="Ưu tiên cao"
-              value={open.filter((t) => t.priority === 'HIGH' || t.priority === 'CRITICAL').length}
-              tone="warn"
-              icon="flag"
-            />
-            <Kpi
-              label="Cảnh báo SLA"
-              value={open.filter((t) => slaOf(t).key !== 'NORMAL').length}
-              tone="bad"
-              icon="alert"
-            />
+            <Kpi label="Ưu tiên cao" value={open.filter((t) => t.priority === 'HIGH' || t.priority === 'CRITICAL').length} tone="warn" icon="flag" />
+            <Kpi label="Cảnh báo SLA" value={open.filter((t) => slaOf(t).key !== 'NORMAL').length} tone="bad" icon="alert" />
           </div>
         )}
       </Async>

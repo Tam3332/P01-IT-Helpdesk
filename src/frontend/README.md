@@ -51,7 +51,7 @@ Token lưu `sessionStorage` (đóng tab là mất), tự đăng xuất khi hết
 ## Cấu trúc `src/`
 | Thư mục | Vai trò |
 |---|---|
-| `config/` | vai trò, menu theo vai trò (`nav.js`), trạng thái/ưu tiên/giới hạn (`domain.js`), quyền hiển thị (`permissions.js`) |
+| `config/` | vai trò, menu theo vai trò (`nav.js`), trạng thái/ưu tiên/giới hạn (`domain.js`) |
 | `context/` | `AuthContext` (phiên, login/logout, tự hết hạn), `ToastContext` |
 | `routes/` | `AppRoutes`, `ProtectedRoute` (`RequireAuth`, `RequireRole`) |
 | `layouts/` | `MainLayout` (sidebar, topbar, drawer < 900px) |

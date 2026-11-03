@@ -65,7 +65,12 @@ function EditDialog({ cfg, onClose, onSaved }) {
       if (!(rs > 0)) throw new Error('Hạn xử lý phải lớn hơn 0.')
       if (rs < rp) throw new Error('Hạn xử lý không được nhỏ hơn hạn phản hồi.')
       try {
-        await updateSlaConfig(cfg.priorityLevel, { responseTimeHours: rp, resolutionTimeHours: rs })
+        await updateSlaConfig(cfg.priorityLevel, {
+          responseTimeHours: rp,
+          resolutionTimeHours: rs,
+          warningThresholdPct: cfg.warningThresholdPct,
+          breachThresholdPct: cfg.breachThresholdPct,
+        })
       } catch (e) {
         throw new Error(apiError(e, 'Không lưu được cấu hình.'))
       }

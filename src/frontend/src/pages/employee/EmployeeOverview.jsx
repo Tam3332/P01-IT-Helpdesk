@@ -20,20 +20,14 @@ export default function EmployeeOverview() {
     <>
       <PageHeader title={item.label} subtitle={item.subtitle}>
         <button type="button" className="btn pri" onClick={() => navigate('/employee/tickets/new')}>
-          <Icon name="plus" />
-          Tạo ticket
+          <Icon name="plus" />Tạo ticket
         </button>
       </PageHeader>
       <Async state={counts}>
         {c && (
           <div className="kpis">
             <Kpi label="Tổng số ticket" value={sum(Object.keys(c))} tone="primary" icon="ticket" />
-            <Kpi
-              label="Đang mở"
-              value={sum([...OPEN_STATUSES, 'REOPEN_PENDING'])}
-              tone="info"
-              icon="clock"
-            />
+            <Kpi label="Đang mở" value={sum([...OPEN_STATUSES, 'REOPEN_PENDING'])} tone="info" icon="clock" />
             <Kpi label="Đã giải quyết (chờ xác nhận)" value={c.RESOLVED} tone="ok" icon="check" />
             <Kpi label="Đã đóng" value={c.CLOSED} tone="neu" icon="lock" />
           </div>
