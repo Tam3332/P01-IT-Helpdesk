@@ -40,3 +40,15 @@ Môi trường như phần trên, backend sau khi thêm B7 (chưa commit lúc ch
 | EV-HD-01 | EV-HD-01_api_me_200_va_401.png | 2026-11-04 | T3-06, SDD §6.1–6.2 | `GET /auth/me` có token, rồi không có token | 200, đúng user, không trả password_hash; không token → 401 UNAUTHORIZED |
 | EV-HD-01 | EV-HD-01_api_404_logout_token_thu_hoi_401.png | 2026-11-04 | T3-06, SDD §6.1, SecRS TH-08 | API chưa có (`/tickets/HD-2026-0001/comments`); `POST /auth/logout`; gọi lại `/auth/me` bằng token cũ | 404 RESOURCE_NOT_FOUND (không còn 500); logout 200; token cũ còn hạn nhưng bị từ chối 401 |
 | EV-HD-01 | EV-HD-01_db_token_blacklist.png | 2026-11-04 | T3-06, ADR-02, IA-HD07 | Truy vấn bảng `token_blacklist` sau logout | 1 dòng: jti, user_id = 1, cột `token` trống (không lưu token gốc), expires_at = lúc login + 15 phút (giờ UTC) |
+
+## Bổ sung: Assign Ticket (HD06/UC-06), `GET /users/it-staff`, phân trang (04/11/2026)
+
+Task bổ sung do Trí giao ngày 03/11 (ngoài danh sách T3-06), làm theo SRS HD06/UC-06, BR-HD-03/05, SDD §3.4/§6.4. Backend trên máy dev, code chưa commit lúc chụp. Ticket test HD-2026-0001 (ban đầu NEW, HIGH); staff id = 2, employee id = 1, manager id = 3.
+
+| EV-ID | File | Ngày | Task / test | Mô tả | Kết quả quan sát |
+|---|---|---|---|---|---|
+| EV-HD-05 | EV-HD-05_api_it_staff_va_phan_trang.png | 2026-11-04 | UC-06 bước 4; SDD §6.2; SRS UC-04 3b | `GET /users/it-staff` bằng Manager rồi Employee; `GET /tickets?page=-1&size=0` | 200 chỉ IT Staff đang hoạt động, không có password_hash; Employee → 403; tham số trang sai → dùng mặc định (page 0, size 20) |
+| EV-HD-06 | EV-HD-06_api_assign_403_422_200.png | 2026-11-04 | UC-06 4a, 3a, bước 5; 3b (Trí chốt 04/11) | Employee gọi assign; Manager giao cho Employee; giao cho Staff kèm priority CRITICAL; giao lại đúng Staff cũ | 403; 422 INVALID_ASSIGNEE; 200 status ASSIGNED, SLA tính lại theo Critical (tạo + 15 phút / + 4 giờ), firstRespondedAt null (SRS P2); 422 ASSIGNEE_UNCHANGED |
+| EV-HD-06 | EV-HD-06_db_assignment_history.png | 2026-11-04 | BR-HD-05; SDD §3.4; HD09 | Truy vấn `ticket_assignments`, `ticket_history` sau các ca trên | 1 dòng phân công is_current = true; 2 dòng lịch sử ASSIGN (người phụ trách, priority HIGH → CRITICAL) kèm IP; các ca bị từ chối không để lại dòng nào |
+
+Chưa kiểm: điều phối lại sang Staff khác (cần thêm 1 tài khoản IT Staff); assign ticket REOPENED / Closed (chưa có API đổi trạng thái để tạo dữ liệu).
