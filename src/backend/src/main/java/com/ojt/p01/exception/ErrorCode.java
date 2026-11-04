@@ -43,8 +43,10 @@ public enum ErrorCode {
     // -------------------------------------------------------------------------
     // Admin — Category & SLAConfig
     // -------------------------------------------------------------------------
-    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.BAD_REQUEST),
-    CATEGORY_HAS_TICKETS       ("CATEGORY_HAS_TICKETS", "Danh mục đang có phiếu yêu cầu tham chiếu, không thể xóa", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-10 3c // 400: SRS UC-10 3a (nhóm không dùng 409)
+    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: SRS UC-10 3a (nhóm không dùng 409)
+    CATEGORY_NAME_DUPLICATE    ("CATEGORY_NAME_DUPLICATE", "Tên danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: SRS UC-10 3a "trùng mã/tên", HD02 "tên duy nhất"
+    CATEGORY_ID_NOT_FOUND      ("CATEGORY_ID_NOT_FOUND", "Không tìm thấy danh mục", HttpStatus.NOT_FOUND), // 404: Admin gọi /admin/categories/{id} sai id (SDD §4.2c)
+    CATEGORY_HAS_TICKETS       ("CATEGORY_HAS_TICKETS", "Danh mục đang có phiếu yêu cầu tham chiếu, không thể xóa", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-10 3c
     SLA_INVALID_HOURS          ("SLA_INVALID_HOURS", "Thời gian SLA phải lớn hơn 0", HttpStatus.BAD_REQUEST);
 
     private final String code;

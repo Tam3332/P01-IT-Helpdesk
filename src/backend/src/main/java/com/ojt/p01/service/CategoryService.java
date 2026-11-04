@@ -64,7 +64,7 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public CategoryDetailResponse getCategoryById(Integer id) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
         return toDetailResponse(cat);
     }
 
@@ -77,6 +77,10 @@ public class CategoryService {
     public CategoryDetailResponse createCategory(CreateCategoryRequest request) {
         if (categoryRepository.existsByCategoryCode(request.categoryCode())) {
             throw new AppException(ErrorCode.CATEGORY_CODE_DUPLICATE);
+        }
+        // UC-10 3a: kiểm tra trùng cả tên (không phân biệt hoa thường)
+        if (categoryRepository.existsByCategoryNameIgnoreCase(request.categoryName().trim())) {
+            throw new AppException(ErrorCode.CATEGORY_NAME_DUPLICATE);
         }
 
         TicketCategory cat = new TicketCategory();
@@ -93,9 +97,13 @@ public class CategoryService {
     @Transactional
     public CategoryDetailResponse updateCategory(Integer id, UpdateCategoryRequest request) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
 
         if (request.categoryName() != null && !request.categoryName().isBlank()) {
+            // Giữ tên duy nhất khi đổi tên (HD02 "tên duy nhất"); bỏ qua chính danh mục đang sửa
+            if (categoryRepository.existsByCategoryNameIgnoreCaseAndIdNot(request.categoryName().trim(), id)) {
+                throw new AppException(ErrorCode.CATEGORY_NAME_DUPLICATE);
+            }
             cat.setCategoryName(request.categoryName());
         }
         if (request.description() != null) {
@@ -112,7 +120,7 @@ public class CategoryService {
     @Transactional
     public CategoryDetailResponse toggleCategoryStatus(Integer id, boolean active) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
         cat.setIsActive(active);
         return toDetailResponse(categoryRepository.save(cat));
     }
@@ -121,7 +129,7 @@ public class CategoryService {
     @Transactional
     public void deleteCategory(Integer id) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
 
         if (ticketRepository.existsByCategory_Id(id)) {
             throw new AppException(ErrorCode.CATEGORY_HAS_TICKETS);

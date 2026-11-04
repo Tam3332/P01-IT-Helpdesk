@@ -150,7 +150,8 @@ public class TicketService {
      * @param priority Lọc độ ưu tiên (tùy chọn: LOW, MEDIUM, ...)
      */
     @Transactional(readOnly = true)
-    public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority) {
+    public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority,
+                                                   Integer categoryId, Long assigneeId, String search) {
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
@@ -183,6 +184,23 @@ public class TicketService {
             // 3. Bộ lọc độ ưu tiên (nếu có)
             if (priority != null && !priority.isBlank()) {
                 predicates.add(cb.equal(root.get("priority"), priority.trim().toUpperCase()));
+            }
+
+            // 4–6. Bộ lọc SDD §4 (categoryId, assigneeId, search). Tất cả AND thêm SAU phạm vi theo role ở bước 1,
+            // nên không thể dùng bộ lọc để lấy ticket ngoài phạm vi (SecRS AC-05).
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            }
+            if (assigneeId != null) {
+                predicates.add(cb.equal(root.get("currentAssignee").get("id"), assigneeId));
+            }
+            if (search != null && !search.isBlank()) {
+                // Tìm theo tiêu đề hoặc mô tả, không phân biệt hoa thường. Thoát %, _ để người dùng gõ ký tự này không thành wildcard.
+                String kw = "%" + search.trim().toLowerCase()
+                        .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("title")), kw, '\\'),
+                        cb.like(cb.lower(root.get("description")), kw, '\\')));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -421,6 +439,8 @@ public class TicketService {
                 ticket.getPriority(),
                 ticket.getStatus(),
                 ticket.getRequester().getFullName(),
+                ticket.getCurrentAssignee() != null ? ticket.getCurrentAssignee().getId() : null,
+                ticket.getCurrentAssignee() != null ? ticket.getCurrentAssignee().getFullName() : null,
                 ticket.getResponseDeadline(),
                 ticket.getResolutionDeadline(),
                 ticket.getCreatedAt()

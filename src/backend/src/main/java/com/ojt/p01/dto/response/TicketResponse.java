@@ -3,7 +3,7 @@ package com.ojt.p01.dto.response;
 import java.time.OffsetDateTime;
 
 /**
- * Response trả về sau khi tạo ticket thành công.
+ * Ticket dạng rút gọn: trả về khi tạo ticket và trong danh sách GET /tickets.
  *
  * @param id                 ID nội bộ
  * @param ticketNumber       Mã vé: HD-YYYY-XXXX
@@ -14,6 +14,8 @@ import java.time.OffsetDateTime;
  * @param priority           Mức ưu tiên (= impactLevel ở bước này)
  * @param status             Trạng thái (NEW)
  * @param requesterName      Tên người tạo
+ * @param assigneeId         ID IT Staff đang phụ trách (null nếu chưa phân công)
+ * @param assigneeName       Tên IT Staff đang phụ trách (cột "Người xử lý" ở FE; null nếu chưa phân công)
  * @param responseDeadline   Hạn phản hồi lần đầu (SLA)
  * @param resolutionDeadline Hạn giải quyết xong (SLA)
  * @param createdAt          Thời điểm tạo
@@ -28,6 +30,8 @@ public record TicketResponse(
         String priority,
         String status,
         String requesterName,
+        Long assigneeId,
+        String assigneeName,
         OffsetDateTime responseDeadline,
         OffsetDateTime resolutionDeadline,
         OffsetDateTime createdAt

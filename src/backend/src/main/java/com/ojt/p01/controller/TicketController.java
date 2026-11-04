@@ -75,9 +75,13 @@ public class TicketController {
             @Parameter(description = "Lọc trạng thái: NEW, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, REOPENED, REOPEN_PENDING")
             @RequestParam(required = false) String status,
             @Parameter(description = "Lọc mức ưu tiên: LOW, MEDIUM, HIGH, CRITICAL")
-            @RequestParam(required = false) String priority
+            @RequestParam(required = false) String priority,
+            @Parameter(description = "Lọc theo ID danh mục") @RequestParam(required = false) Integer categoryId,
+            @Parameter(description = "Lọc theo ID IT Staff đang phụ trách") @RequestParam(required = false) Long assigneeId,
+            @Parameter(description = "Tìm theo tiêu đề hoặc mô tả (không phân biệt hoa thường)") @RequestParam(required = false) String search
     ) {
-        PageResponse<TicketResponse> response = ticketService.getTickets(page, size, status, priority);
+        // Bộ lọc chỉ thu hẹp kết quả trong phạm vi role (SecRS AC-05)
+        PageResponse<TicketResponse> response = ticketService.getTickets(page, size, status, priority, categoryId, assigneeId, search);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
