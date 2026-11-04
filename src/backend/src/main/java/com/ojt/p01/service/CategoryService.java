@@ -8,6 +8,7 @@ import com.ojt.p01.entity.TicketCategory;
 import com.ojt.p01.exception.AppException;
 import com.ojt.p01.exception.ErrorCode;
 import com.ojt.p01.repository.TicketCategoryRepository;
+import com.ojt.p01.repository.TicketRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +27,11 @@ import java.util.List;
 public class CategoryService {
 
     private final TicketCategoryRepository categoryRepository;
+    private final TicketRepository ticketRepository;
 
-    public CategoryService(TicketCategoryRepository categoryRepository) {
+    public CategoryService(TicketCategoryRepository categoryRepository, TicketRepository ticketRepository) {
         this.categoryRepository = categoryRepository;
+        this.ticketRepository = ticketRepository;
     }
 
     // -------------------------------------------------------------------------
@@ -112,6 +115,19 @@ public class CategoryService {
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
         cat.setIsActive(active);
         return toDetailResponse(categoryRepository.save(cat));
+    }
+
+    /** UC-10 3c: Xóa danh mục vĩnh viễn (Hard Delete). Chỉ xóa được khi chưa có ticket tham chiếu. */
+    @Transactional
+    public void deleteCategory(Integer id) {
+        TicketCategory cat = categoryRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+
+        if (ticketRepository.existsByCategory_Id(id)) {
+            throw new AppException(ErrorCode.CATEGORY_HAS_TICKETS);
+        }
+
+        categoryRepository.delete(cat);
     }
 
     // -------------------------------------------------------------------------
