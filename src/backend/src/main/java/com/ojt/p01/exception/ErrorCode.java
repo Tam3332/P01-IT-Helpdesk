@@ -24,7 +24,7 @@ public enum ErrorCode {
     // -------------------------------------------------------------------------
     TICKET_NOT_FOUND       ("TICKET_NOT_FOUND", "Không tìm thấy phiếu yêu cầu", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_FOUND     ("CATEGORY_NOT_FOUND", "Danh mục không tồn tại hoặc đã bị vô hiệu hóa", HttpStatus.BAD_REQUEST),
-    SLA_CONFIG_NOT_FOUND   ("SLA_CONFIG_NOT_FOUND", "Không tìm thấy cấu hình SLA cho mức ưu tiên này", HttpStatus.INTERNAL_SERVER_ERROR),
+    SLA_CONFIG_NOT_FOUND   ("SLA_CONFIG_NOT_FOUND", "Không tìm thấy cấu hình SLA cho mức ưu tiên này", HttpStatus.NOT_FOUND),
 
     // -------------------------------------------------------------------------
     // Auth / User
@@ -40,7 +40,8 @@ public enum ErrorCode {
     // -------------------------------------------------------------------------
     // Admin — Category & SLAConfig
     // -------------------------------------------------------------------------
-    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: SRS UC-10 3a (nhóm không dùng 409)
+    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.BAD_REQUEST),
+    CATEGORY_HAS_TICKETS       ("CATEGORY_HAS_TICKETS", "Danh mục đang có phiếu yêu cầu tham chiếu, không thể xóa", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-10 3c // 400: SRS UC-10 3a (nhóm không dùng 409)
     SLA_INVALID_HOURS          ("SLA_INVALID_HOURS", "Thời gian SLA phải lớn hơn 0", HttpStatus.BAD_REQUEST);
 
     private final String code;

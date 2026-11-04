@@ -891,6 +891,39 @@ paths:
         '403':
           $ref: '#/components/responses/403Forbidden'
 
+  /admin/categories/{id}:
+    delete:
+      tags: [Categories & SLA]
+      summary: Xóa vĩnh viễn danh mục (ADMIN) (UC-10 3c)
+      description: Chỉ xóa được khi danh mục chưa có ticket tham chiếu. Nếu đang có ticket tham chiếu trả 422 Unprocessable Entity.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Xóa danh mục thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Danh mục đang có ticket tham chiếu, không thể xóa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /admin/sla-configs:
     get:
       tags: [Categories & SLA]

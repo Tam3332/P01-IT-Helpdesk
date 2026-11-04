@@ -103,4 +103,12 @@ public class CategoryController {
                 active ? "Danh mục đã được kích hoạt" : "Danh mục đã bị vô hiệu hóa",
                 categoryService.toggleCategoryStatus(id, active)));
     }
+    @Operation(summary = "[Admin] Xóa vĩnh viễn danh mục (UC-10 3c)",
+               description = "Chỉ xóa được khi danh mục chưa có ticket tham chiếu. Nếu đang có ticket tham chiếu → 422 Unprocessable Entity.")
+    @DeleteMapping("/api/v1/admin/categories/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(
+            @Parameter(description = "ID danh mục") @PathVariable Integer id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.ok(ApiResponse.success("Xóa danh mục thành công", null));
+    }
 }

@@ -18,6 +18,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
 
     boolean existsByTicketNumber(String ticketNumber);
 
+    /** Kiểm tra danh mục có ticket nào đang tham chiếu không (UC-10 3c) */
+    boolean existsByCategory_Id(Integer categoryId);
+
     /** Đếm số ticket trong năm để sinh mã HD-YYYY-XXXX tiếp theo */
     @Query("SELECT COUNT(t) FROM Ticket t WHERE t.ticketNumber LIKE :yearPrefix%")
     long countByYearPrefix(@Param("yearPrefix") String yearPrefix);
