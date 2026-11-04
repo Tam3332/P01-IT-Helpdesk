@@ -1,5 +1,6 @@
 package com.ojt.p01.security;
 
+import com.ojt.p01.repository.TokenBlacklistRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,9 +27,12 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistRepository tokenBlacklistRepository;
 
-    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider,
+                                   TokenBlacklistRepository tokenBlacklistRepository) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.tokenBlacklistRepository = tokenBlacklistRepository;
     }
 
     @Override
@@ -53,7 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(username, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                // Token đã logout (jti nằm trong token_blacklist) thì không xác thực → 401 (SDD §6.1, SecRS TH-08)
+                if (!tokenBlacklistRepository.existsByJti(claims.getId())) {
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             } catch (Exception ignored) {
                 // Token không hợp lệ thì không set Authentication, SecurityContext sẽ unauthenticated
             }
