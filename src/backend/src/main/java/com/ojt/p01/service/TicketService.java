@@ -1,17 +1,23 @@
 package com.ojt.p01.service;
 
+import com.ojt.p01.dto.request.AssignTicketRequest;
 import com.ojt.p01.dto.request.CreateTicketRequest;
 import com.ojt.p01.dto.response.PageResponse;
 import com.ojt.p01.dto.response.TicketDetailResponse;
 import com.ojt.p01.dto.response.TicketResponse;
 import com.ojt.p01.entity.SLAConfig;
 import com.ojt.p01.entity.Ticket;
+import com.ojt.p01.entity.TicketAssignment;
 import com.ojt.p01.entity.TicketCategory;
+import com.ojt.p01.entity.TicketHistory;
+import com.ojt.p01.entity.TicketStatus;
 import com.ojt.p01.entity.User;
 import com.ojt.p01.exception.AppException;
 import com.ojt.p01.exception.ErrorCode;
 import com.ojt.p01.repository.SLAConfigRepository;
+import com.ojt.p01.repository.TicketAssignmentRepository;
 import com.ojt.p01.repository.TicketCategoryRepository;
+import com.ojt.p01.repository.TicketHistoryRepository;
 import com.ojt.p01.repository.TicketRepository;
 import com.ojt.p01.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
@@ -27,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.time.Year;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -40,15 +47,24 @@ public class TicketService {
     private final TicketCategoryRepository categoryRepository;
     private final SLAConfigRepository slaConfigRepository;
     private final UserRepository userRepository;
+    private final TicketAssignmentRepository assignmentRepository;
+    private final TicketHistoryRepository historyRepository;
+    private final TicketStatusTransitionValidator transitionValidator;
 
     public TicketService(TicketRepository ticketRepository,
                          TicketCategoryRepository categoryRepository,
                          SLAConfigRepository slaConfigRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         TicketAssignmentRepository assignmentRepository,
+                         TicketHistoryRepository historyRepository,
+                         TicketStatusTransitionValidator transitionValidator) {
         this.ticketRepository = ticketRepository;
         this.categoryRepository = categoryRepository;
         this.slaConfigRepository = slaConfigRepository;
         this.userRepository = userRepository;
+        this.assignmentRepository = assignmentRepository;
+        this.historyRepository = historyRepository;
+        this.transitionValidator = transitionValidator;
     }
 
     // -------------------------------------------------------------------------
@@ -138,7 +154,10 @@ public class TicketService {
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        // SRS UC-04 3b: tham số trang không hợp lệ thì dùng giá trị mặc định (trang 0, 20 dòng – HD05)
+        int safePage = page < 0 ? 0 : page;
+        int safeSize = size < 1 ? 20 : size;
+        PageRequest pageRequest = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Specification<Ticket> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -216,6 +235,112 @@ public class TicketService {
         }
         // IT_MANAGER và ADMIN được xem mọi vé
 
+        return toDetailResponse(ticket);
+    }
+
+    // -------------------------------------------------------------------------
+    // HD06: Phân công / điều phối lại (PUT /api/v1/tickets/{id}/assign) — SRS UC-06, BR-HD-05
+    // -------------------------------------------------------------------------
+
+    /** Trạng thái được phép phân công: UC-06 tiền điều kiện + Reopened (SRS P3 bước 5, HD06 "P3 – bước 6"). */
+    private static final EnumSet<TicketStatus> ASSIGNABLE_STATUSES =
+            EnumSet.of(TicketStatus.NEW, TicketStatus.ASSIGNED, TicketStatus.IN_PROGRESS, TicketStatus.REOPENED);
+
+    /**
+     * Phân công lần đầu (ticket NEW) hoặc điều phối lại (ASSIGNED / IN_PROGRESS / REOPENED).
+     * Toàn bộ chạy trong 1 transaction: lỗi ở bất kỳ bước nào thì rollback hết (UC-06 5a, NFR-04).
+     *
+     * - Lần đầu: NEW → ASSIGNED, chốt priority, tính lại 2 hạn SLA = created_at + giờ theo priority (UC-06 bước 5, BR-HD-03).
+     * - Điều phối lại ticket ASSIGNED / IN_PROGRESS: giữ nguyên trạng thái, không tính lại SLA
+     *   (UC-06 bước 5 "nếu phân công lần đầu từ New").
+     * - Phân công lại sau Reopen: REOPENED → ASSIGNED (SDD §2.1, Trí chốt 04/11), IT Staff nhận thì sang IN_PROGRESS;
+     *   không tính lại SLA vì hạn xử lý mới đã tính lúc duyệt mở lại (SRS P3 bước 5).
+     * - Không ghi first_responded_at: SRS P2 "Hạn phản hồi dừng tính ngay khi IT Staff tiếp nhận (In Progress)".
+     */
+    @Transactional
+    public TicketDetailResponse assignTicket(String idOrNumber, AssignTicketRequest request, String ipAddress) {
+        User manager = getCurrentUser();
+
+        // Lớp 2 kiểm quyền (lớp 1 là SecurityConfig): chỉ IT_MANAGER (UC-06 4a, SDD §6.2)
+        String roleName = manager.getRole() != null ? manager.getRole().getRoleName() : "";
+        if (!"IT_MANAGER".equalsIgnoreCase(roleName)) {
+            throw new AppException(ErrorCode.FORBIDDEN);
+        }
+
+        Ticket ticket = findTicketByIdOrNumber(idOrNumber); // không có → 404
+
+        TicketStatus current = TicketStatus.valueOf(ticket.getStatus());
+        if (!ASSIGNABLE_STATUSES.contains(current)) {
+            throw new AppException(ErrorCode.TICKET_NOT_ASSIGNABLE,
+                    "Không thể phân công ticket đang ở trạng thái " + current.name());
+        }
+
+        // Người được giao: phải tồn tại, role IT_STAFF, đang hoạt động (UC-06 3a → 422)
+        User assignee = userRepository.findById(request.assigneeId()).orElse(null);
+        boolean validAssignee = assignee != null
+                && assignee.getRole() != null
+                && "IT_STAFF".equalsIgnoreCase(assignee.getRole().getRoleName())
+                && Boolean.TRUE.equals(assignee.getIsActive());
+        if (!validAssignee) {
+            throw new AppException(ErrorCode.INVALID_ASSIGNEE);
+        }
+
+        OffsetDateTime now = OffsetDateTime.now();
+        boolean firstAssign = current == TicketStatus.NEW;
+        boolean afterReopen = current == TicketStatus.REOPENED;
+        User oldAssignee = ticket.getCurrentAssignee();
+        String oldPriority = ticket.getPriority();
+        String newPriority = request.priority() != null ? request.priority() : oldPriority;
+        String note = request.assignmentNote() != null && !request.assignmentNote().isBlank()
+                ? request.assignmentNote().trim() : null;
+
+        // UC-06 3b (Trí chốt 04/11): ticket ASSIGNED / IN_PROGRESS mà giao lại đúng người đang phụ trách
+        // và không đổi priority → 422, không ghi lịch sử. REOPENED thì vẫn cho giao lại người cũ (chuyển sang ASSIGNED).
+        boolean sameAssignee = oldAssignee != null && oldAssignee.getId().equals(assignee.getId());
+        boolean reassignable = current == TicketStatus.ASSIGNED || current == TicketStatus.IN_PROGRESS;
+        if (reassignable && sameAssignee && newPriority.equals(oldPriority)) {
+            throw new AppException(ErrorCode.ASSIGNEE_UNCHANGED);
+        }
+
+        // BR-HD-05 / SDD §3.4: kết thúc phân công cũ TRƯỚC (flush ngay), rồi mới thêm dòng mới,
+        // để không vi phạm unique index "mỗi ticket 1 dòng is_current = true"
+        assignmentRepository.findByTicket_IdAndIsCurrentTrue(ticket.getId()).ifPresent(old -> {
+            old.end(now);
+            assignmentRepository.saveAndFlush(old);
+        });
+        assignmentRepository.save(new TicketAssignment(ticket, assignee, manager, now, note));
+
+        ticket.setCurrentAssignee(assignee);
+        ticket.setPriority(newPriority);
+
+        if (firstAssign) {
+            transitionValidator.assertTransitionAllowed(TicketStatus.NEW, TicketStatus.ASSIGNED);
+            ticket.setStatus(TicketStatus.ASSIGNED.name());
+
+            // BR-HD-03: hạn = created_at + giờ theo SLAConfig của mức ưu tiên chính thức
+            SLAConfig sla = slaConfigRepository.findByPriorityLevel(newPriority)
+                    .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
+            OffsetDateTime created = ticket.getCreatedAt();
+            ticket.setResponseDeadline(created.plusMinutes(toMinutes(sla.getResponseTimeHours().doubleValue())));
+            ticket.setResolutionDeadline(created.plusMinutes(toMinutes(sla.getResolutionTimeHours().doubleValue())));
+        }
+        if (afterReopen) {
+            transitionValidator.assertTransitionAllowed(TicketStatus.REOPENED, TicketStatus.ASSIGNED);
+            ticket.setStatus(TicketStatus.ASSIGNED.name());
+        }
+        ticketRepository.save(ticket);
+
+        // TicketHistory (UC-06 bước 6): 1 dòng người phụ trách, thêm 1 dòng nếu đổi priority
+        String action = firstAssign ? "ASSIGN" : "REASSIGN";
+        historyRepository.save(new TicketHistory(ticket, manager, action, "current_assignee_id",
+                oldAssignee != null ? String.valueOf(oldAssignee.getId()) : null,
+                String.valueOf(assignee.getId()), note, ipAddress, now));
+        if (!newPriority.equals(oldPriority)) {
+            historyRepository.save(new TicketHistory(ticket, manager, action, "priority",
+                    oldPriority, newPriority, null, ipAddress, now));
+        }
+
+        // Chưa làm: audit TICKET_ASSIGNED (UC-06 bước 7, chờ schema Hoà); gửi thông báo IT Staff (UC-06 bước 8, chưa có cơ chế)
         return toDetailResponse(ticket);
     }
 

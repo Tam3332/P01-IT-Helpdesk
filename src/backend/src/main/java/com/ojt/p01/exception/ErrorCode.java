@@ -35,6 +35,9 @@ public enum ErrorCode {
     // -------------------------------------------------------------------------
     // Ticket state machine
     // -------------------------------------------------------------------------
+    TICKET_NOT_ASSIGNABLE      ("TICKET_NOT_ASSIGNABLE", "Ticket không ở trạng thái cho phép phân công", HttpStatus.UNPROCESSABLE_ENTITY), // 422: UC-06 tiền điều kiện; SecRS §5 (Closed → 422)
+    ASSIGNEE_UNCHANGED         ("ASSIGNEE_UNCHANGED", "IT Staff này đang phụ trách ticket", HttpStatus.UNPROCESSABLE_ENTITY), // 422: UC-06 3b (Trí chốt 04/11)
+    INVALID_ASSIGNEE           ("INVALID_ASSIGNEE", "Người được giao phải là IT Staff đang hoạt động", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-06 3a, BR-HD-05
     INVALID_STATUS_TRANSITION  ("INVALID_STATUS_TRANSITION", "Chuyển trạng thái vé không hợp lệ", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-07 2a, SDD §6.5 bước 5
 
     // -------------------------------------------------------------------------

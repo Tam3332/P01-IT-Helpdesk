@@ -53,9 +53,10 @@ public class TicketStatusTransitionValidator {
         ALLOWED_TRANSITIONS.put(TicketStatus.REOPEN_PENDING,
                 EnumSet.of(TicketStatus.REOPENED, TicketStatus.RESOLVED));
 
-        // REOPENED → IN_PROGRESS (IT_STAFF tiếp tục)
+        // REOPENED → IN_PROGRESS (IT_STAFF cũ tiếp tục)
+        // REOPENED → ASSIGNED (IT_MANAGER phân công lại sau Reopen — SDD §2.1, Trí chốt 04/11; HD06 "P3 – bước 6")
         ALLOWED_TRANSITIONS.put(TicketStatus.REOPENED,
-                EnumSet.of(TicketStatus.IN_PROGRESS));
+                EnumSet.of(TicketStatus.IN_PROGRESS, TicketStatus.ASSIGNED));
 
         // CLOSED → không thể chuyển (terminal state)
         ALLOWED_TRANSITIONS.put(TicketStatus.CLOSED,

@@ -13,6 +13,7 @@ package com.ojt.p01.entity;
  *  REOPEN_PENDING → REOPENED        (IT_MANAGER duyệt mở lại)
  *  REOPEN_PENDING → RESOLVED        (IT_MANAGER từ chối mở lại)
  *  REOPENED       → IN_PROGRESS     (IT_STAFF tiếp tục xử lý sau khi được mở lại)
+ *  REOPENED       → ASSIGNED        (IT_MANAGER phân công lại sau Reopen — SDD §2.1)
  *  CLOSED         → (không thể chuyển — terminal state)
  *
  * Ghi chú SLA:

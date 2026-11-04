@@ -90,6 +90,11 @@ public class SecurityConfig {
                 // --- Admin endpoints: ADMIN only ---
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
+                // --- Chỉ IT_MANAGER (SDD §6.2; SRS UC-06 4a) ---
+                .requestMatchers(HttpMethod.PUT, "/api/v1/tickets/*/assign").hasRole("IT_MANAGER")
+                .requestMatchers("/api/v1/users/it-staff", "/api/v1/reopen-requests/**",
+                                 "/api/v1/dashboard/stats", "/api/v1/dashboard/sla-monitor").hasRole("IT_MANAGER")
+
                 // --- Authenticated endpoints ---
                 .requestMatchers("/api/v1/categories/**").authenticated()
                 .requestMatchers("/api/v1/tickets/**").authenticated()

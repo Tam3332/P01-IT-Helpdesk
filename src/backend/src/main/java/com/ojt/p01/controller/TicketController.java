@@ -1,6 +1,7 @@
 package com.ojt.p01.controller;
 
 import com.ojt.p01.common.ApiResponse;
+import com.ojt.p01.dto.request.AssignTicketRequest;
 import com.ojt.p01.dto.request.CreateTicketRequest;
 import com.ojt.p01.entity.TicketPriority;
 import com.ojt.p01.entity.TicketStatus;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -95,6 +97,26 @@ public class TicketController {
     ) {
         TicketDetailResponse response = ticketService.getTicketDetail(id);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * PUT /api/v1/tickets/{id}/assign (HD06, UC-06) — chỉ IT_MANAGER.
+     * 200: ticket sau phân công | 400: body sai | 401 | 403: không phải IT_MANAGER | 404: không có ticket
+     * 422: ticket không ở trạng thái phân công được, hoặc người được giao không phải IT Staff đang hoạt động.
+     */
+    @Operation(
+            summary = "Phân công / điều phối lại người xử lý (HD06, UC-06)",
+            description = "Body: assigneeId (bắt buộc), priority (tùy chọn), assignmentNote (tùy chọn, ≤ 255 ký tự)."
+    )
+    @PutMapping("/{id}/assign")
+    public ResponseEntity<ApiResponse<TicketDetailResponse>> assignTicket(
+            @Parameter(description = "ID số hoặc mã vé") @PathVariable String id,
+            @Valid @RequestBody AssignTicketRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        // IP người thao tác cho ticket_history.ip_address (NOT NULL). Khi chạy sau Nginx cần cấu hình đọc X-Forwarded-For.
+        TicketDetailResponse response = ticketService.assignTicket(id, request, httpRequest.getRemoteAddr());
+        return ResponseEntity.ok(ApiResponse.success("Phân công thành công", response));
     }
 
     /**
