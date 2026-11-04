@@ -17,4 +17,10 @@ public interface TicketCategoryRepository extends JpaRepository<TicketCategory, 
 
     /** Kiểm tra mã danh mục đã tồn tại chưa (unique constraint). */
     boolean existsByCategoryCode(String categoryCode);
+
+    /** Tên danh mục đã có chưa, không phân biệt hoa thường (UC-10 3a). */
+    boolean existsByCategoryNameIgnoreCase(String categoryName);
+
+    /** Tên đã thuộc về danh mục KHÁC chưa (dùng khi cập nhật, bỏ qua chính nó). */
+    boolean existsByCategoryNameIgnoreCaseAndIdNot(String categoryName, Integer id);
 }

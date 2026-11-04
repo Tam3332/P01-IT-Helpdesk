@@ -63,6 +63,12 @@ paths:
           $ref: '#/components/responses/400BadRequest'
         '401':
           $ref: '#/components/responses/401Unauthorized'
+        '403':
+          description: Tài khoản bị Admin khóa (is_active = false), chỉ báo sau khi mật khẩu đúng (SRS UC-01 2c)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '429':
           description: Tài khoản bị tạm khóa 15 phút do vượt quá 5 lần đăng nhập sai
           content:
@@ -297,15 +303,18 @@ paths:
       summary: Phân công hoặc điều phối lại người xử lý vé (HD06, UC-06, BR-HD-05)
       description: >
         Chỉ IT_MANAGER (role khác nhận 403). Thực thi Transaction đảm bảo đúng 1 IT Staff active (BR-HD-05).
-        Ticket ngoài phạm vi trả 404. Ticket đang CLOSED hoặc REOPEN_PENDING không phân công được (422).
+        Phân công được khi ticket ở NEW, ASSIGNED, IN_PROGRESS hoặc REOPENED (UC-06; SRS P3 bước 5).
+        NEW → ASSIGNED, chốt priority và tính lại 2 hạn SLA theo priority (UC-06 bước 5, BR-HD-03).
+        ASSIGNED / IN_PROGRESS → giữ nguyên trạng thái (điều phối lại). REOPENED → ASSIGNED (SDD §2.1), không tính lại SLA.
       security:
         - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
+          description: ID số của ticket hoặc mã ticket (HD-YYYY-XXXX)
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -342,7 +351,14 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
         '422':
-          description: Ticket đã CLOSED hoặc đang REOPEN_PENDING chờ duyệt, hoặc người được giao không phải IT Staff đang hoạt động (BR-HD-04, UC-06 3a, BR-HD-05)
+          description: >
+            TICKET_NOT_ASSIGNABLE – ticket đang RESOLVED, REOPEN_PENDING hoặc CLOSED (BR-HD-04);
+            INVALID_ASSIGNEE – người được giao không phải IT Staff đang hoạt động (UC-06 3a, BR-HD-05);
+            ASSIGNEE_UNCHANGED – ticket ASSIGNED/IN_PROGRESS, giao lại đúng người đang phụ trách và không đổi priority (UC-06 3b)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /tickets/{id}/status:
     patch:
@@ -853,6 +869,24 @@ paths:
           $ref: '#/components/responses/401Unauthorized'
 
   /admin/categories:
+    get:
+      tags: [Categories & SLA]
+      summary: Xem toàn bộ danh mục, kể cả Inactive (ADMIN) (HD02, UC-10 bước 2)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách danh mục
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
     post:
       tags: [Categories & SLA]
       summary: Tạo mới danh mục sự cố (ADMIN) (HD02, UC-10)
@@ -892,6 +926,73 @@ paths:
           $ref: '#/components/responses/403Forbidden'
 
   /admin/categories/{id}:
+    get:
+      tags: [Categories & SLA]
+      summary: Xem chi tiết một danh mục (ADMIN) (HD02, UC-10)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết danh mục
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    put:
+      tags: [Categories & SLA]
+      summary: Cập nhật tên, mô tả, mức ưu tiên mặc định (ADMIN) (HD02, UC-10)
+      description: Không đổi mã danh mục. Chỉ cập nhật trường có trong body (đều không bắt buộc).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categoryName:
+                  type: string
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 500
+                defaultPriority:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, CRITICAL]
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
     delete:
       tags: [Categories & SLA]
       summary: Xóa vĩnh viễn danh mục (ADMIN) (UC-10 3c)
@@ -923,6 +1024,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/categories/{id}/status:
+    patch:
+      tags: [Categories & SLA]
+      summary: Khóa hoặc mở lại danh mục (ADMIN) (UC-10 thao tác C)
+      description: Inactive thì không hiện khi tạo ticket mới, không ảnh hưởng ticket cũ.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Đổi trạng thái thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
 
   /admin/sla-configs:
     get:

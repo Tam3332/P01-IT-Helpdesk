@@ -5,6 +5,8 @@ import com.ojt.p01.dto.request.CreateCategoryRequest;
 import com.ojt.p01.dto.request.UpdateCategoryRequest;
 import com.ojt.p01.dto.response.CategoryDetailResponse;
 import com.ojt.p01.dto.response.CategoryResponse;
+import com.ojt.p01.exception.AppException;
+import com.ojt.p01.exception.ErrorCode;
 import com.ojt.p01.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -97,7 +99,8 @@ public class CategoryController {
             @RequestBody Map<String, Boolean> body) {
         Boolean active = body.get("active");
         if (active == null) {
-            throw new IllegalArgumentException("Body phải có trường 'active' (true/false)");
+            // Thiếu trường active → 400 (trước đây IllegalArgumentException rơi xuống 500)
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Body phải có trường 'active' (true/false)");
         }
         return ResponseEntity.ok(ApiResponse.success(
                 active ? "Danh mục đã được kích hoạt" : "Danh mục đã bị vô hiệu hóa",
