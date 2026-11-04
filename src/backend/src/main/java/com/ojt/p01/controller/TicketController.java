@@ -7,6 +7,7 @@ import com.ojt.p01.entity.TicketPriority;
 import com.ojt.p01.entity.TicketStatus;
 import com.ojt.p01.dto.response.PageResponse;
 import com.ojt.p01.dto.response.TicketDetailResponse;
+import com.ojt.p01.dto.response.TicketHistoryResponse;
 import com.ojt.p01.dto.response.TicketResponse;
 import com.ojt.p01.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -122,6 +123,23 @@ public class TicketController {
         TicketDetailResponse response = ticketService.assignTicket(id, request, httpRequest.getRemoteAddr());
         return ResponseEntity.ok(ApiResponse.success("Phân công thành công", response));
     }
+
+    /**
+     * GET /api/v1/tickets/{id}/history (HD09, UC-02 bước 7, UC-06 bước 6)
+     * Lấy toàn bộ lịch sử biến động / audit trail của ticket theo thứ tự thời gian.
+     * Chống IDOR (IA-HD02): Employee chỉ xem lịch sử ticket của mình; Staff xem ticket được giao hoặc NEW; Manager/Admin xem tất cả.
+     */
+    @Operation(
+            summary = "Xem lịch sử xử lý ticket (HD09)",
+            description = "Trả về danh sách các sự kiện (CREATE, ASSIGN, REASSIGN...) theo thứ tự thời gian tăng dần."
+    )
+    @GetMapping("/{id}/history")
+    public ResponseEntity<ApiResponse<List<TicketHistoryResponse>>> getTicketHistory(
+            @Parameter(description = "ID số hoặc mã véc") @PathVariable String id
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(ticketService.getTicketHistory(id)));
+    }
+
 
     /**
      * GET /api/v1/tickets/priorities (HD02)

@@ -4,6 +4,7 @@ import com.ojt.p01.dto.request.AssignTicketRequest;
 import com.ojt.p01.dto.request.CreateTicketRequest;
 import com.ojt.p01.dto.response.PageResponse;
 import com.ojt.p01.dto.response.TicketDetailResponse;
+import com.ojt.p01.dto.response.TicketHistoryResponse;
 import com.ojt.p01.dto.response.TicketResponse;
 import com.ojt.p01.entity.SLAConfig;
 import com.ojt.p01.entity.Ticket;
@@ -78,6 +79,14 @@ public class TicketService {
      */
     @Transactional
     public TicketResponse createTicket(CreateTicketRequest request) {
+        return createTicket(request, "127.0.0.1");
+    }
+
+    /**
+     * Tạo ticket mới và ghi nhận TicketHistory ban đầu (action=CREATE, UC-02 bước 7, HD09).
+     */
+    @Transactional
+    public TicketResponse createTicket(CreateTicketRequest request, String ipAddress) {
 
         // 1. Lấy user đang đăng nhập
         User requester = getCurrentUser();
@@ -129,6 +138,20 @@ public class TicketService {
         ticket.setIsSlaBreached(false);
 
         Ticket saved = ticketRepository.save(ticket);
+
+        // Ghi nhận lịch sử tạo ticket (UC-02 bước 7, HD09)
+        String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
+        historyRepository.save(new TicketHistory(
+                saved,
+                requester,
+                "CREATE",
+                "status",
+                null,
+                "NEW",
+                "Tạo mới ticket",
+                clientIp,
+                saved.getCreatedAt()
+        ));
 
         return toResponse(saved);
     }
@@ -364,6 +387,52 @@ public class TicketService {
 
     // -------------------------------------------------------------------------
     // Helper: Tìm vé bằng ID số hoặc Mã vé chuỗi
+    // -------------------------------------------------------------------------
+    // HD09: Xem lịch sử xử lý ticket (GET /api/v1/tickets/{id}/history)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Lấy toàn bộ dòng thời gian / lịch sử biến động của ticket (HD09, UC-02 bước 7, UC-06 bước 6).
+     * Áp dụng kiểm tra quyền truy cập chống IDOR (IA-HD02) tương tự chi tiết ticket.
+     */
+    @Transactional(readOnly = true)
+    public List<TicketHistoryResponse> getTicketHistory(String idOrNumber) {
+        Ticket ticket = findTicketByIdOrNumber(idOrNumber);
+
+        User currentUser = getCurrentUser();
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
+
+        if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
+            if (!ticket.getRequester().getId().equals(currentUser.getId())) {
+                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+            }
+        } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
+            boolean isAssignedToMe = ticket.getCurrentAssignee() != null
+                    && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
+            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
+
+            if (!isAssignedToMe && !isNewTicket) {
+                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+            }
+        }
+
+        return historyRepository.findByTicket_IdOrderByTimestampAsc(ticket.getId())
+                .stream()
+                .map(h -> new TicketHistoryResponse(
+                        h.getId(),
+                        h.getTicket().getId(),
+                        h.getActor().getId(),
+                        h.getActor().getFullName(),
+                        h.getAction(),
+                        h.getFieldChanged(),
+                        h.getOldValue(),
+                        h.getNewValue(),
+                        h.getReasonOrNote(),
+                        h.getTimestamp()
+                ))
+                .toList();
+    }
+
     // -------------------------------------------------------------------------
 
     private Ticket findTicketByIdOrNumber(String idOrNumber) {
