@@ -15,6 +15,30 @@ Nguồn đối chiếu: SDD §5.1 (màn hình), §5.4 (nút theo vai trò), SRS 
 
 Chỉ có 1 Employee và 1 IT Staff, nên chưa test được ca cần 2 người cùng role (Employee A xem ticket của B, phân công sang Staff khác).
 
+## Minh chứng (evidence)
+
+File này nằm ở `evidence/T3-06/test_giao_dien.md` (nhánh `cuong/be`). Ảnh của từng ca nằm cùng thư mục:
+
+```
+evidence/T3-06/
+├── README.md            ← bảng tra: mã EV → file ảnh → ca test → nội dung
+├── test_giao_dien.md    ← file này (checklist + kết quả)
+├── api/                 ← ảnh test API bằng PowerShell / Swagger
+├── db/                  ← ảnh truy vấn PostgreSQL (kiểm dữ liệu ghi vào DB)
+└── ui/                  ← ảnh chụp giao diện theo checklist này, chia theo nhóm ca
+    ├── A_General/       ← A. Chung (mọi role)
+    ├── B_Employee/      ← B. Employee
+    ├── C_ITStaff/       ← C. IT Staff
+    ├── D_ITManager/     ← D. IT Manager
+    └── E_Admin/         ← E. Admin
+```
+
+Tên ảnh giao diện: `<mã EV>_ui_<mã ca>_<mô tả ngắn>.png`, ví dụ `ui/D_ITManager/EV-HD-06_ui_D3_sau_phan_cong.png` là ca D3, minh chứng cho EV-HD-06.
+- `EV-HD-01/03/05/06`: đăng nhập / tạo ticket / xem ticket / phân công (theo SRS HD01, HD03, HD05, HD06).
+- `EV-UC-10`: quản lý danh mục, SLA của Admin (SRS UC-10).
+
+Tìm ảnh của một ca: mở `README.md`, mục "Kiểm thử giao diện theo checklist", tìm theo mã ca (A1, D3, E5…).
+
 ## A. Chung (mọi role) – SCR-01, khung giao diện
 
 | # | Làm | Mong đợi | Nguồn | Đã phát hiện | Kết quả 04/11 |
@@ -75,7 +99,7 @@ Chỉ có 1 Employee và 1 IT Staff, nên chưa test được ca cần 2 ngườ
 
 ## Ảnh cần gửi để kiểm tra
 
-Chụp cả trang (thấy được thanh địa chỉ và tên người đăng nhập), **không** dính overlay. Đặt tên theo mã ca, ví dụ `B5.png`.
+Chụp cả trang (thấy được thanh địa chỉ và tên người đăng nhập), **không** dính overlay. Gửi ảnh kèm mã ca (ví dụ "B5"); khi đưa vào `evidence/T3-06/ui/<nhóm>/` sẽ đổi tên theo quy ước ở mục Minh chứng.
 
 | Ca | Chụp gì | Để kiểm tra |
 |---|---|---|
