@@ -2,6 +2,8 @@ package com.ojt.p01.controller;
 
 import com.ojt.p01.common.ApiResponse;
 import com.ojt.p01.dto.request.CreateTicketRequest;
+import com.ojt.p01.entity.TicketPriority;
+import com.ojt.p01.entity.TicketStatus;
 import com.ojt.p01.dto.response.PageResponse;
 import com.ojt.p01.dto.response.TicketDetailResponse;
 import com.ojt.p01.dto.response.TicketResponse;
@@ -14,6 +16,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Controller quản lý vòng đời Ticket (HD03, HD05).
@@ -91,4 +96,33 @@ public class TicketController {
         TicketDetailResponse response = ticketService.getTicketDetail(id);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    /**
+     * GET /api/v1/tickets/priorities (HD02)
+     * Danh sách mức ưu tiên (enum) để frontend hiển thị dropdown.
+     */
+    @Operation(
+            summary = "Danh sách mức ưu tiên (HD02)",
+            description = "Trả về các giá trị enum TicketPriority: LOW, MEDIUM, HIGH, CRITICAL."
+    )
+    @GetMapping("/priorities")
+    public ResponseEntity<ApiResponse<List<String>>> getPriorities() {
+        List<String> values = Arrays.stream(TicketPriority.values()).map(Enum::name).toList();
+        return ResponseEntity.ok(ApiResponse.success(values));
+    }
+
+    /**
+     * GET /api/v1/tickets/statuses (HD02)
+     * Danh sách trạng thái ticket (enum) để frontend hiển thị dropdown.
+     */
+    @Operation(
+            summary = "Danh sách trạng thái ticket (HD02)",
+            description = "Trả về các giá trị enum TicketStatus."
+    )
+    @GetMapping("/statuses")
+    public ResponseEntity<ApiResponse<List<String>>> getStatuses() {
+        List<String> values = Arrays.stream(TicketStatus.values()).map(Enum::name).toList();
+        return ResponseEntity.ok(ApiResponse.success(values));
+    }
+
 }

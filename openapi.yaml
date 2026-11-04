@@ -216,6 +216,56 @@ paths:
         '403':
           $ref: '#/components/responses/403Forbidden'
 
+  /tickets/priorities:
+    get:
+      tags: [Tickets]
+      summary: Danh sách mức ưu tiên (HD02)
+      description: Trả về các giá trị enum TicketPriority để frontend hiển thị dropdown.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách giá trị enum
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                        example: [LOW, MEDIUM, HIGH, CRITICAL]
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /tickets/statuses:
+    get:
+      tags: [Tickets]
+      summary: Danh sách trạng thái ticket (HD02)
+      description: Trả về các giá trị enum TicketStatus để frontend hiển thị dropdown.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách giá trị enum
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                        example: [NEW, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, REOPENED, REOPEN_PENDING]
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
   /tickets/{id}:
     get:
       tags: [Tickets]
