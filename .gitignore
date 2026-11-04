@@ -26,3 +26,11 @@ npm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+target/
+*.class
+
+.agents/
+
+
+# Seed file sinh t? d?ng ch?a BCrypt hash — KHÔNG commit
+database/init_demo_users.sql

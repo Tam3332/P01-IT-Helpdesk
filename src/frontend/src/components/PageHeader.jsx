@@ -1,13 +1,12 @@
-import { Typography, Flex } from 'antd'
-
-export default function PageHeader({ title, subtitle, extra }) {
+// Tiêu đề trang theo prototype: h1 + mô tả ngắn, nút thao tác ở bên phải
+export default function PageHeader({ title, subtitle, children }) {
   return (
-    <Flex justify="space-between" align="center" wrap style={{ marginBottom: 16 }} gap={8}>
+    <div className="phead">
       <div>
-        <Typography.Title level={3} style={{ margin: 0 }}>{title}</Typography.Title>
-        {subtitle && <Typography.Text type="secondary">{subtitle}</Typography.Text>}
+        <h1>{title}</h1>
+        {subtitle && <p>{subtitle}</p>}
       </div>
-      {extra}
-    </Flex>
+      {children && <div className="acts">{children}</div>}
+    </div>
   )
 }

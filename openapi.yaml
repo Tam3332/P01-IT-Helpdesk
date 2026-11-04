@@ -216,6 +216,56 @@ paths:
         '403':
           $ref: '#/components/responses/403Forbidden'
 
+  /tickets/priorities:
+    get:
+      tags: [Tickets]
+      summary: Danh sách mức ưu tiên (HD02)
+      description: Trả về các giá trị enum TicketPriority để frontend hiển thị dropdown.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách giá trị enum
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                        example: [LOW, MEDIUM, HIGH, CRITICAL]
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /tickets/statuses:
+    get:
+      tags: [Tickets]
+      summary: Danh sách trạng thái ticket (HD02)
+      description: Trả về các giá trị enum TicketStatus để frontend hiển thị dropdown.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách giá trị enum
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                        example: [NEW, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, REOPENED, REOPEN_PENDING]
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
   /tickets/{id}:
     get:
       tags: [Tickets]
@@ -292,7 +342,7 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
         '422':
-          description: Ticket đã CLOSED hoặc đang REOPEN_PENDING chờ duyệt, không phân công được (BR-HD-04)
+          description: Ticket đã CLOSED hoặc đang REOPEN_PENDING chờ duyệt, hoặc người được giao không phải IT Staff đang hoạt động (BR-HD-04, UC-06 3a, BR-HD-05)
 
   /tickets/{id}/status:
     patch:
@@ -420,10 +470,8 @@ paths:
           $ref: '#/components/responses/403Forbidden'
         '404':
           $ref: '#/components/responses/404NotFound'
-        '409':
-          description: Ticket này đang có một yêu cầu mở lại đang chờ duyệt (PENDING), không thể gửi thêm
         '422':
-          description: Ticket không ở trạng thái RESOLVED hoặc đã quá 7 ngày (168 giờ) kể từ lúc Resolved
+          description: Ticket không ở trạng thái RESOLVED, đã quá 7 ngày (168 giờ) kể từ lúc Resolved, hoặc đang có yêu cầu mở lại chờ duyệt (PENDING) (BR-HD-04)
 
   /reopen-requests:
     get:
@@ -808,6 +856,7 @@ paths:
     post:
       tags: [Categories & SLA]
       summary: Tạo mới danh mục sự cố (ADMIN) (HD02, UC-10)
+      description: Trùng mã/tên danh mục hoặc để trống tên → 400 (SRS UC-10 3a).
       security:
         - BearerAuth: []
       requestBody:
@@ -841,8 +890,39 @@ paths:
           $ref: '#/components/responses/401Unauthorized'
         '403':
           $ref: '#/components/responses/403Forbidden'
-        '409':
-          description: "Mã hoặc tên danh mục đã tồn tại (SRS HD02: 'tạo loại yêu cầu mới với tên duy nhất')"
+
+  /admin/categories/{id}:
+    delete:
+      tags: [Categories & SLA]
+      summary: Xóa vĩnh viễn danh mục (ADMIN) (UC-10 3c)
+      description: Chỉ xóa được khi danh mục chưa có ticket tham chiếu. Nếu đang có ticket tham chiếu trả 422 Unprocessable Entity.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Xóa danh mục thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Danh mục đang có ticket tham chiếu, không thể xóa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /admin/sla-configs:
     get:
@@ -939,6 +1019,7 @@ paths:
     post:
       tags: [Admin & Users]
       summary: Tạo tài khoản mới (ADMIN) (SRS §2 System Admin)
+      description: Trùng username hoặc email → 400 (cùng quy ước lỗi trùng dữ liệu của SRS UC-10 3a).
       security:
         - BearerAuth: []
       requestBody:
@@ -982,8 +1063,6 @@ paths:
           $ref: '#/components/responses/401Unauthorized'
         '403':
           $ref: '#/components/responses/403Forbidden'
-        '409':
-          description: Username hoặc email đã tồn tại (UNIQUE, SDD §3)
 
   /admin/users/{userId}/role:
     patch:
@@ -1117,6 +1196,59 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
 
+  # ================= DASHBOARD =================
+  /dashboard/stats:
+    get:
+      tags: [Dashboard]
+      summary: Thống kê tổng hợp số lượng vé, vi phạm SLA, hiệu năng (HD14)
+      description: >
+        Trả về thống kê tổng quan: tổng số vé theo trạng thái, số vé vi phạm SLA,
+        thời gian xử lý trung bình. Dành riêng cho IT_MANAGER.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Thống kê tổng hợp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatsResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /dashboard/sla-monitor:
+    get:
+      tags: [Dashboard]
+      summary: Giám sát vé sắp chạm ngưỡng cảnh báo 80% hoặc quá hạn SLA (HD12, HD14)
+      description: >
+        Danh sách vé đang tiến gần đến ngưỡng SLA (>= 80% thời gian deadline)
+        hoặc đã vi phạm SLA (is_sla_breached = true). Dành riêng cho IT_MANAGER.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: breachedOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: "true = chỉ lấy vé đã vi phạm SLA; false = lấy cả vé sắp vi phạm"
+      responses:
+        '200':
+          description: Danh sách vé cần giám sát SLA
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SLAMonitorItem'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -1125,6 +1257,65 @@ components:
       bearerFormat: JWT
 
   schemas:
+    DashboardStatsResponse:
+      type: object
+      description: Thống kê tổng hợp cho IT_MANAGER (HD14)
+      properties:
+        totalTickets:
+          type: integer
+          description: Tổng số vé trong hệ thống
+        byStatus:
+          type: object
+          description: Số lượng vé theo từng trạng thái
+          additionalProperties:
+            type: integer
+          example:
+            NEW: 5
+            ASSIGNED: 3
+            IN_PROGRESS: 2
+            RESOLVED: 8
+            CLOSED: 12
+        slaBreachedCount:
+          type: integer
+          description: Số vé đã vi phạm SLA
+        slaBreachedPct:
+          type: number
+          format: double
+          description: "% vé vi phạm SLA trên tổng số"
+        avgResolutionHours:
+          type: number
+          format: double
+          description: Thời gian giải quyết trung bình (giờ)
+
+    SLAMonitorItem:
+      type: object
+      description: Thông tin vé cần giám sát SLA (HD12)
+      properties:
+        ticketId:
+          type: integer
+        ticketNumber:
+          type: string
+          example: HD-2026-0001
+        title:
+          type: string
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        status:
+          type: string
+        resolutionDeadline:
+          type: string
+          format: date-time
+        slaUsedPct:
+          type: number
+          format: double
+          description: "% thời gian SLA đã dùng (>= 80 = cảnh báo, >= 100 = vi phạm)"
+        isSlaBreached:
+          type: boolean
+        assigneeName:
+          type: string
+          nullable: true
+
     ReopenRequestDTO:
       type: object
       description: Bản ghi yêu cầu mở lại ticket, tương ứng bảng reopen_requests trong ERD
