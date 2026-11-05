@@ -2,7 +2,7 @@
 
 **Status:** Python detector and sample-based Backend contract tests are complete. This has **not** been tested with real audit events or on the team's VM lab. `SEC-TC-HD-02` and `EV-HD-22` remain pending actual lab execution.
 
-## Exact source contract (GitHub `cuong/be`, also `tri/be`, checked 05/11/2026)
+## Exact source contract (GitHub `tri/be` e9ed3fc and `cuong/be` 279aade, checked 06/11/2026; AuditLogger unchanged)
 
 The Spring Boot class `com.ojt.p01.audit.AuditLogger` writes **JSON Lines** to `audit.log-file`, default `logs/audit_events.jsonl`. The container runs in `/app` and already mounts `audit_logs:/app/logs` in `docker-compose.yml`. Its output fields are `timestamp` (UTC), `event_type`, `actor_id` (JSON integer or null), `role`, `target_type`, `target_id`, `action`, `outcome`, `src_ip`, `correlation_id`, `http_status`. The Backend does **not** currently emit `login_ref`.
 
@@ -52,7 +52,7 @@ Use different paths for input and output, never copy real passwords, JWTs, beare
 
 ## Optional Docker Compose integration (requires Nhi/Chính review)
 
-The package root includes **`docker-compose.monitoring.yml`**, which *adds* a Monitoring sidecar. It shares the already-declared `audit_logs` volume **read-only** with the Backend, puts generated alerts in an independent `monitoring_alerts` volume, and forces `AUDIT_LOG_FILE=/app/logs/audit_events.jsonl`. The sidecar has no network and drops capabilities; it still uses the image's default container user for lab convenience, so Nhi should review/strengthen permissions before release.
+The package root includes **`docker-compose.monitoring.yml`**, which only *adds* a Monitoring sidecar and **does not modify the backend service**. It shares the already-declared `audit_logs` volume **read-only** with the Backend and puts generated alerts in an independent `monitoring_alerts` volume. Backend's default `logs/audit_events.jsonl` (working dir `/app`) already resolves to `/app/logs/audit_events.jsonl`; if the team wants an explicit `AUDIT_LOG_FILE`, Chính adds it to the base `docker-compose.yml`. Always run it together with `docker-compose.yml` and use `--no-deps` so the shared Backend is not recreated. The sidecar has no network and drops capabilities; it still uses the image's default container user for lab convenience, so Nhi should review/strengthen permissions before release.
 
 When approved on the VM, compose config can be checked without starting containers:
 
@@ -66,7 +66,7 @@ Do not claim that the lab pipeline is running just because this configuration fi
 
 `AuditLogger` on `cuong/be` currently uses `request.getRemoteAddr()`. If the request passes through Nginx, this can be the reverse-proxy IP rather than the testing client. R1 will group by whatever `src_ip` the Backend emits; **Python must not trust `X-Forwarded-For` or guess the original IP**.
 
-A restricted Backend patch example is under `integration_proposals/`: `ClientIpResolver.java` (trust only an explicitly allowlisted direct proxy, not arbitrary forwarded headers) and `BACKEND_IP_AND_DOCKER_REVIEW.md`. Nhi should configure a gateway that *overwrites* `X-Real-IP` with `$remote_addr`, restrict direct Backend access, and confirm the real trusted proxy IP before enabling this change. Do not apply that patch to Backend without Trí/Cường review. **This gap cannot be marked fixed until the VM configuration is verified.**
+Proposed client-IP handling has been sent to Cường (Backend) and Nhi (gateway) for review; it is not part of this repository. Monitoring does not change Backend code. **This gap cannot be marked fixed until the VM configuration is verified.**
 
 ## Group review and evidence
 

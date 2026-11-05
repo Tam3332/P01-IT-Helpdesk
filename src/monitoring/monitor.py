@@ -243,6 +243,7 @@ def follow(source: Path, output: Path, detector: Detector, interval: float = 0.5
                 try:
                     st = source.stat()
                 except FileNotFoundError:
+                    start_at_beginning = True
                     time.sleep(interval)
                     continue
                 if fp is None or inode != (st.st_dev, st.st_ino) or st.st_size < fp.tell():
