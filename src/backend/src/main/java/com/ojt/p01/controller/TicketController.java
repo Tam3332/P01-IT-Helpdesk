@@ -2,6 +2,7 @@ package com.ojt.p01.controller;
 
 import com.ojt.p01.common.ApiResponse;
 import com.ojt.p01.dto.request.AssignTicketRequest;
+import com.ojt.p01.dto.request.UpdateTicketStatusRequest;
 import com.ojt.p01.dto.request.CreateTicketRequest;
 import com.ojt.p01.entity.TicketPriority;
 import com.ojt.p01.entity.TicketStatus;
@@ -123,6 +124,43 @@ public class TicketController {
         TicketDetailResponse response = ticketService.assignTicket(id, request, httpRequest.getRemoteAddr());
         return ResponseEntity.ok(ApiResponse.success("Phân công thành công", response));
     }
+
+    /**
+     * PATCH /api/v1/tickets/{id}/status (HD07, UC-07, BR-HD-01)
+     * IT Staff nhận xử lý (IN_PROGRESS) hoặc hoàn tất sự cố (RESOLVED).
+     * Body: status (IN_PROGRESS | RESOLVED), resolutionNote (bắt buộc khi RESOLVED, >= 20 ký tự).
+     */
+    @Operation(
+            summary = "Cập nhật trạng thái xử lý ticket (HD07, UC-07)",
+            description = "Chỉ IT Staff đang được giao hoặc IT Manager. Chuyển sang RESOLVED bắt buộc có resolutionNote >= 20 ký tự (BR-HD-01)."
+    )
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<TicketDetailResponse>> updateTicketStatus(
+            @Parameter(description = "ID số hoặc mã véc") @PathVariable String id,
+            @Valid @RequestBody UpdateTicketStatusRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        TicketDetailResponse response = ticketService.updateTicketStatus(id, request, httpRequest.getRemoteAddr());
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái thành công", response));
+    }
+
+    /**
+     * POST /api/v1/tickets/{id}/close (HD10, UC-08, BR-HD-02, BR-HD-04)
+     * Xác nhận đóng ticket hoàn tất. Chỉ áp dụng khi ticket đang ở trạng thái RESOLVED.
+     */
+    @Operation(
+            summary = "Xác nhận đóng ticket hoàn tất (HD10, UC-08)",
+            description = "Chỉ Employee chủ ticket hoặc IT Manager được đóng (BR-HD-02). Chỉ đóng được khi trạng thái là RESOLVED."
+    )
+    @PostMapping("/{id}/close")
+    public ResponseEntity<ApiResponse<TicketDetailResponse>> closeTicket(
+            @Parameter(description = "ID số hoặc mã véc") @PathVariable String id,
+            HttpServletRequest httpRequest
+    ) {
+        TicketDetailResponse response = ticketService.closeTicket(id, httpRequest.getRemoteAddr());
+        return ResponseEntity.ok(ApiResponse.success("Đóng ticket thành công", response));
+    }
+
 
     /**
      * GET /api/v1/tickets/{id}/history (HD09, UC-02 bước 7, UC-06 bước 6)

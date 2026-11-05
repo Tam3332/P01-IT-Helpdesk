@@ -37,3 +37,6 @@ database/init_demo_users.sql
 
 # AI agent config - local only
 src/backend/AGENTS.md
+ 
+uploads/
+src/backend/uploads/

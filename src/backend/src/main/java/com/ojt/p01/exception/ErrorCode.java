@@ -47,7 +47,18 @@ public enum ErrorCode {
     CATEGORY_NAME_DUPLICATE    ("CATEGORY_NAME_DUPLICATE", "Tên danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: SRS UC-10 3a "trùng mã/tên", HD02 "tên duy nhất"
     CATEGORY_ID_NOT_FOUND      ("CATEGORY_ID_NOT_FOUND", "Không tìm thấy danh mục", HttpStatus.NOT_FOUND), // 404: Admin gọi /admin/categories/{id} sai id (SDD §4.2c)
     CATEGORY_HAS_TICKETS       ("CATEGORY_HAS_TICKETS", "Danh mục đang có phiếu yêu cầu tham chiếu, không thể xóa", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-10 3c
-    SLA_INVALID_HOURS          ("SLA_INVALID_HOURS", "Thời gian SLA phải lớn hơn 0", HttpStatus.BAD_REQUEST);
+    SLA_INVALID_HOURS          ("SLA_INVALID_HOURS", "Thời gian SLA phải lớn hơn 0", HttpStatus.BAD_REQUEST),
+
+    // -------------------------------------------------------------------------
+    // Comments & Attachments & Lifecycle
+    // -------------------------------------------------------------------------
+    RESOLUTION_NOTE_REQUIRED   ("RESOLUTION_NOTE_REQUIRED", "Giải pháp kỹ thuật bắt buộc khi hoàn tất xử lý (tối thiểu 20 ký tự)", HttpStatus.BAD_REQUEST),
+    TICKET_CLOSED              ("TICKET_CLOSED", "Ticket đã đóng, không thể thao tác", HttpStatus.UNPROCESSABLE_ENTITY),
+    TICKET_NOT_RESOLVED        ("TICKET_NOT_RESOLVED", "Chỉ có thể đóng ticket khi đang ở trạng thái RESOLVED", HttpStatus.UNPROCESSABLE_ENTITY),
+    FILE_TOO_LARGE             ("FILE_TOO_LARGE", "Dung lượng tệp vượt quá giới hạn 10MB", HttpStatus.BAD_REQUEST),
+    FILE_TYPE_NOT_ALLOWED      ("FILE_TYPE_NOT_ALLOWED", "Định dạng tệp không được hỗ trợ", HttpStatus.BAD_REQUEST),
+    ATTACHMENT_LIMIT_EXCEEDED  ("ATTACHMENT_LIMIT_EXCEEDED", "Mỗi ticket chỉ được đính kèm tối đa 5 tệp", HttpStatus.BAD_REQUEST),
+    ATTACHMENT_NOT_FOUND       ("ATTACHMENT_NOT_FOUND", "Không tìm thấy tệp đính kèm", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;
