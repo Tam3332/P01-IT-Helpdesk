@@ -34,3 +34,6 @@ target/
 
 # Seed file sinh t? d?ng ch?a BCrypt hash — KHÔNG commit
 database/init_demo_users.sql
+
+# AI agent config - local only
+src/backend/AGENTS.md
