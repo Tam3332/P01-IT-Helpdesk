@@ -7,7 +7,7 @@ import { Async, EmptyState } from '@/components/StateViews'
 import { useAuth } from '@/context/AuthContext'
 import useAsync from '@/hooks/useAsync'
 import { SLA } from '@/config/domain'
-import { ROLE_HOME } from '@/config/constants'
+import { ROLES, ROLE_HOME } from '@/config/constants'
 import { findNavItem } from '@/config/nav'
 import { fetchOpenTickets, ticketRef } from '@/services/ticketService'
 import { fmtDateTime } from '@/utils/format'
@@ -23,7 +23,9 @@ export default function SlaMonitorPage() {
   const open = useAsync(fetchOpenTickets, [])
   const [filter, setFilter] = useState('all')
 
-  const rows = (open.data || []).map((t) => ({ t, s: slaOf(t) })).sort((a, b) => b.s.pct - a.s.pct)
+  // Staff chỉ giám sát ticket được giao cho mình, không gồm ticket NEW chưa phân công
+  const mine = (open.data || []).filter((t) => user.role !== ROLES.STAFF || t.status !== 'NEW')
+  const rows = mine.map((t) => ({ t, s: slaOf(t) })).sort((a, b) => b.s.pct - a.s.pct)
   const count = (k) => rows.filter((x) => x.s.key === k).length
   const shown = rows.filter((x) => filter === 'all' || x.s.key === filter)
   const seg = [
@@ -60,7 +62,7 @@ export default function SlaMonitorPage() {
                       <td><button type="button" className="idlink" onClick={(e) => { e.stopPropagation(); go(t) }}>{t.ticketNumber ?? t.id}</button></td>
                       <td className="tt">{t.title}</td>
                       <td><PriorityBadge priority={t.priority} /></td>
-                      <td className="nw">{t.assigneeName || ((t.currentAssigneeId ?? t.assigneeId) ? `Người dùng #${t.currentAssigneeId ?? t.assigneeId}` : 'Chưa phân công')}</td>
+                      <td className="nw">{t.assigneeName || ((t.currentAssigneeId ?? t.assigneeId) ? `Người dùng #${t.currentAssigneeId ?? t.assigneeId}` : t.status === 'NEW' ? 'Chưa phân công' : '—')}</td>
                       <td className="nw num">{fmtDateTime(t.resolutionDeadline)}<div className="sm muted">{s.left > 0 ? `còn ${dur(s.left)}` : `trễ ${dur(s.left)}`}</div></td>
                       <td style={{ minWidth: 150 }}>
                         <div className="prog" role="img" aria-label={`${Math.round(s.pct)}% thời hạn đã dùng`}><s style={{ width: `${Math.min(100, s.pct)}%`, background: SLA[s.key]?.color }} /></div>

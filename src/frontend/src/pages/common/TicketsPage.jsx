@@ -22,7 +22,10 @@ export default function TicketsPage() {
           </button>
         )}
       </PageHeader>
-      <TicketListCard title={user.role === ROLES.MANAGER ? 'Tất cả ticket' : 'Danh sách ticket'} />
+      <TicketListCard
+        title={user.role === ROLES.MANAGER || user.role === ROLES.ADMIN ? 'Tất cả ticket' : 'Danh sách ticket'}
+        fixed={user.role === ROLES.STAFF ? { assigneeId: user.id } : undefined}
+      />
     </>
   )
 }

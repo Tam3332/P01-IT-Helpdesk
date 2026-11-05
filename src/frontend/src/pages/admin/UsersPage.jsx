@@ -20,7 +20,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const wrap = async (fn, fallback) => { try { return await fn() } catch (e) { throw new Error(apiError(e, fallback)) } }
 
 export default function UsersPage() {
-  const item = NAV[ROLES.ADMIN][1]
+  const item = NAV[ROLES.ADMIN].find((i) => i.path === '/admin/users')
   const { user: me } = useAuth()
   const toast = useToast()
   const [page, setPage] = useState(0)
@@ -59,7 +59,7 @@ export default function UsersPage() {
             <option value="off">Đã khóa</option>
           </select>
         </div>
-        <Async state={data}>
+        <Async state={data} notReadyText="Backend chưa có API quản lý người dùng (GET /api/v1/admin/users). Màn hình sẽ hiện dữ liệu khi API được triển khai.">
           {list.length ? (
             <div className="tw">
               <table>
@@ -113,7 +113,7 @@ function CreateUserDialog({ onClose, onDone }) {
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
   return (
     <Modal title="Tạo tài khoản" okText="Tạo tài khoản" onClose={onClose} onOk={async () => {
-      if (!f.username.trim()) throw new Error('Vui lòng nhập tên đăng nhập.')
+      if (!f.username.trim()) throw new Error('Vui lòng nhập tên tài khoản.')
       if (!EMAIL_RE.test(f.email.trim())) throw new Error('Vui lòng nhập email hợp lệ.')
       if (!f.fullName.trim()) throw new Error('Vui lòng nhập họ tên.')
       if (!f.password) throw new Error('Vui lòng nhập mật khẩu.')
@@ -122,7 +122,7 @@ function CreateUserDialog({ onClose, onDone }) {
       onDone(`Đã tạo tài khoản ${f.username.trim()}.`)
     }}>
       <div className="row2">
-        <Field label="Tên đăng nhập" required htmlFor="uf-login"><input className="in" id="uf-login" maxLength={50} autoComplete="off" value={f.username} onChange={set('username')} /></Field>
+        <Field label="Tên tài khoản" required htmlFor="uf-login" hint="Định danh nội bộ, không dùng để đăng nhập. Đăng nhập bằng email."><input className="in" id="uf-login" maxLength={50} autoComplete="off" value={f.username} onChange={set('username')} /></Field>
         <Field label="Email" required htmlFor="uf-email"><input className="in" id="uf-email" type="email" maxLength={120} autoComplete="off" value={f.email} onChange={set('email')} /></Field>
       </div>
       <Field label="Họ tên" required htmlFor="uf-name"><input className="in" id="uf-name" maxLength={100} value={f.fullName} onChange={set('fullName')} /></Field>

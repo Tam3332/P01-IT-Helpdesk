@@ -8,7 +8,7 @@ import { ROLES } from '@/config/constants'
 import { adminListCategories, listSlaConfigs } from '@/services/referenceService'
 
 export default function SettingsPage() {
-  const item = NAV[ROLES.ADMIN][2]
+  const item = NAV[ROLES.ADMIN].find((i) => i.path === '/admin/settings')
   const navigate = useNavigate()
   const cats = useAsync(() => adminListCategories().catch(() => null), [])
   const sla = useAsync(() => listSlaConfigs().catch(() => null), [])
