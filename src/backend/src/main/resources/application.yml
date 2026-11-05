@@ -30,6 +30,10 @@ jwt:
   secret: ${JWT_SECRET:21727172a7109d0ac9be8f1d0218a074fbca17c87ae295ce237947e5562c9691}
   expiration-ms: ${JWT_EXPIRATION_MS:900000}
 
+# Security Audit Log JSON Lines (SDD §7). Khi chạy Docker: đặt AUDIT_LOG_FILE trỏ vào log volume
+audit:
+  log-file: ${AUDIT_LOG_FILE:logs/audit_events.jsonl}
+
 # OpenAPI / Swagger UI
 springdoc:
   api-docs:

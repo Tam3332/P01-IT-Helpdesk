@@ -49,9 +49,11 @@ public class TicketController {
     )
     @PostMapping
     public ResponseEntity<ApiResponse<TicketResponse>> createTicket(
-            @Valid @RequestBody CreateTicketRequest request) {
+            @Valid @RequestBody CreateTicketRequest request,
+            HttpServletRequest httpRequest) {
 
-        TicketResponse response = ticketService.createTicket(request);
+        // Truyền IP người tạo để ghi ticket_history.ip_address (trước đây luôn ghi 127.0.0.1)
+        TicketResponse response = ticketService.createTicket(request, httpRequest.getRemoteAddr());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Ticket created successfully", response));

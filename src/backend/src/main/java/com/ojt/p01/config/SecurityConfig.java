@@ -1,6 +1,7 @@
 package com.ojt.p01.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.common.ApiResponse;
 import com.ojt.p01.security.JwtAuthenticationFilter;
 import jakarta.servlet.DispatcherType;
@@ -42,10 +43,13 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ObjectMapper objectMapper;
+    private final AuditLogger auditLogger;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper,
+                          AuditLogger auditLogger) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.objectMapper = objectMapper;
+        this.auditLogger = auditLogger;
     }
 
     @Bean
@@ -63,6 +67,10 @@ public class SecurityConfig {
                     response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    // Đã đăng nhập nhưng sai role → ghi AUTHZ_DENIED (SDD §7, IA-HD05), target là method + URL bị chặn
+                    auditLogger.logForCurrentUser("AUTHZ_DENIED", "ENDPOINT",
+                            request.getMethod() + " " + request.getRequestURI(),
+                            request.getMethod(), "DENIED", HttpServletResponse.SC_FORBIDDEN);
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setCharacterEncoding(StandardCharsets.UTF_8.name());

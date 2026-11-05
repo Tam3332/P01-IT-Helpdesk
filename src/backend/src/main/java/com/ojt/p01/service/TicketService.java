@@ -1,5 +1,6 @@
 package com.ojt.p01.service;
 
+import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.dto.request.AssignTicketRequest;
 import com.ojt.p01.dto.request.CreateTicketRequest;
 import com.ojt.p01.dto.response.PageResponse;
@@ -30,6 +31,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.OffsetDateTime;
 import java.time.Year;
@@ -51,6 +54,7 @@ public class TicketService {
     private final TicketAssignmentRepository assignmentRepository;
     private final TicketHistoryRepository historyRepository;
     private final TicketStatusTransitionValidator transitionValidator;
+    private final AuditLogger auditLogger;
 
     public TicketService(TicketRepository ticketRepository,
                          TicketCategoryRepository categoryRepository,
@@ -58,7 +62,8 @@ public class TicketService {
                          UserRepository userRepository,
                          TicketAssignmentRepository assignmentRepository,
                          TicketHistoryRepository historyRepository,
-                         TicketStatusTransitionValidator transitionValidator) {
+                         TicketStatusTransitionValidator transitionValidator,
+                         AuditLogger auditLogger) {
         this.ticketRepository = ticketRepository;
         this.categoryRepository = categoryRepository;
         this.slaConfigRepository = slaConfigRepository;
@@ -66,6 +71,7 @@ public class TicketService {
         this.assignmentRepository = assignmentRepository;
         this.historyRepository = historyRepository;
         this.transitionValidator = transitionValidator;
+        this.auditLogger = auditLogger;
     }
 
     // -------------------------------------------------------------------------
@@ -152,6 +158,18 @@ public class TicketService {
                 clientIp,
                 saved.getCreatedAt()
         ));
+
+        // Audit TICKET_CREATED (SDD §7, T3-06): chỉ ghi sau khi transaction commit thành công,
+        // tránh có dòng log cho ticket thực tế không được lưu
+        Long actorId = requester.getId();
+        String actorRole = requester.getRole() != null ? requester.getRole().getRoleName() : null;
+        String createdNumber = saved.getTicketNumber();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                auditLogger.log("TICKET_CREATED", actorId, actorRole, "TICKET", createdNumber, "CREATE", "SUCCESS", 201);
+            }
+        });
 
         return toResponse(saved);
     }
@@ -262,7 +280,7 @@ public class TicketService {
         if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
             // EMPLOYEE cố truy cập vé người khác → 404 Anti-IDOR
             if (!ticket.getRequester().getId().equals(currentUser.getId())) {
-                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+                throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_TICKET");
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
             // IT_STAFF chỉ xem vé được giao cho mình HOẶC vé NEW
@@ -271,7 +289,7 @@ public class TicketService {
             boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
 
             if (!isAssignedToMe && !isNewTicket) {
-                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+                throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_TICKET");
             }
         }
         // IT_MANAGER và ADMIN được xem mọi vé
@@ -404,7 +422,7 @@ public class TicketService {
 
         if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
             if (!ticket.getRequester().getId().equals(currentUser.getId())) {
-                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+                throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_HISTORY");
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
@@ -412,7 +430,7 @@ public class TicketService {
             boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
 
             if (!isAssignedToMe && !isNewTicket) {
-                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+                throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_HISTORY");
             }
         }
 
@@ -434,6 +452,15 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
+
+    /**
+     * Ticket có tồn tại nhưng người gọi không được xem: ghi AUTHZ_DENIED (SDD §7, IA-HD05) rồi trả 404 như ticket không tồn tại (IA-HD02).
+     * Không ghi khi ticket thật sự không tồn tại (SDD §7: "không tính lỗi HTTP 404 thông thường").
+     */
+    private AppException denyTicketAccess(User user, String roleName, Ticket ticket, String action) {
+        auditLogger.log("AUTHZ_DENIED", user.getId(), roleName, "TICKET", ticket.getTicketNumber(), action, "DENIED", 404);
+        return new AppException(ErrorCode.TICKET_NOT_FOUND);
+    }
 
     private Ticket findTicketByIdOrNumber(String idOrNumber) {
         if (idOrNumber == null || idOrNumber.isBlank()) {

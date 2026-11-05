@@ -93,3 +93,12 @@ Theo `test_giao_dien.md`. Backend `cuong/be` sau commit `05cc318` + sửa cột 
 | EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E5_sla_bang_0.png | E5 | SLA = 0 → "Hạn xử lý phải lớn hơn 0." |
 | EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E5_sla_am.png | E5 | SLA = -1 → bị chặn |
 | EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E6_admin_tong_quan_khong_co_menu_ticket.png | E6 | Menu Admin không có trang ticket chỉ đọc (lỗi FE) |
+
+## Audit log JSONL (05/11/2026)
+
+Backend ghi `src/backend/logs/audit_events.jsonl` theo SDD §7 (11 trường; không có mật khẩu/token).
+
+| EV-ID | File | Ngày | Task / test | Mô tả | Kết quả quan sát |
+|---|---|---|---|---|---|
+| EV-HD-01 | api/EV-HD-01_api_audit_log_jsonl.png | 2026-11-05 | T3-06, SDD §7, IA-HD04 | Login đúng, sai mật khẩu, email không tồn tại; Employee gọi PUT /tickets/1/assign; Employee tạo ticket | LOGIN_SUCCESS, LOGIN_FAILED (có / không actor_id), AUTHZ_DENIED 403 (target = method + URL), TICKET_CREATED 201 (target = mã ticket) |
+| EV-HD-03 | api/EV-HD-03_api_tao_ticket_va_403_correlation_id.png | 2026-11-05 | T3-06, SDD §7 | Tạo ticket HD-2026-0003; curl PUT assign bằng token Employee | 201; 403 có body FORBIDDEN và header X-Correlation-Id trùng correlation_id trong dòng AUTHZ_DENIED |

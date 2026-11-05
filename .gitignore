@@ -19,6 +19,8 @@ build/
 
 # Logs
 *.log
+# Audit log JSONL sinh khi chay backend (SDD 7)
+logs/
 npm-debug.log*
 
 # IDE and operating system

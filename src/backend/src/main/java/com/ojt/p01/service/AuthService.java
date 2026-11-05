@@ -1,5 +1,6 @@
 package com.ojt.p01.service;
 
+import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.dto.request.LoginRequest;
 import com.ojt.p01.dto.response.LoginResponse;
 import com.ojt.p01.dto.response.UserResponse;
@@ -32,7 +33,7 @@ import java.util.Optional;
  *   4. Hợp lệ                     → cấp JWT 15 phút
  *
  * Chưa làm trong tuần 3 (theo file phân công T3-06): đếm số lần sai, khóa 15 phút, HTTP 429 (UC-01 2b) → tuần 5.
- * Ghi audit LOGIN_SUCCESS / LOGIN_FAILED: bổ sung ở bước B7.
+ * Mỗi lần đăng nhập ghi 1 dòng audit LOGIN_SUCCESS / LOGIN_FAILED (SDD §7, T3-06). Không ghi mật khẩu.
  */
 @Service
 public class AuthService {
@@ -49,15 +50,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistRepository tokenBlacklistRepository;
+    private final AuditLogger auditLogger;
 
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        JwtTokenProvider jwtTokenProvider,
-                       TokenBlacklistRepository tokenBlacklistRepository) {
+                       TokenBlacklistRepository tokenBlacklistRepository,
+                       AuditLogger auditLogger) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.tokenBlacklistRepository = tokenBlacklistRepository;
+        this.auditLogger = auditLogger;
     }
 
     @Transactional(readOnly = true)
@@ -68,21 +72,28 @@ public class AuthService {
         Optional<User> found = userRepository.findByEmail(email);
         if (found.isEmpty()) {
             passwordEncoder.matches(request.password(), DUMMY_HASH);
+            // Email không tồn tại: chưa biết actor → ghi email đã nhập để Monitoring đếm theo email + IP (IA-HD05)
+            auditLogger.log("LOGIN_FAILED", null, null, "USER_EMAIL", email, "LOGIN", "FAILURE", 401);
             throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
         User user = found.get();
 
         // Kiểm tra mật khẩu TRƯỚC trạng thái tài khoản: người không biết mật khẩu
         // sẽ không biết được tài khoản đó có tồn tại hay đang bị khóa.
+        String roleName = user.getRole() != null ? user.getRole().getRoleName() : null;
+
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            auditLogger.log("LOGIN_FAILED", user.getId(), roleName, "USER_EMAIL", email, "LOGIN", "FAILURE", 401);
             throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
+            auditLogger.log("LOGIN_FAILED", user.getId(), roleName, "USER_EMAIL", email, "LOGIN", "FAILURE", 403);
             throw new AppException(ErrorCode.ACCOUNT_DISABLED);
         }
 
         String token = jwtTokenProvider.generateToken(user);
+        auditLogger.log("LOGIN_SUCCESS", user.getId(), roleName, "USER", String.valueOf(user.getId()), "LOGIN", "SUCCESS", 200);
         return new LoginResponse(token, "Bearer", jwtTokenProvider.getExpirationSeconds(), UserResponse.from(user));
     }
 
