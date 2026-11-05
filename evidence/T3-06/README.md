@@ -102,3 +102,11 @@ Backend ghi `src/backend/logs/audit_events.jsonl` theo SDD §7 (11 trường; kh
 |---|---|---|---|---|---|
 | EV-HD-01 | api/EV-HD-01_api_audit_log_jsonl.png | 2026-11-05 | T3-06, SDD §7, IA-HD04 | Login đúng, sai mật khẩu, email không tồn tại; Employee gọi PUT /tickets/1/assign; Employee tạo ticket | LOGIN_SUCCESS, LOGIN_FAILED (có / không actor_id), AUTHZ_DENIED 403 (target = method + URL), TICKET_CREATED 201 (target = mã ticket) |
 | EV-HD-03 | api/EV-HD-03_api_tao_ticket_va_403_correlation_id.png | 2026-11-05 | T3-06, SDD §7 | Tạo ticket HD-2026-0003; curl PUT assign bằng token Employee | 201; 403 có body FORBIDDEN và header X-Correlation-Id trùng correlation_id trong dòng AUTHZ_DENIED |
+
+## Sau khi merge tri/be 27792af (05/11/2026, commit 4067036)
+
+| EV-ID | File | Ngày | Task / test | Mô tả | Kết quả quan sát |
+|---|---|---|---|---|---|
+| EV-HD-05 | api/EV-HD-05_api_staff_thay_ve_new.png | 2026-11-05 | T3-06, SRS §4 HD05, SecRS IA-HD02 | IT Staff GET /tickets | Thấy vé được giao + vé NEW chưa giao (HD-2026-0003) |
+| EV-HD-03 | api/EV-HD-03_api_upload_doi_duoi_bi_chan_400.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload tệp chữ đổi đuôi thành .png | 400 FILE_TYPE_NOT_ALLOWED (sai chữ ký nội dung) |
+| EV-HD-03 | api/EV-HD-03_api_upload_png_hop_le_200.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload ảnh PNG thật | 200, mimeType image/png do server xác định |
