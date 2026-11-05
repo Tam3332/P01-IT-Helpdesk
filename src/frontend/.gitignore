@@ -4,8 +4,3 @@ dist
 .env.*.local
 *.log
 .DS_Store
-
-.env
-nginx/ssl/*.key
-nginx/ssl/*.crt
-docker-compose.override.yml

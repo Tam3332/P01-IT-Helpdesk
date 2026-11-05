@@ -1,60 +1,74 @@
-import apiClient from './apiClient'
-import { USE_MOCK } from '@/config/constants'
-import { tickets, reopenRequests, auditLogs, users } from '@/mocks/data'
+import api, { clean, normalizePage, unwrap } from './apiClient'
+import { OPEN_STATUSES, STATUS_KEYS, TICKET_REF_FIELD } from '@/config/domain'
 
-const delay = (ms = 250) => new Promise((r) => setTimeout(r, ms))
+export const ticketRef = (t) => t?.[TICKET_REF_FIELD] ?? t?.id
 
-// Mỗi hàm: mock khi VITE_USE_MOCK=true, ngược lại gọi API Spring Boot.
 export async function listTickets(params = {}) {
-  if (USE_MOCK) {
-    await delay()
-    let rows = [...tickets]
-    if (params.creator) rows = rows.filter((t) => t.creator === params.creator)
-    if (params.assignee) rows = rows.filter((t) => t.assignee === params.assignee)
-    if (params.status) rows = rows.filter((t) => t.status === params.status)
-    return rows
-  }
-  const { data } = await apiClient.get('/tickets', { params })
-  return data.content ?? data
+  const res = await api.get('/tickets', { params: clean(params) })
+  return normalizePage(unwrap(res))
 }
 
-export async function getTicket(id) {
-  if (USE_MOCK) {
-    await delay()
-    return tickets.find((t) => t.id === id) ?? null
-  }
-  const { data } = await apiClient.get(`/tickets/${id}`)
-  return data
+// Lấy toàn bộ ticket khớp bộ lọc (dùng cho tổng quan/giám sát SLA khi chưa có API dashboard HD14)
+export async function listAllTickets(params = {}, { pageSize = 100, maxPages = 10 } = {}) {
+  const out = []
+  let page = 0
+  let totalPages = 1
+  do {
+    const r = await listTickets({ ...params, page, size: pageSize })
+    out.push(...r.content)
+    totalPages = r.totalPages
+    page += 1
+  } while (page < totalPages && page < maxPages)
+  return out
 }
 
-export async function createTicket(payload) {
-  if (USE_MOCK) {
-    await delay()
-    const t = {
-      id: `TK-${String(tickets.length + 1).padStart(4, '0')}`,
-      status: 'NEW', assignee: null, elapsed: 0, createdAt: new Date().toISOString(), ...payload,
-    }
-    tickets.unshift(t)
-    return t
-  }
-  const { data } = await apiClient.post('/tickets', payload)
-  return data
+export async function countTickets(params = {}) {
+  const r = await listTickets({ ...params, page: 0, size: 1 })
+  return r.totalElements
 }
 
-export async function listReopenRequests() {
-  if (USE_MOCK) { await delay(); return reopenRequests }
-  const { data } = await apiClient.get('/reopen-requests')
-  return data
+export const getTicket = async (ref) => unwrap(await api.get(`/tickets/${encodeURIComponent(ref)}`))
+export const createTicket = async (body) => unwrap(await api.post('/tickets', body))
+export const assignTicket = async (ref, body) => unwrap(await api.put(`/tickets/${encodeURIComponent(ref)}/assign`, body))
+export const changeStatus = async (ref, body) => unwrap(await api.patch(`/tickets/${encodeURIComponent(ref)}/status`, body))
+export const closeTicket = async (ref) => unwrap(await api.post(`/tickets/${encodeURIComponent(ref)}/close`))
+export const reopenTicket = async (ref, reopenReason) => unwrap(await api.post(`/tickets/${encodeURIComponent(ref)}/reopen`, { reopenReason }))
+
+export const listComments = async (ref) => unwrap(await api.get(`/tickets/${encodeURIComponent(ref)}/comments`)) || []
+export const addComment = async (ref, body) => unwrap(await api.post(`/tickets/${encodeURIComponent(ref)}/comments`, body))
+
+export const listAttachments = async (ref) => unwrap(await api.get(`/tickets/${encodeURIComponent(ref)}/attachments`)) || []
+export async function uploadAttachment(ref, file) {
+  const form = new FormData()
+  form.append('file', file)
+  return unwrap(await api.post(`/tickets/${encodeURIComponent(ref)}/attachments`, form, { timeout: 60000 }))
+}
+// Tải tệp bằng blob (cần gửi kèm Bearer token nên không dùng thẻ <a href> trực tiếp)
+export async function downloadAttachment(ref, attachment) {
+  const res = await api.get(`/tickets/${encodeURIComponent(ref)}/attachments/${attachment.id}`, { responseType: 'blob', timeout: 60000 })
+  const url = URL.createObjectURL(res.data)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = attachment.fileName || 'attachment'
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-export async function listAuditLogs() {
-  if (USE_MOCK) { await delay(); return auditLogs }
-  const { data } = await apiClient.get('/audit-logs')
-  return data
+export const listHistory = async (ref) => unwrap(await api.get(`/tickets/${encodeURIComponent(ref)}/history`)) || []
+export const getFeedback = async (ref) => unwrap(await api.get(`/tickets/${encodeURIComponent(ref)}/feedback`))
+export const sendFeedback = async (ref, body) => unwrap(await api.post(`/tickets/${encodeURIComponent(ref)}/feedback`, body))
+
+
+// Số ticket theo từng trạng thái (đã được backend giới hạn theo quyền của người gọi)
+export async function getStatusCounts() {
+  const entries = await Promise.all(STATUS_KEYS.map(async (s) => [s, await countTickets({ status: s })]))
+  return Object.fromEntries(entries)
 }
 
-export async function listUsers() {
-  if (USE_MOCK) { await delay(); return users }
-  const { data } = await apiClient.get('/users')
-  return data
+// Toàn bộ ticket đang mở. Dùng cho tổng quan/giám sát SLA cho tới khi có API dashboard (HD14).
+export async function fetchOpenTickets() {
+  const lists = await Promise.all(OPEN_STATUSES.map((status) => listAllTickets({ status })))
+  return lists.flat()
 }

@@ -1,74 +1,78 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { ROLES, ROLE_HOME } from '@/config/constants'
-import { useAuth } from '@/context/AuthContext'
-import ProtectedRoute from './ProtectedRoute'
 import MainLayout from '@/layouts/MainLayout'
 import LoginPage from '@/pages/auth/LoginPage'
-import ForbiddenPage from '@/pages/auth/ForbiddenPage'
-import NotFoundPage from '@/pages/auth/NotFoundPage'
-import EmployeeDashboard from '@/pages/employee/EmployeeDashboard'
-import MyTicketsPage from '@/pages/employee/MyTicketsPage'
-import CreateTicketPage from '@/pages/employee/CreateTicketPage'
+import NotFoundPage from '@/pages/common/NotFoundPage'
+import TicketsPage from '@/pages/common/TicketsPage'
+import SlaMonitorPage from '@/pages/common/SlaMonitorPage'
 import TicketDetailPage from '@/pages/tickets/TicketDetailPage'
-import StaffDashboard from '@/pages/staff/StaffDashboard'
-import AssignedTicketsPage from '@/pages/staff/AssignedTicketsPage'
-import ManagerDashboard from '@/pages/manager/ManagerDashboard'
-import TicketManagementPage from '@/pages/manager/TicketManagementPage'
+import EmployeeOverview from '@/pages/employee/EmployeeOverview'
+import CreateTicketPage from '@/pages/employee/CreateTicketPage'
+import StaffOverview from '@/pages/staff/StaffOverview'
+import ManagerOverview from '@/pages/manager/ManagerOverview'
 import ReopenRequestsPage from '@/pages/manager/ReopenRequestsPage'
-import SlaMonitorPage from '@/pages/manager/SlaMonitorPage'
-import AdminDashboard from '@/pages/admin/AdminDashboard'
+import ReopenReviewPage from '@/pages/manager/ReopenReviewPage'
+import AdminOverview from '@/pages/admin/AdminOverview'
 import UsersPage from '@/pages/admin/UsersPage'
 import SettingsPage from '@/pages/admin/SettingsPage'
+import CategoriesPage from '@/pages/admin/CategoriesPage'
+import SlaConfigPage from '@/pages/admin/SlaConfigPage'
+import ReadonlyConfigPage from '@/pages/admin/ReadonlyConfigPage'
 import AuditLogsPage from '@/pages/admin/AuditLogsPage'
-
-function HomeRedirect() {
-  const { user } = useAuth()
-  return <Navigate to={user ? ROLE_HOME[user.role] : '/login'} replace />
-}
-
-const { EMPLOYEE, STAFF, MANAGER, ADMIN } = ROLES
+import { HomeRedirect, RedirectIfAuthed, RequireAuth, RequireRole } from './ProtectedRoute'
+import { ROLES } from '@/config/constants'
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/403" element={<ForbiddenPage />} />
-      <Route path="/" element={<HomeRedirect />} />
-
-      <Route element={<ProtectedRoute />}>
+      <Route path="/login" element={<RedirectIfAuthed><LoginPage /></RedirectIfAuthed>} />
+      <Route element={<RequireAuth />}>
         <Route element={<MainLayout />}>
-          {/* Chi tiết ticket dùng chung cho mọi role đã đăng nhập (backend lọc quyền xem) */}
-          <Route path="/tickets/:id" element={<TicketDetailPage />} />
+          <Route index element={<HomeRedirect />} />
 
-          <Route element={<ProtectedRoute allowedRoles={[EMPLOYEE]} />}>
-            <Route path="/employee" element={<EmployeeDashboard />} />
-            <Route path="/employee/tickets" element={<MyTicketsPage />} />
-            <Route path="/employee/tickets/new" element={<CreateTicketPage />} />
+          <Route path="employee" element={<RequireRole role={ROLES.EMPLOYEE} />}>
+            <Route index element={<EmployeeOverview />} />
+            <Route path="tickets" element={<TicketsPage />} />
+            <Route path="tickets/new" element={<CreateTicketPage />} />
+            <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={[STAFF]} />}>
-            <Route path="/staff" element={<StaffDashboard />} />
-            <Route path="/staff/tickets" element={<AssignedTicketsPage />} />
-            <Route path="/staff/sla" element={<SlaMonitorPage />} />
+          <Route path="staff" element={<RequireRole role={ROLES.STAFF} />}>
+            <Route index element={<StaffOverview />} />
+            <Route path="tickets" element={<TicketsPage />} />
+            <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
+            <Route path="sla" element={<SlaMonitorPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={[MANAGER]} />}>
-            <Route path="/manager" element={<ManagerDashboard />} />
-            <Route path="/manager/tickets" element={<TicketManagementPage />} />
-            <Route path="/manager/sla" element={<SlaMonitorPage />} />
-            <Route path="/manager/reopen-requests" element={<ReopenRequestsPage />} />
+          <Route path="manager" element={<RequireRole role={ROLES.MANAGER} />}>
+            <Route index element={<ManagerOverview />} />
+            <Route path="tickets" element={<TicketsPage />} />
+            <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
+            <Route path="sla" element={<SlaMonitorPage />} />
+            <Route path="reopen-requests" element={<ReopenRequestsPage />} />
+            <Route path="reopen-requests/:requestId" element={<ReopenReviewPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={[ADMIN]} />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<UsersPage />} />
-            <Route path="/admin/settings" element={<SettingsPage />} />
-            <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+          <Route path="admin" element={<RequireRole role={ROLES.ADMIN} />}>
+            <Route index element={<AdminOverview />} />
+            <Route path="tickets" element={<TicketsPage />} />
+            <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="categories" element={<CategoriesPage />} />
+            <Route path="priorities" element={<ReadonlyConfigPage kind="priorities" />} />
+            <Route path="statuses" element={<ReadonlyConfigPage kind="statuses" />} />
+            <Route path="sla-config" element={<SlaConfigPage />} />
+            <Route path="audit-logs" element={<AuditLogsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
-
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   )
 }
