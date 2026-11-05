@@ -34,6 +34,16 @@ jwt:
 audit:
   log-file: ${AUDIT_LOG_FILE:logs/audit_events.jsonl}
 
+# Actuator: chỉ mở endpoint health, không hiện chi tiết DB/disk (tránh lộ thông tin hạ tầng, IA-HD07)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 # OpenAPI / Swagger UI
 springdoc:
   api-docs:

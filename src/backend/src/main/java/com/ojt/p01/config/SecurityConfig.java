@@ -88,6 +88,8 @@ public class SecurityConfig {
                 // SDD §6.2: chỉ POST /api/v1/auth/login không cần token; /auth/me và /auth/logout bắt buộc token
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                // Healthcheck Docker: chỉ trả {"status":"UP"}, không có chi tiết (xem management.* trong application.yml)
+                .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
 
                 // --- SLAConfig: GET cho IT_MANAGER + ADMIN, PUT chỉ ADMIN ---
                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/sla-configs/**")
