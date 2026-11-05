@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Icon from '@/components/Icon'
+
+import NotificationBell from '@/components/NotificationBell'
 import { useAuth } from '@/context/AuthContext'
 import { ROLE_HOME, ROLE_LABEL } from '@/config/constants'
 import { NAV, findNavItem, ticketListItem } from '@/config/nav'
@@ -111,6 +113,9 @@ export default function MainLayout() {
                 <b>{forbidden ? 'Không có quyền truy cập' : current?.label || 'Không tìm thấy'}</b>
               </>
             )}
+          </div>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+            <NotificationBell />
           </div>
         </header>
         <main className="content">

@@ -1,10 +1,9 @@
--- =============================================================================
--- Hệ thống SecDesk - Quản lý Yêu cầu Dịch vụ CNTT & Giám sát An toàn (P01)
--- Cơ sở dữ liệu: PostgreSQL 16 | Chuẩn hóa 3NF | Ràng buộc An toàn Thông tin
--- Tác giả: Nhóm 2 - FPT University OJT Fall 2026
--- =============================================================================
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Hệ thống - Quản lý Yêu cầu Dịch vụ CNTT & Giám sát An toàn (P01)
+-- Cơ sở dữ liệu: PostgreSQL 18 | Chuẩn hóa 3NF | Ràng buộc An toàn Thông tin
+-- Tác giả: Nhóm 2 - FPT University OJT Fall 2026
+
+
 
 -- 1. BẢNG VAI TRÒ (ROLES)
 CREATE TABLE IF NOT EXISTS roles (
@@ -72,6 +71,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     priority VARCHAR(20) NOT NULL CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
     status VARCHAR(30) NOT NULL DEFAULT 'NEW' 
         CHECK (status IN ('NEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REOPENED', 'REOPEN_PENDING')),
+        -- REOPEN_PENDING: Employee đã gửi yêu cầu mở lại, chờ IT Manager duyệt (SLA tạm dừng)
     requester_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     current_assignee_id BIGINT NULL REFERENCES users(id) ON DELETE SET NULL,
     response_deadline TIMESTAMPTZ NOT NULL,
@@ -92,6 +92,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 CREATE INDEX idx_tickets_requester_status ON tickets(requester_id, status);
 CREATE INDEX idx_tickets_assignee_status ON tickets(current_assignee_id, status);
 CREATE INDEX idx_tickets_filter ON tickets(status, priority, created_at DESC);
+-- SLA worker chỉ quét ticket đang xử lý; REOPEN_PENDING không nằm trong danh sách nên SLA tạm dừng khi chờ duyệt
 CREATE INDEX idx_tickets_sla_worker ON tickets(status, resolution_deadline) 
     WHERE status IN ('NEW', 'ASSIGNED', 'IN_PROGRESS', 'REOPENED');
 
@@ -148,7 +149,7 @@ CREATE TABLE IF NOT EXISTS ticket_history (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES tickets(id) ON DELETE RESTRICT, -- Ngăn cascade delete mất log
     actor_id BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    action VARCHAR(50) NOT NULL, -- CREATE, ASSIGN, REASSIGN, STATUS_CHANGE, COMMENT, SLA_WARNING, SLA_BREACH, REOPEN, CLOSE
+    action VARCHAR(50) NOT NULL, -- CREATE, ASSIGN, REASSIGN, STATUS_CHANGE, COMMENT, SLA_WARNING, SLA_BREACH, REOPEN_REQUEST, REOPEN_APPROVE, REOPEN_REJECT, CLOSE
     field_changed VARCHAR(50) NULL,
     old_value TEXT NULL,
     new_value TEXT NULL,
@@ -205,7 +206,7 @@ CREATE TABLE IF NOT EXISTS token_blacklist (
     id BIGSERIAL PRIMARY KEY,
     jti VARCHAR(36) NOT NULL UNIQUE, -- JWT ID duy nhất từ token payload
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    token TEXT NULL, -- Chuỗi token hoặc hash để đối soát
+    token TEXT NULL, -- Chỉ lưu hash SHA-256 của token nếu cần đối soát, không lưu token gốc (IA-HD07)
     expires_at TIMESTAMPTZ NOT NULL, -- Thời điểm token hết hạn để TTL worker dọn dẹp
     revoked_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

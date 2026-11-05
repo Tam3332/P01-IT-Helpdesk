@@ -1,0 +1,1823 @@
+openapi: 3.0.3
+info:
+  title: P01 Helpdesk & Service Request API
+  description: >
+    API đặc tả cho hệ thống quản lý sự cố và yêu cầu dịch vụ CNTT (P01)
+    kèm cơ chế kiểm soát truy cập phân quyền chặt chẽ (RBAC, Anti-IDOR, Token Blacklist).
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
+  - url: https://secdesk.lab.local/api/v1
+    description: Lab Ubuntu Server Environment
+
+tags:
+  - name: Authentication
+    description: Đăng nhập, đăng xuất thu hồi token, thông tin người dùng hiện tại
+  - name: Tickets
+    description: Quản lý vòng đời phiếu yêu cầu (Tạo, lọc, cập nhật trạng thái, phân công, đóng, mở lại)
+  - name: Comments
+    description: Bình luận công khai và ghi chú nội bộ của kỹ thuật viên
+  - name: Attachments
+    description: Tải lên và tải xuống tệp tin minh chứng sự cố (<= 10MB, Whitelist)
+  - name: Feedback
+    description: Đánh giá chất lượng dịch vụ CSAT (1-5 sao)
+  - name: Categories & SLA
+    description: Quản trị danh mục yêu cầu và cấu hình ngưỡng cảnh báo SLA
+  - name: Admin & Users
+    description: Quản lý tài khoản người dùng, phân vai trò, khóa tài khoản
+  - name: Dashboard
+    description: Thống kê số liệu, hàng đợi xử lý và giám sát cảnh báo SLA
+
+paths:
+  # ================= AUTHENTICATION =================
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Đăng nhập hệ thống (IA-HD01, IA-HD05)
+      description: Xác thực người dùng bằng email và mật khẩu. Khóa 15 phút sau 5 lần sai.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: employee1@fpt.edu.vn
+                password:
+                  type: string
+                  format: password
+                  example: Password@123
+      responses:
+        '200':
+          description: Đăng nhập thành công, trả về JWT Access Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          description: Tài khoản bị Admin khóa (is_active = false), chỉ báo sau khi mật khẩu đúng (SRS UC-01 2c)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Tài khoản bị tạm khóa 15 phút do vượt quá 5 lần đăng nhập sai
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Đăng xuất và thu hồi Access Token (ADR-02)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Đăng xuất thành công, token được đưa vào danh sách đen (Blacklist)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Lấy thông tin tài khoản hiện tại từ JWT
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Thông tin người dùng hiện tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  # ================= TICKETS =================
+  /tickets:
+    get:
+      tags: [Tickets]
+      summary: Lấy danh sách ticket có phân trang và bộ lọc theo Role (HD05, UC-04, IA-HD02)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [NEW, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, REOPENED, REOPEN_PENDING]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          description: Tìm theo tiêu đề hoặc mô tả (HD13)
+          schema:
+            type: string
+        - name: assigneeId
+          in: query
+          description: Lọc theo IT Staff phụ trách (HD13)
+          schema:
+            type: integer
+        - name: createdFrom
+          in: query
+          description: Ngày tạo từ (HD13)
+          schema:
+            type: string
+            format: date
+        - name: createdTo
+          in: query
+          description: Ngày tạo đến (HD13)
+          schema:
+            type: string
+            format: date
+        - name: sort
+          in: query
+          description: Sắp xếp, mặc định ngày tạo giảm dần (UC-04 bước 3, HD13)
+          schema:
+            type: string
+            default: createdAt,desc
+            example: priority,desc
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Danh sách ticket theo quyền (Employee xem vé của mình, Staff xem vé được giao + New, Manager/Admin xem hết)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketPage'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+    post:
+      tags: [Tickets]
+      summary: Tạo phiếu yêu cầu hỗ trợ mới (HD03, UC-02)
+      description: Chỉ dành cho EMPLOYEE. Role khác nhận 403.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, description, categoryId, impactLevel]
+              properties:
+                title:
+                  type: string
+                  maxLength: 200
+                  example: Hỏng cáp mạng văn phòng tầng 3
+                description:
+                  type: string
+                  maxLength: 2000
+                  example: Máy tính bàn không nhận tín hiệu internet từ cổng mạng LAN âm tường.
+                categoryId:
+                  type: integer
+                  example: 3
+                impactLevel:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, CRITICAL]
+                  example: HIGH
+      responses:
+        '201':
+          description: Tạo ticket thành công, mã định dạng HD-YYYY-XXXX
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /tickets/priorities:
+    get:
+      tags: [Tickets]
+      summary: Danh sách mức ưu tiên (HD02)
+      description: Trả về các giá trị enum TicketPriority để frontend hiển thị dropdown.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách giá trị enum
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                        example: [LOW, MEDIUM, HIGH, CRITICAL]
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /tickets/statuses:
+    get:
+      tags: [Tickets]
+      summary: Danh sách trạng thái ticket (HD02)
+      description: Trả về các giá trị enum TicketStatus để frontend hiển thị dropdown.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách giá trị enum
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: string
+                        example: [NEW, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, REOPENED, REOPEN_PENDING]
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /tickets/{id}:
+    get:
+      tags: [Tickets]
+      summary: Lấy thông tin chi tiết một ticket (HD05, UC-04, IA-HD02)
+      description: Áp dụng cơ chế Anti-IDOR. Nếu Employee xem vé người khác, hệ thống trả về 404 Not Found.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /tickets/{id}/assign:
+    put:
+      tags: [Tickets]
+      summary: Phân công hoặc điều phối lại người xử lý vé (HD06, UC-06, BR-HD-05)
+      description: >
+        Chỉ IT_MANAGER (role khác nhận 403). Thực thi Transaction đảm bảo đúng 1 IT Staff active (BR-HD-05).
+        Phân công được khi ticket ở NEW, ASSIGNED, IN_PROGRESS hoặc REOPENED (UC-06; SRS P3 bước 5).
+        NEW → ASSIGNED, chốt priority và tính lại 2 hạn SLA theo priority (UC-06 bước 5, BR-HD-03).
+        ASSIGNED / IN_PROGRESS → giữ nguyên trạng thái (điều phối lại). REOPENED → ASSIGNED (SDD §2.1), không tính lại SLA.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID số của ticket hoặc mã ticket (HD-YYYY-XXXX)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [assigneeId]
+              properties:
+                assigneeId:
+                  type: integer
+                  example: 5
+                priority:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, CRITICAL]
+                  description: Mức ưu tiên chính thức do IT Manager chốt (HD06). Bỏ trống thì giữ Priority ban đầu = Impact.
+                  example: HIGH
+                assignmentNote:
+                  type: string
+                  maxLength: 255
+                  example: Điều phối cho chuyên viên phần cứng xử lý gấp trong buổi sáng.
+      responses:
+        '200':
+          description: Phân công thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: >
+            TICKET_NOT_ASSIGNABLE – ticket đang RESOLVED, REOPEN_PENDING hoặc CLOSED (BR-HD-04);
+            INVALID_ASSIGNEE – người được giao không phải IT Staff đang hoạt động (UC-06 3a, BR-HD-05);
+            ASSIGNEE_UNCHANGED – ticket ASSIGNED/IN_PROGRESS, giao lại đúng người đang phụ trách và không đổi priority (UC-06 3b)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tickets/{id}/status:
+    patch:
+      tags: [Tickets]
+      summary: Cập nhật trạng thái xử lý ticket (HD07, UC-07, BR-HD-01)
+      description: >
+        Chỉ IT_STAFF đang được giao ticket (role khác nhận 403; IT Staff không được giao nhận 404).
+        Luồng hợp lệ: ASSIGNED -> IN_PROGRESS, IN_PROGRESS -> RESOLVED, REOPENED -> IN_PROGRESS.
+        Chuyển sang RESOLVED bắt buộc ghi chú giải pháp >= 20 ký tự (BR-HD-01).
+        Ticket đang REOPEN_PENDING (chờ IT Manager duyệt) hoặc CLOSED trả 422.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [IN_PROGRESS, RESOLVED]
+                resolutionNote:
+                  type: string
+                  description: Bắt buộc >= 20 ký tự khi chuyển sang RESOLVED
+                  example: Đã thay đầu jack bấm mạng RJ45 và đo tín hiệu đạt 1Gbps ổn định.
+      responses:
+        '200':
+          description: Cập nhật trạng thái thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Chuyển trạng thái sai luồng, ticket đang REOPEN_PENDING hoặc đã CLOSED (SRS UC-07 2a, 7a; BR-HD-04)
+
+  /tickets/{id}/close:
+    post:
+      tags: [Tickets]
+      summary: Xác nhận đóng ticket hoàn tất (HD10, UC-08, BR-HD-04)
+      description: >
+        Chỉ Employee là chủ ticket hoặc IT_MANAGER được đóng (BR-HD-02). IT Staff và Admin nhận 403.
+        Employee đóng ticket của người khác nhận 404 (Anti-IDOR, IA-HD02). Chỉ đóng được khi ticket ở RESOLVED.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Đóng ticket thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TicketDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Chỉ được đóng ticket đang ở trạng thái RESOLVED (ticket REOPEN_PENDING cũng trả 422)
+
+  /tickets/{id}/reopen:
+    post:
+      tags: [Tickets]
+      summary: Gửi yêu cầu mở lại ticket trong vòng 7 ngày (HD10, UC-08 Nhánh B bước 1-4, BR-HD-04)
+      description: >
+        Chỉ Employee là chủ ticket mới được gửi (không phải Manager tự Reopen).
+        Hệ thống tạo bản ghi reopen_requests với status=PENDING, chuyển trạng thái ticket sang REOPEN_PENDING và trả về 201.
+        IT Manager phải vào GET /reopen-requests để xem xét và gọi /approve hoặc /reject
+        (UC-08 Nhánh B, bước 5-6). Không được gửi khi đang có request PENDING khác.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reopenReason]
+              properties:
+                reopenReason:
+                  type: string
+                  minLength: 20
+                  description: Lý do mở lại phải >= 20 ký tự (BR-HD-04)
+                  example: Mạng vẫn tiếp tục bị chập chờn rớt gói tin sau 15 phút cắm lại dây.
+      responses:
+        '201':
+          description: Đã ghi nhận yêu cầu mở lại (status=PENDING), ticket chuyển sang REOPEN_PENDING, chờ IT Manager duyệt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReopenRequestDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Ticket không ở trạng thái RESOLVED, đã quá 7 ngày (168 giờ) kể từ lúc Resolved, hoặc đang có yêu cầu mở lại chờ duyệt (PENDING) (BR-HD-04)
+
+  /reopen-requests:
+    get:
+      tags: [Tickets]
+      summary: Danh sách yêu cầu mở lại để IT Manager xem xét (HD10, UC-08)
+      description: Chỉ dành cho IT_MANAGER. Mặc định trả các yêu cầu PENDING.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, REJECTED]
+            default: PENDING
+      responses:
+        '200':
+          description: Danh sách yêu cầu mở lại
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReopenRequestDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /reopen-requests/{requestId}/approve:
+    post:
+      tags: [Tickets]
+      summary: IT Manager duyệt yêu cầu mở lại (HD10, UC-08, BR-HD-03, BR-HD-04)
+      description: >
+        Chỉ dành cho IT_MANAGER. Ticket chuyển REOPEN_PENDING -> REOPENED; hạn xử lý mới tính từ lúc duyệt,
+        không tính lại hạn phản hồi, giữ nguyên cờ vi phạm SLA cũ (UC-08 nhánh B, bước 6).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Đã duyệt, ticket chuyển sang REOPENED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReopenRequestDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Yêu cầu không còn ở trạng thái PENDING
+
+  /reopen-requests/{requestId}/reject:
+    post:
+      tags: [Tickets]
+      summary: IT Manager từ chối yêu cầu mở lại (HD10, UC-08, BR-HD-04)
+      description: >
+        Chỉ dành cho IT_MANAGER. Ticket chuyển REOPEN_PENDING -> RESOLVED, bản ghi reopen_requests chuyển REJECTED.
+        Hạn xử lý và cờ vi phạm SLA giữ nguyên (UC-08 nhánh B, bước 6).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reviewNote]
+              properties:
+                reviewNote:
+                  type: string
+                  description: Lý do từ chối (UC-08, nhánh B, bước 6)
+                  example: Sự cố mới không liên quan tới yêu cầu cũ, vui lòng tạo ticket mới.
+      responses:
+        '200':
+          description: Đã từ chối, ticket chuyển REOPEN_PENDING -> RESOLVED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReopenRequestDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Yêu cầu không còn ở trạng thái PENDING
+
+  /tickets/{id}/comments:
+    get:
+      tags: [Comments]
+      summary: Lấy danh sách bình luận của ticket (HD08, UC-05)
+      description: >
+        Employee chỉ thấy bình luận công khai (isInternal=false).
+        IT Staff, IT Manager và Admin thấy tất cả kể cả ghi chú nội bộ (isInternal=true).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Danh sách bình luận (lọc theo Role — Employee không thấy is_internal=true)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommentDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    post:
+      tags: [Comments]
+      summary: Gửi bình luận công khai hoặc ghi chú nội bộ (HD08, UC-05, IA-HD06)
+      description: >
+        Employee (chủ ticket), IT Staff (người phụ trách) và IT Manager được bình luận công khai (isInternal=false) (SRS HD08).
+        Chỉ IT Staff, IT Manager mới được đánh dấu isInternal=true (ghi chú nội bộ).
+        Nếu Employee gửi với isInternal=true, backend tự đổi về false.
+        Ticket đã CLOSED không nhận bình luận mới (422).
+        Ticket ngoài phạm vi của người gọi trả 404 như GET (Anti-IDOR, IA-HD02); 403 chỉ dùng khi role không được phép
+        (Admin, hoặc IT Staff bình luận trên ticket NEW chưa được giao).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [commentText]
+              properties:
+                commentText:
+                  type: string
+                  maxLength: 2000
+                  example: Em đã cử kỹ thuật viên mang thiết bị đo mạng qua bàn anh nhé.
+                isInternal:
+                  type: boolean
+                  default: false
+                  description: >
+                    Ghi chú nội bộ (true) chỉ IT Staff và IT Manager thấy — Employee không thấy.
+                    Nếu Employee gửi true, backend tự override về false (HD08 — UC-05 Luồng phụ).
+      responses:
+        '201':
+          description: Đăng bình luận thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Ticket đã CLOSED, không nhận bình luận mới
+
+  # ================= ATTACHMENTS =================
+  /tickets/{id}/attachments:
+    get:
+      tags: [Attachments]
+      summary: Lấy danh sách tệp đính kèm của ticket (HD04, UC-04 bước 4)
+      description: Chỉ trả metadata (tên, kích thước, MIME, người tải, thời điểm), không trả nội dung tệp. Áp dụng Anti-IDOR như GET /tickets/{id}.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Danh sách metadata tệp đính kèm
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    post:
+      tags: [Attachments]
+      summary: Đính kèm tệp tin tài liệu / ảnh sự cố (HD04, UC-03, IA-HD03)
+      description: >
+        Employee chủ ticket, IT Staff được giao và IT Manager được tải lên; Admin nhận 403.
+        Ticket ngoài phạm vi trả 404 như GET (Anti-IDOR, IA-HD02). commentId phải thuộc cùng ticket, khác trả 404.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                commentId:
+                  type: integer
+      responses:
+        '201':
+          description: Upload tệp thành công, lưu mã băm SHA-256
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentDTO'
+        '400':
+          description: Tệp vượt quá 10MB hoặc không thuộc Whitelist MIME
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Ticket đã CLOSED, không nhận tệp mới (BR-HD-04)
+
+  /tickets/{id}/attachments/{attachmentId}:
+    get:
+      tags: [Attachments]
+      summary: Tải xuống tệp tin đính kèm an toàn (IA-HD03)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tải tệp thành công qua byte stream
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  # ================= FEEDBACK =================
+  /tickets/{id}/feedback:
+    get:
+      tags: [Feedback]
+      summary: Xem đánh giá CSAT của ticket ở chế độ chỉ đọc (HD15)
+      description: Chỉ Employee chủ ticket xem được (SRS HD15, cột Actor ghi Employee). Ticket chưa có đánh giá trả 200 với data = null để giao diện hiện form đánh giá (HD15). 404 chỉ dùng khi ticket không tồn tại hoặc không có quyền (Anti-IDOR).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Đánh giá đã gửi, hoặc null nếu chưa đánh giá
+          content:
+            application/json:
+              schema:
+                nullable: true
+                allOf:
+                  - $ref: '#/components/schemas/FeedbackDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+    post:
+      tags: [Feedback]
+      summary: Đánh giá chất lượng dịch vụ CSAT (HD15)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ratingStars]
+              properties:
+                ratingStars:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+                feedbackComment:
+                  type: string
+                  maxLength: 500
+                  example: Kỹ thuật viên hỗ trợ rất nhiệt tình, nhanh chóng.
+      responses:
+        '201':
+          description: Đánh giá thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Ticket chưa CLOSED, hoặc ticket đã được đánh giá (mỗi vé 1 lần, không sửa) – theo SRS HD15
+
+  # ================= CATEGORIES & SLA =================
+  /categories:
+    get:
+      tags: [Categories & SLA]
+      summary: Lấy danh sách danh mục sự cố đang hoạt động
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách danh mục
+
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+
+  /admin/categories:
+    get:
+      tags: [Categories & SLA]
+      summary: Xem toàn bộ danh mục, kể cả Inactive (ADMIN) (HD02, UC-10 bước 2)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách danh mục
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+    post:
+      tags: [Categories & SLA]
+      summary: Tạo mới danh mục sự cố (ADMIN) (HD02, UC-10)
+      description: Trùng mã/tên danh mục hoặc để trống tên → 400 (SRS UC-10 3a).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categoryCode, categoryName, defaultPriority]
+              properties:
+                categoryCode:
+                  type: string
+                  example: PRINTER
+                categoryName:
+                  type: string
+                  example: Máy in & Máy Scan
+                defaultPriority:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, CRITICAL]
+                  example: MEDIUM
+      responses:
+        '201':
+          description: Tạo danh mục thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /admin/categories/{id}:
+    get:
+      tags: [Categories & SLA]
+      summary: Xem chi tiết một danh mục (ADMIN) (HD02, UC-10)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết danh mục
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    put:
+      tags: [Categories & SLA]
+      summary: Cập nhật tên, mô tả, mức ưu tiên mặc định (ADMIN) (HD02, UC-10)
+      description: Không đổi mã danh mục. Chỉ cập nhật trường có trong body (đều không bắt buộc).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categoryName:
+                  type: string
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 500
+                defaultPriority:
+                  type: string
+                  enum: [LOW, MEDIUM, HIGH, CRITICAL]
+      responses:
+        '200':
+          description: Cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+    delete:
+      tags: [Categories & SLA]
+      summary: Xóa vĩnh viễn danh mục (ADMIN) (UC-10 3c)
+      description: Chỉ xóa được khi danh mục chưa có ticket tham chiếu. Nếu đang có ticket tham chiếu trả 422 Unprocessable Entity.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Xóa danh mục thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '422':
+          description: Danh mục đang có ticket tham chiếu, không thể xóa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/categories/{id}/status:
+    patch:
+      tags: [Categories & SLA]
+      summary: Khóa hoặc mở lại danh mục (ADMIN) (UC-10 thao tác C)
+      description: Inactive thì không hiện khi tạo ticket mới, không ảnh hưởng ticket cũ.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [active]
+              properties:
+                active:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Đổi trạng thái thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /admin/sla-configs:
+    get:
+      tags: [Categories & SLA]
+      summary: Xem cấu hình định mức giờ SLA theo mức ưu tiên (UC-09, UC-10)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Bảng cấu hình SLA hiện tại
+
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SlaConfigDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /admin/sla-configs/{priority}:
+    put:
+      tags: [Categories & SLA]
+      summary: Cập nhật hạn mức giờ SLA cho một mức ưu tiên (ADMIN) (HD11, UC-10)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: priority
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [LOW, MEDIUM, HIGH, CRITICAL]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [responseTimeHours, resolutionTimeHours]
+              properties:
+                responseTimeHours:
+                  type: number
+                  example: 0.5
+                resolutionTimeHours:
+                  type: number
+                  example: 8.0
+      responses:
+        '200':
+          description: Cập nhật SLA thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SlaConfigDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  # ================= ADMIN & USERS =================
+  /admin/users:
+    get:
+      tags: [Admin & Users]
+      summary: Danh sách tài khoản người dùng (ADMIN) (SRS §2 System Admin, IA-HD01)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Danh sách tài khoản (không trả password_hash)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+    post:
+      tags: [Admin & Users]
+      summary: Tạo tài khoản mới (ADMIN) (SRS §2 System Admin)
+      description: Trùng username hoặc email → 400 (cùng quy ước lỗi trùng dữ liệu của SRS UC-10 3a).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password, fullName, role]
+              properties:
+                username:
+                  type: string
+                  example: staff2
+                email:
+                  type: string
+                  format: email
+                  example: staff2@fpt.edu.vn
+                password:
+                  type: string
+                  format: password
+                  description: Mật khẩu ban đầu, backend lưu hash bcrypt (HD01)
+                fullName:
+                  type: string
+                  example: Nguyễn Văn B
+                department:
+                  type: string
+                  example: Phòng IT
+                role:
+                  type: string
+                  enum: [EMPLOYEE, IT_STAFF, IT_MANAGER, ADMIN]
+      responses:
+        '201':
+          description: Tạo tài khoản thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /admin/users/{userId}/role:
+    patch:
+      tags: [Admin & Users]
+      summary: Gán lại vai trò cho tài khoản (ADMIN) (IA-HD01)
+      description: Chỉ Admin được đổi role; người dùng không tự nâng quyền; mọi lần đổi role đều ghi audit (IA-HD01).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [EMPLOYEE, IT_STAFF, IT_MANAGER, ADMIN]
+      responses:
+        '200':
+          description: Đổi role thành công, đã ghi audit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /admin/users/{userId}/status:
+    patch:
+      tags: [Admin & Users]
+      summary: Kích hoạt hoặc khóa tài khoản (ADMIN) (SRS §2 System Admin, UC-01 2c)
+      description: Tài khoản bị khóa (isActive=false) không đăng nhập được (UC-01 2c).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [isActive]
+              properties:
+                isActive:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Cập nhật trạng thái tài khoản thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  /users/it-staff:
+    get:
+      tags: [Admin & Users]
+      summary: Danh sách IT Staff đang hoạt động để phân công (IT_MANAGER) (UC-06 bước 4)
+      description: Chỉ trả tài khoản role IT_STAFF và isActive=true (SRS §2 IT Manager - không gán ticket cho tài khoản không thuộc IT Staff).
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách IT Staff (id, fullName, department)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  # ================= AUDIT LOG =================
+  /tickets/{id}/history:
+    get:
+      tags: [Tickets]
+      summary: Xem nhật ký kiểm toán bất biến của ticket (HD09, BR-HD-04, NFR-05)
+      description: >
+        Quyền theo Access Matrix (02 §5): Employee chỉ xem ticket của mình, IT Staff chỉ ticket
+        được giao, IT Manager xem tất cả, Admin chỉ đọc. Không có quyền thì trả 404 (Anti-IDOR, IA-HD02).
+        Với Employee, backend loại các dòng gắn với ghi chú nội bộ (is_internal=true) và không trả ip_address.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Toàn bộ dòng sự kiện thay đổi trạng thái, phân công, SLA (đã lọc theo role)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistoryDTO'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+
+  # ================= DASHBOARD =================
+  /dashboard/stats:
+    get:
+      tags: [Dashboard]
+      summary: Thống kê tổng hợp số lượng vé, vi phạm SLA, hiệu năng (HD14)
+      description: >
+        Trả về thống kê tổng quan: tổng số vé theo trạng thái, số vé vi phạm SLA,
+        thời gian xử lý trung bình. Dành riêng cho IT_MANAGER.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Thống kê tổng hợp
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStatsResponse'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+  /dashboard/sla-monitor:
+    get:
+      tags: [Dashboard]
+      summary: Giám sát vé sắp chạm ngưỡng cảnh báo 80% hoặc quá hạn SLA (HD12, HD14)
+      description: >
+        Danh sách vé đang tiến gần đến ngưỡng SLA (>= 80% thời gian deadline)
+        hoặc đã vi phạm SLA (is_sla_breached = true). Dành riêng cho IT_MANAGER.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: breachedOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: "true = chỉ lấy vé đã vi phạm SLA; false = lấy cả vé sắp vi phạm"
+      responses:
+        '200':
+          description: Danh sách vé cần giám sát SLA
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SLAMonitorItem'
+        '401':
+          $ref: '#/components/responses/401Unauthorized'
+        '403':
+          $ref: '#/components/responses/403Forbidden'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DashboardStatsResponse:
+      type: object
+      description: Thống kê tổng hợp cho IT_MANAGER (HD14)
+      properties:
+        totalTickets:
+          type: integer
+          description: Tổng số vé trong hệ thống
+        byStatus:
+          type: object
+          description: Số lượng vé theo từng trạng thái
+          additionalProperties:
+            type: integer
+          example:
+            NEW: 5
+            ASSIGNED: 3
+            IN_PROGRESS: 2
+            RESOLVED: 8
+            CLOSED: 12
+        slaBreachedCount:
+          type: integer
+          description: Số vé đã vi phạm SLA
+        slaBreachedPct:
+          type: number
+          format: double
+          description: "% vé vi phạm SLA trên tổng số"
+        avgResolutionHours:
+          type: number
+          format: double
+          description: Thời gian giải quyết trung bình (giờ)
+
+    SLAMonitorItem:
+      type: object
+      description: Thông tin vé cần giám sát SLA (HD12)
+      properties:
+        ticketId:
+          type: integer
+        ticketNumber:
+          type: string
+          example: HD-2026-0001
+        title:
+          type: string
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        status:
+          type: string
+        resolutionDeadline:
+          type: string
+          format: date-time
+        slaUsedPct:
+          type: number
+          format: double
+          description: "% thời gian SLA đã dùng (>= 80 = cảnh báo, >= 100 = vi phạm)"
+        isSlaBreached:
+          type: boolean
+        assigneeName:
+          type: string
+          nullable: true
+
+    ReopenRequestDTO:
+      type: object
+      description: Bản ghi yêu cầu mở lại ticket, tương ứng bảng reopen_requests trong ERD
+      properties:
+        id:
+          type: integer
+          example: 7
+        ticketId:
+          type: integer
+          example: 42
+        ticketNumber:
+          type: string
+          example: HD-2026-0042
+        requesterId:
+          type: integer
+          example: 3
+        requesterName:
+          type: string
+          example: Nguyễn Văn A
+        reopenReason:
+          type: string
+          example: Mạng vẫn tiếp tục bị chập chờn rớt gói tin sau 15 phút cắm lại dây.
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+          example: PENDING
+        reviewedBy:
+          type: integer
+          nullable: true
+          example: null
+        reviewNote:
+          type: string
+          nullable: true
+          example: null
+        createdAt:
+          type: string
+          format: date-time
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Thao tác thực hiện thành công
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: TICKET_NOT_FOUND
+            message:
+              type: string
+              example: Không tìm thấy tài nguyên hoặc không có quyền truy cập
+            details:
+              type: array
+              items:
+                type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: integer
+          example: 900
+        user:
+          $ref: '#/components/schemas/UserResponse'
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: employee1
+        email:
+          type: string
+          example: employee1@fpt.edu.vn
+        fullName:
+          type: string
+          example: Phạm Nguyễn Minh Trí
+        role:
+          type: string
+          example: EMPLOYEE
+        department:
+          type: string
+          example: Phòng Đào Tạo
+        isActive:
+          type: boolean
+          example: true
+
+    AttachmentDTO:
+      type: object
+      description: Metadata tệp đính kèm, tương ứng bảng ticket_attachments (không trả storage_path)
+      properties:
+        id:
+          type: integer
+        fileName:
+          type: string
+          example: loi_man_hinh.png
+        fileSize:
+          type: integer
+          example: 245760
+        mimeType:
+          type: string
+          example: image/png
+        uploaderId:
+          type: integer
+        commentId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    FeedbackDTO:
+      type: object
+      description: Đánh giá CSAT, tương ứng bảng ticket_feedbacks
+      properties:
+        ticketId:
+          type: integer
+        ratingStars:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        feedbackComment:
+          type: string
+          example: Kỹ thuật viên hỗ trợ rất nhiệt tình, nhanh chóng.
+        createdAt:
+          type: string
+          format: date-time
+
+    TicketDTO:
+      type: object
+      description: Ticket, tương ứng bảng tickets (ERD §3)
+      properties:
+        id:
+          type: integer
+        ticketNumber:
+          type: string
+          example: HD-2026-0042
+        title:
+          type: string
+        description:
+          type: string
+        categoryId:
+          type: integer
+        impactLevel:
+          type: string
+          enum: &id001
+            - LOW
+            - MEDIUM
+            - HIGH
+            - CRITICAL
+        priority:
+          type: string
+          enum: *id001
+        status:
+          type: string
+          enum:
+            - NEW
+            - ASSIGNED
+            - IN_PROGRESS
+            - RESOLVED
+            - CLOSED
+            - REOPENED
+            - REOPEN_PENDING
+        requesterId:
+          type: integer
+        currentAssigneeId:
+          type: integer
+          nullable: true
+        responseDeadline:
+          type: string
+          format: date-time
+        resolutionDeadline:
+          type: string
+          format: date-time
+        slaLabel:
+          type: string
+          enum:
+            - NORMAL
+            - NEAR_BREACH
+            - BREACHED
+          description: Nhãn SLA (HD12, BR-HD-03)
+        isSlaBreached:
+          type: boolean
+        resolutionNote:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        closedAt:
+          type: string
+          format: date-time
+          nullable: true
+    TicketPage:
+      type: object
+      description: 'Trang kết quả danh sách ticket (HD13: 20 dòng/trang, có tổng số kết quả)'
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketDTO'
+        page:
+          type: integer
+        size:
+          type: integer
+          example: 20
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+    CommentDTO:
+      type: object
+      description: Bình luận, tương ứng bảng ticket_comments
+      properties:
+        id:
+          type: integer
+        ticketId:
+          type: integer
+        authorId:
+          type: integer
+        commentText:
+          type: string
+        isInternal:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    CategoryDTO:
+      type: object
+      description: Danh mục, tương ứng bảng ticket_categories
+      properties:
+        id:
+          type: integer
+        categoryCode:
+          type: string
+        categoryName:
+          type: string
+        defaultPriority:
+          type: string
+          enum: *id001
+        isActive:
+          type: boolean
+    SlaConfigDTO:
+      type: object
+      description: Định mức SLA, tương ứng bảng sla_configs
+      properties:
+        priorityLevel:
+          type: string
+          enum: *id001
+        responseTimeHours:
+          type: number
+        resolutionTimeHours:
+          type: number
+        updatedAt:
+          type: string
+          format: date-time
+    HistoryDTO:
+      type: object
+      description: Một dòng nhật ký, tương ứng bảng ticket_history (không trả ip_address cho client)
+      properties:
+        id:
+          type: integer
+        actorId:
+          type: integer
+        action:
+          type: string
+          description: CREATE, ASSIGN, REASSIGN, STATUS_CHANGE, COMMENT, SLA_WARNING, SLA_BREACH, REOPEN_REQUEST, REOPEN_APPROVE, REOPEN_REJECT, CLOSE
+          example: STATUS_CHANGE
+        fieldChanged:
+          type: string
+          nullable: true
+        oldValue:
+          type: string
+          nullable: true
+        newValue:
+          type: string
+          nullable: true
+        reasonOrNote:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+    UserPage:
+      type: object
+      description: Trang danh sách tài khoản
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        page:
+          type: integer
+        size:
+          type: integer
+          example: 20
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+  responses:
+    400BadRequest:
+      description: Dữ liệu gửi lên sai định dạng hoặc vi phạm ràng buộc DTO validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    401Unauthorized:
+      description: Thiếu token hoặc token đã hết hạn / bị thu hồi khi đăng xuất
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    403Forbidden:
+      description: Người dùng không có vai trò (Role) phù hợp để thực thi API này
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    404NotFound:
+      description: Tài nguyên không tồn tại hoặc cơ chế Anti-IDOR chặn che giấu sự tồn tại
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
