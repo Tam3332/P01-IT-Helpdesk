@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -30,4 +31,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
 
     /** Ticket được giao cho IT Staff */
     Page<Ticket> findByCurrentAssignee_IdOrderByCreatedAtDesc(Long assigneeId, Pageable pageable);
+
+    /** Lấy danh sách ticket mới (NEW) hoặc mở lại (REOPENED, REOPEN_PENDING) cho thông báo của Manager */
+    @Query("SELECT t FROM Ticket t " +
+           "JOIN FETCH t.requester " +
+           "WHERE t.status = 'NEW' OR t.status = 'REOPEN_PENDING' OR t.status = 'REOPENED' " +
+           "ORDER BY t.createdAt DESC")
+    List<Ticket> findNotificationsForManager(Pageable pageable);
 }

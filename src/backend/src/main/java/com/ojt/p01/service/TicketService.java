@@ -2,6 +2,7 @@ package com.ojt.p01.service;
 
 import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.dto.request.AssignTicketRequest;
+import com.ojt.p01.dto.request.UpdateTicketStatusRequest;
 import com.ojt.p01.dto.request.CreateTicketRequest;
 import com.ojt.p01.dto.response.PageResponse;
 import com.ojt.p01.dto.response.TicketDetailResponse;
@@ -210,7 +211,7 @@ public class TicketService {
                 predicates.add(cb.equal(root.get("requester").get("id"), currentUser.getId()));
 
             } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-                // IT_STAFF thấy: vé được giao cho mình HOẶC vé NEW trong hàng đợi
+                // IT_STAFF thấy: vé được giao cho mình HOẶC vé NEW trong hàng đợi (SRS §4 HD05, UC-04 bước 2; SecRS IA-HD02)
                 Predicate assignedToMe = cb.equal(root.get("currentAssignee").get("id"), currentUser.getId());
                 Predicate isNew = cb.equal(root.get("status"), "NEW");
                 predicates.add(cb.or(assignedToMe, isNew));
@@ -283,11 +284,12 @@ public class TicketService {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_TICKET");
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-            // IT_STAFF chỉ xem vé được giao cho mình HOẶC vé NEW
+            // IT_STAFF xem vé được giao cho mình HOẶC vé NEW (chỉ xem) (SRS §4 HD05, SecRS IA-HD02)
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
-            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
 
+            // Vé NEW trong hàng đợi: Staff được xem (chỉ đọc) theo SRS §4 HD05, SecRS IA-HD02
+            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
             if (!isAssignedToMe && !isNewTicket) {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_TICKET");
             }
@@ -406,6 +408,161 @@ public class TicketService {
     // -------------------------------------------------------------------------
     // Helper: Tìm vé bằng ID số hoặc Mã vé chuỗi
     // -------------------------------------------------------------------------
+    // HD07: Cập nhật trạng thái xử lý ticket (PATCH /api/v1/tickets/{id}/status)
+    // -------------------------------------------------------------------------
+
+    /**
+     * IT Staff nhận xử lý (IN_PROGRESS) hoặc hoàn tất sự cố (RESOLVED).
+     * - Chỉ IT_STAFF được giao hoặc IT_MANAGER mới được đổi trạng thái.
+     * - Chuyển RESOLVED bắt buộc có resolutionNote >= 20 ký tự (BR-HD-01).
+     * - Chuyển IN_PROGRESS: ghi nhận first_responded_at để dừng tính Response SLA.
+     */
+    @Transactional
+    public TicketDetailResponse updateTicketStatus(String idOrNumber, UpdateTicketStatusRequest request, String ipAddress) {
+        Ticket ticket = findTicketByIdOrNumber(idOrNumber);
+        User currentUser = getCurrentUser();
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "";
+
+        // Kiểm tra quyền (Anti-IDOR & RBAC):
+        boolean isManager = "IT_MANAGER".equalsIgnoreCase(roleName);
+        boolean isStaff = "IT_STAFF".equalsIgnoreCase(roleName);
+        if (!isManager && !isStaff) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Chỉ IT Staff hoặc IT Manager mới được cập nhật trạng thái");
+        }
+
+        // Nếu là IT Staff: phải là người được phân công xử lý ticket này
+        if (isStaff && !isManager) {
+            if (ticket.getCurrentAssignee() == null || !ticket.getCurrentAssignee().getId().equals(currentUser.getId())) {
+                throw new AppException(ErrorCode.TICKET_NOT_FOUND); // Anti-IDOR (IA-HD02)
+            }
+        }
+
+        TicketStatus currentStatus;
+        TicketStatus targetStatus;
+        try {
+            currentStatus = TicketStatus.valueOf(ticket.getStatus());
+            targetStatus = TicketStatus.valueOf(request.status().trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION, "Trạng thái đích không hợp lệ: " + request.status());
+        }
+
+        // Kiểm tra State Machine
+        transitionValidator.assertTransitionAllowed(currentStatus, targetStatus);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
+
+        if (targetStatus == TicketStatus.IN_PROGRESS) {
+            // Dừng tính Response SLA nếu chưa có mốc phản hồi đầu tiên
+            if (ticket.getFirstRespondedAt() == null) {
+                ticket.setFirstRespondedAt(now);
+            }
+            ticket.setStatus("IN_PROGRESS");
+            ticketRepository.save(ticket);
+
+            historyRepository.save(new TicketHistory(
+                    ticket,
+                    currentUser,
+                    "STATUS_CHANGE",
+                    "status",
+                    currentStatus.name(),
+                    "IN_PROGRESS",
+                    "Bắt đầu tiếp nhận xử lý ticket",
+                    clientIp,
+                    now
+            ));
+
+        } else if (targetStatus == TicketStatus.RESOLVED) {
+            // Kiểm tra resolution_note >= 20 ký tự (BR-HD-01)
+            String note = request.resolutionNote() != null ? request.resolutionNote().trim() : "";
+            if (note.length() < 20) {
+                throw new AppException(ErrorCode.RESOLUTION_NOTE_REQUIRED);
+            }
+
+            ticket.setResolvedAt(now);
+            ticket.setResolutionNote(note);
+            ticket.setStatus("RESOLVED");
+            if (ticket.getResolutionDeadline() != null && now.isAfter(ticket.getResolutionDeadline())) {
+                ticket.setIsSlaBreached(true);
+            }
+            ticketRepository.save(ticket);
+
+            historyRepository.save(new TicketHistory(
+                    ticket,
+                    currentUser,
+                    "STATUS_CHANGE",
+                    "status",
+                    currentStatus.name(),
+                    "RESOLVED",
+                    note,
+                    clientIp,
+                    now
+            ));
+        }
+
+        return toDetailResponse(ticket);
+    }
+
+    // -------------------------------------------------------------------------
+    // HD10: Đóng ticket hoàn tất (POST /api/v1/tickets/{id}/close)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Xác nhận đóng ticket sau khi được giải quyết (HD10, UC-08, BR-HD-02, BR-HD-04).
+     * - Chỉ Employee chủ ticket hoặc IT_MANAGER mới được đóng.
+     * - Chỉ đóng được ticket khi đang ở trạng thái RESOLVED.
+     */
+    @Transactional
+    public TicketDetailResponse closeTicket(String idOrNumber, String ipAddress) {
+        Ticket ticket = findTicketByIdOrNumber(idOrNumber);
+        User currentUser = getCurrentUser();
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "";
+
+        boolean isManager = "IT_MANAGER".equalsIgnoreCase(roleName);
+        boolean isRequester = ticket.getRequester().getId().equals(currentUser.getId());
+
+        if (!isManager && !isRequester) {
+            if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
+                throw new AppException(ErrorCode.TICKET_NOT_FOUND); // Anti-IDOR
+            }
+            throw new AppException(ErrorCode.FORBIDDEN, "Chỉ người tạo ticket hoặc IT Manager mới có quyền đóng ticket");
+        }
+
+        TicketStatus currentStatus = TicketStatus.valueOf(ticket.getStatus());
+        if (currentStatus != TicketStatus.RESOLVED) {
+            throw new AppException(ErrorCode.TICKET_NOT_RESOLVED);
+        }
+
+        transitionValidator.assertTransitionAllowed(currentStatus, TicketStatus.CLOSED);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        ticket.setStatus("CLOSED");
+        ticket.setClosedAt(now);
+        // SLA xử lý chỉ tính tới lúc Resolved (SRS §5 BR-HD-03: "đồng hồ xử lý dừng khi sang Resolved"),
+        // không tính thời gian chờ Employee xác nhận đóng
+        if (ticket.getResolvedAt() != null && ticket.getResolutionDeadline() != null
+                && ticket.getResolvedAt().isAfter(ticket.getResolutionDeadline())) {
+            ticket.setIsSlaBreached(true);
+        }
+        ticketRepository.save(ticket);
+
+        String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
+        historyRepository.save(new TicketHistory(
+                ticket,
+                currentUser,
+                "CLOSE",
+                "status",
+                "RESOLVED",
+                "CLOSED",
+                "Xác nhận đóng ticket thành công",
+                clientIp,
+                now
+        ));
+
+        return toDetailResponse(ticket);
+    }
+
+    // -------------------------------------------------------------------------
     // HD09: Xem lịch sử xử lý ticket (GET /api/v1/tickets/{id}/history)
     // -------------------------------------------------------------------------
 
@@ -427,8 +584,9 @@ public class TicketService {
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
-            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
 
+            // Vé NEW trong hàng đợi: Staff được xem (chỉ đọc) theo SRS §4 HD05, SecRS IA-HD02
+            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
             if (!isAssignedToMe && !isNewTicket) {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_HISTORY");
             }
@@ -539,6 +697,9 @@ public class TicketService {
                 ticket.getCurrentAssignee() != null ? ticket.getCurrentAssignee().getFullName() : null,
                 ticket.getResponseDeadline(),
                 ticket.getResolutionDeadline(),
+                ticket.getIsSlaBreached(),
+                ticket.getResolvedAt(),
+                ticket.getClosedAt(),
                 ticket.getCreatedAt()
         );
     }
