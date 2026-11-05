@@ -1,0 +1,1 @@
+STREAMING OFFLINE CHECK: PASS — appended 10 synthetic events, detected exactly 2 alerts; no live backend/VM used.

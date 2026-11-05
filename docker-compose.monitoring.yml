@@ -1,0 +1,37 @@
+# T3-03 / IA-HD05: optional Monitoring sidecar for the P01 lab.
+# Add as a *second* compose file; do not overwrite the team's docker-compose.yml.
+# Run only after Nhi / Chính review the VM's volumes, permissions and resources.
+services:
+  backend:
+    environment:
+      # Absolute path eliminates ambiguity about the Backend's working directory.
+      AUDIT_LOG_FILE: /app/logs/audit_events.jsonl
+      # Optional after trusted proxy has been configured by Nhi, otherwise empty.
+      AUDIT_TRUSTED_PROXY_IPS: ${AUDIT_TRUSTED_PROXY_IPS:-}
+  monitoring:
+    image: python:3.12-alpine
+    profiles: [monitoring]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    network_mode: none  # reads a shared volume; requires no network connection
+    working_dir: /monitoring
+    command:
+      - python
+      - -B
+      - /monitoring/monitor.py
+      - --input
+      - /audit/audit_events.jsonl
+      - --output
+      - /alerts/alerts.jsonl
+      - --follow
+    volumes:
+      - ./src/monitoring:/monitoring:ro
+      - audit_logs:/audit:ro
+      - monitoring_alerts:/alerts
+    depends_on: [backend]
+volumes:
+  # Existing named volume, same logical name as in the base compose file.
+  audit_logs: {}
+  monitoring_alerts: {}

@@ -1,0 +1,23 @@
+test_backend_contract_fixture_generates_two_alerts (test_backend_contract.BackendContractTests.test_backend_contract_fixture_generates_two_alerts) ... ok
+test_backend_known_actor_numeric_r1 (test_backend_contract.BackendContractTests.test_backend_known_actor_numeric_r1) ... ok
+test_backend_numeric_actor_r2_tickets_and_ticket_endpoint (test_backend_contract.BackendContractTests.test_backend_numeric_actor_r2_tickets_and_ticket_endpoint) ... ok
+test_disabled_user_403_not_bad_password (test_backend_contract.BackendContractTests.test_disabled_user_403_not_bad_password) ... ok
+test_do_not_count_admin_endpoint_or_ordinary_404 (test_backend_contract.BackendContractTests.test_do_not_count_admin_endpoint_or_ordinary_404) ... ok
+test_legacy_v0_sample_still_generates_two_alerts (test_backend_contract.BackendContractTests.test_legacy_v0_sample_still_generates_two_alerts) ... ok
+test_normalize_actor_id_reject_bool_or_float (test_backend_contract.BackendContractTests.test_normalize_actor_id_reject_bool_or_float) ... ok
+test_success_resets_backend_actor_id (test_backend_contract.BackendContractTests.test_success_resets_backend_actor_id) ... ok
+test_unknown_email_casefold_and_no_plain_email_in_alert (test_backend_contract.BackendContractTests.test_unknown_email_casefold_and_no_plain_email_in_alert) ... ok
+test_brute_force_event_not_second_alert (test_monitor.DetectorTests.test_brute_force_event_not_second_alert) ... ok
+test_missing_grouping_fields_and_time_skipped (test_monitor.DetectorTests.test_missing_grouping_fields_and_time_skipped) ... ok
+test_offline_replay_replaces_output_not_appends (test_monitor.DetectorTests.test_offline_replay_replaces_output_not_appends) ... ok
+test_r1_exact_threshold_and_no_duplicate (test_monitor.DetectorTests.test_r1_exact_threshold_and_no_duplicate) ... ok
+test_r1_group_by_login_ref_and_ip (test_monitor.DetectorTests.test_r1_group_by_login_ref_and_ip) ... ok
+test_r2_no_repeat_until_window_rearmed (test_monitor.DetectorTests.test_r2_no_repeat_until_window_rearmed) ... ok
+test_r2_only_tickets_same_actor (test_monitor.DetectorTests.test_r2_only_tickets_same_actor) ... ok
+test_success_resets_sequence (test_monitor.DetectorTests.test_success_resets_sequence) ... ok
+test_window_expiry (test_monitor.DetectorTests.test_window_expiry) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.005s
+
+OK
