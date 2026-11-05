@@ -211,10 +211,8 @@ public class TicketService {
                 predicates.add(cb.equal(root.get("requester").get("id"), currentUser.getId()));
 
             } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-                // IT_STAFF thấy: vé được giao cho mình HOẶC vé NEW trong hàng đợi (SRS §4 HD05, UC-04 bước 2; SecRS IA-HD02)
-                Predicate assignedToMe = cb.equal(root.get("currentAssignee").get("id"), currentUser.getId());
-                Predicate isNew = cb.equal(root.get("status"), "NEW");
-                predicates.add(cb.or(assignedToMe, isNew));
+                // IT_STAFF chỉ thấy vé được giao cho mình (SRS §4 HD05, UC-04 bước 2 – bản sửa 05/11)
+                predicates.add(cb.equal(root.get("currentAssignee").get("id"), currentUser.getId()));
             }
             // IT_MANAGER, ADMIN: thấy tất cả vé
 
@@ -284,13 +282,10 @@ public class TicketService {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_TICKET");
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-            // IT_STAFF xem vé được giao cho mình HOẶC vé NEW (chỉ xem) (SRS §4 HD05, SecRS IA-HD02)
+            // IT_STAFF chỉ xem vé được giao cho mình (SRS §4 HD05 – bản sửa 05/11); vé khác → 404 + audit AUTHZ_DENIED
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
-
-            // Vé NEW trong hàng đợi: Staff được xem (chỉ đọc) theo SRS §4 HD05, SecRS IA-HD02
-            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
-            if (!isAssignedToMe && !isNewTicket) {
+            if (!isAssignedToMe) {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_TICKET");
             }
         }
@@ -449,6 +444,13 @@ public class TicketService {
         // Kiểm tra State Machine
         transitionValidator.assertTransitionAllowed(currentStatus, targetStatus);
 
+        // API này chỉ xử lý IN_PROGRESS và RESOLVED; trạng thái khác (vd REOPENED → ASSIGNED, đóng ticket)
+        // đi qua API riêng → 422, trạng thái không đổi (SecRS §4.1 AC-08)
+        if (targetStatus != TicketStatus.IN_PROGRESS && targetStatus != TicketStatus.RESOLVED) {
+            throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION,
+                    "API này chỉ cập nhật sang IN_PROGRESS hoặc RESOLVED");
+        }
+
         OffsetDateTime now = OffsetDateTime.now();
         String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
 
@@ -585,9 +587,8 @@ public class TicketService {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
 
-            // Vé NEW trong hàng đợi: Staff được xem (chỉ đọc) theo SRS §4 HD05, SecRS IA-HD02
-            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
-            if (!isAssignedToMe && !isNewTicket) {
+            // IT_STAFF chỉ xem lịch sử vé được giao cho mình (SRS §4 HD05 – bản sửa 05/11)
+            if (!isAssignedToMe) {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_HISTORY");
             }
         }

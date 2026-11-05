@@ -1,6 +1,8 @@
 # Test giao diện (FE `localhost:5173` + BE `cuong/be`) – các chức năng đã có backend
 
 Cột **Kết quả 04/11**: ✅ đạt / ❌ lỗi / ⏸ chưa test.
+
+> **Cập nhật 05/11:** (1) SRS §4 HD05 đổi phạm vi: *"IT Staff chỉ xem ticket được giao cho mình."* (Trí xác nhận) → C1–C3 phải test lại. (2) BE đã có thêm API đổi trạng thái `PATCH /tickets/{id}/status`, đóng ticket `POST /tickets/{id}/close`, bình luận, đính kèm, lịch sử (merge tri/be 27792af) → C4, D6 test được.
 Cột **Đã phát hiện**: lỗi đã biết tính đến 04/11 17:40 và ai xử lý; "Chưa phát hiện lỗi" nghĩa là chưa thấy vấn đề (có thể chưa test).
 Nguồn đối chiếu: SDD §5.1 (màn hình), §5.4 (nút theo vai trò), SRS HD01/03/05/06.
 
@@ -25,19 +27,35 @@ evidence/T3-06/
 ├── test_giao_dien.md    ← file này (checklist + kết quả)
 ├── api/                 ← ảnh test API bằng PowerShell / Swagger
 ├── db/                  ← ảnh truy vấn PostgreSQL (kiểm dữ liệu ghi vào DB)
-└── ui/                  ← ảnh chụp giao diện theo checklist này, chia theo nhóm ca
+└── ui/                  ← ảnh chụp giao diện theo checklist này: nhóm ca → ngày test
     ├── A_General/       ← A. Chung (mọi role)
+    │   └── 2026-11-04/
     ├── B_Employee/      ← B. Employee
+    │   └── 2026-11-04/
     ├── C_ITStaff/       ← C. IT Staff
+    │   ├── 2026-11-04/  ← phạm vi cũ (Staff thấy cả ticket Mới)
+    │   └── 2026-11-05/  ← phạm vi mới (chỉ ticket được giao)
     ├── D_ITManager/     ← D. IT Manager
+    │   ├── 2026-11-04/
+    │   └── 2026-11-05/  ← D6 đóng ticket
     └── E_Admin/         ← E. Admin
+        └── 2026-11-04/
 ```
 
-Tên ảnh giao diện: `<mã EV>_ui_<mã ca>_<mô tả ngắn>.png`, ví dụ `ui/D_ITManager/EV-HD-06_ui_D3_sau_phan_cong.png` là ca D3, minh chứng cho EV-HD-06.
+Tên ảnh giao diện: `<mã EV>_ui_<mã ca>_<mô tả ngắn>.png`, ví dụ `ui/D_ITManager/2026-11-04/EV-HD-06_ui_D3_sau_phan_cong.png` là ca D3, chụp ngày 04/11, minh chứng cho EV-HD-06.
 - `EV-HD-01/03/05/06`: đăng nhập / tạo ticket / xem ticket / phân công (theo SRS HD01, HD03, HD05, HD06).
 - `EV-UC-10`: quản lý danh mục, SLA của Admin (SRS UC-10).
 
 Tìm ảnh của một ca: mở `README.md`, mục "Kiểm thử giao diện theo checklist", tìm theo mã ca (A1, D3, E5…).
+
+### Mốc ngày test
+
+| Ngày | Bản backend (`cuong/be`) | Đã test | Ghi chú |
+|---|---|---|---|
+| 2026-11-04 | trước 840789b (chưa có cột Người xử lý), rồi 840789b | A, B, C1–C4, D1–D4, D7, E | Phạm vi Staff cũ: thấy ticket được giao **và** ticket Mới (SRS §4 HD05 bản cũ) |
+| 2026-11-05 | 4067036 (merge tri/be 27792af) + sửa phạm vi Staff | C1–C4, D6 | SRS §4 HD05 sửa: *"IT Staff chỉ xem ticket được giao cho mình."*; đã có API đổi trạng thái, đóng ticket, bình luận, đính kèm |
+
+Cột "Kết quả" ghi ngày trong ngoặc khi ca được test lại, ví dụ `✅ (05/11)`; ảnh nằm ở thư mục ngày tương ứng.
 
 ## A. Chung (mọi role) – SCR-01, khung giao diện
 
@@ -69,10 +87,10 @@ Tìm ảnh của một ca: mở `README.md`, mục "Kiểm thử giao diện the
 
 | # | Làm | Mong đợi | Nguồn | Đã phát hiện | Kết quả 04/11 |
 |---|---|---|---|---|---|
-| C1 | Danh sách: ticket được giao + ticket Mới | Đúng phạm vi, cột Người xử lý đúng | HD05 | Chưa phát hiện lỗi | ✅ |
-| C2 | Thẻ thống kê "Ticket được giao" | Chỉ đếm ticket giao cho mình (hiện đang đếm cả ticket Mới chưa giao) | SCR-07 | **Lỗi FE**: đang đếm cả ticket Mới chưa giao – Chính | ❌ (lỗi đã biết) |
-| C3 | Mở ticket Mới chưa giao | Xem được, không có nút thao tác | HD05 (Queue New chỉ xem) | **Lỗi FE**: ticket Mới chưa giao vẫn hiện ô "Thêm bình luận", "Ghi chú nội bộ", nút Gửi bình luận. SDD §5.4: chỉ IT Staff **được giao** mới gửi bình luận; SecRS §5: "Ticket New: IT Staff xem được nhưng bình luận → 403" – Chính | ✅ xem được; ❌ hiện ô bình luận |
-| C4 | Không có nút Phân công | Không thấy | SDD §5.4 | Ticket được giao hiện nút "Bắt đầu xử lý" đúng SDD §5.4; **chưa bấm** vì API `PATCH /tickets/{id}/status` (HD07) chưa có | ✅ |
+| C1 | Danh sách của Staff | Chỉ ticket được giao cho mình, cột Người xử lý đúng (SRS §4 HD05 sửa 05/11: "IT Staff chỉ xem ticket được giao cho mình.") | HD05 | 05/11: chỉ thấy HD-0001, HD-0002 (không còn ticket Mới) | ✅ (05/11) |
+| C2 | Thẻ thống kê "Ticket được giao" | Chỉ đếm ticket giao cho mình | SCR-07 | 05/11: thẻ "Ticket được giao" = 2, đúng (lỗi đếm cả ticket Mới của 04/11 không còn) | ✅ (05/11) |
+| C3 | Mở ticket Mới chưa giao (gõ thẳng URL) | Từ 05/11: báo không tìm thấy (BE trả 404), không lộ nội dung | HD05 (sửa 05/11), UC-04 4a | 05/11: báo "Không tìm thấy ticket hoặc bạn không có quyền xem ticket này" (BE 404). Nhỏ (FE): vẫn hiện nút "Thử lại" – Chính | ✅ (05/11) | | ⏸ test lại |
+| C4 | Không có nút Phân công; bấm "Bắt đầu xử lý" ở ticket được giao | Không thấy nút Phân công; bấm "Bắt đầu xử lý" → trạng thái Đang xử lý | SDD §5.4; UC-07 bước 2 | Không thấy nút Phân công ✅. 05/11: bấm "Bắt đầu xử lý" ở HD-0001 → Đang xử lý, lịch sử ghi "Đã phân công → Đang xử lý". Bước giải quyết đã test qua API (HD-0002) | ✅ (05/11) |
 
 ## D. IT Manager – SCR-02, SCR-05, SCR-06
 
@@ -83,7 +101,7 @@ Tìm ảnh của một ca: mở `README.md`, mục "Kiểm thử giao diện the
 | D3 | Phân công ticket Mới, đổi ưu tiên | Toast thành công; trạng thái **Đã phân công**; ưu tiên + hạn SLA đổi; danh sách hiện người xử lý | UC-06 | API + giao diện đạt: Đã phân công, ưu tiên Cao, hạn = tạo + 8 giờ, toast "Đã phân công ticket", nút đổi thành "Phân công lại" | ✅ |
 | D4 | Phân công lại đúng người cũ, không đổi ưu tiên | Báo "IT Staff này đang phụ trách ticket" | UC-06 3b | FE tự chặn trước khi gọi API ("Ticket đang giao cho người này…"); BE cũng chặn 422 (EV-HD-06 api) | ✅ |
 | D5 | Phân công lại cho người khác | Người xử lý đổi, trạng thái giữ nguyên | UC-06 – cần thêm 1 IT Staff | Chưa test được: cần thêm 1 tài khoản IT Staff – Trí seed | ⏸ |
-| D6 | Nút Phân công không hiện ở ticket Đã đóng | Không thấy | SDD §5.4 | Chưa test được: chưa có API đóng ticket | ⏸ |
+| D6 | Nút Phân công không hiện ở ticket Đã đóng | Không thấy | SDD §5.4 | 05/11: Employee bấm "Yêu cầu đóng ticket" ở HD-0002 (đã giải quyết) → Đã đóng, lịch sử có "Xác nhận đóng ticket"; Manager mở lại không còn nút Phân công | ✅ (05/11) |
 | D7 | Đăng nhập staff sau khi phân công | Ticket hiện trong danh sách được giao | HD05 | Chưa phát hiện lỗi | ✅ |
 
 ## E. Admin – SCR-08, SCR-09
@@ -99,7 +117,7 @@ Tìm ảnh của một ca: mở `README.md`, mục "Kiểm thử giao diện the
 
 ## Ảnh cần gửi để kiểm tra
 
-Chụp cả trang (thấy được thanh địa chỉ và tên người đăng nhập), **không** dính overlay. Gửi ảnh kèm mã ca (ví dụ "B5"); khi đưa vào `evidence/T3-06/ui/<nhóm>/` sẽ đổi tên theo quy ước ở mục Minh chứng.
+Chụp cả trang (thấy được thanh địa chỉ và tên người đăng nhập), **không** dính overlay. Gửi ảnh kèm mã ca (ví dụ "B5"); khi đưa vào `evidence/T3-06/ui/<nhóm>/<ngày test>/` sẽ đổi tên theo quy ước ở mục Minh chứng.
 
 | Ca | Chụp gì | Để kiểm tra |
 |---|---|---|

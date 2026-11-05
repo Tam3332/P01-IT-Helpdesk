@@ -265,10 +265,10 @@ public class AttachmentService {
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
+            // IT_STAFF chỉ thao tác trên vé được giao cho mình (SRS §4 HD05 – bản sửa 05/11; SecRS §5 POST attachments: "Assigned only")
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
-            boolean isNewTicket = "NEW".equalsIgnoreCase(ticket.getStatus());
-            if (!isAssignedToMe && !isNewTicket) {
+            if (!isAssignedToMe) {
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         }

@@ -9,7 +9,7 @@ Lưu ý: chạy thử trên máy dev, **chưa chạy trên VM lab**; chưa phả
 |---|---|
 | `api/` | Ảnh gọi API trực tiếp (Swagger, PowerShell `Invoke-RestMethod` / `curl.exe`): mã HTTP, JSON trả về |
 | `db/` | Ảnh truy vấn PostgreSQL (`docker exec p01-db psql ...`) để kiểm tra dữ liệu được ghi đúng |
-| `ui/` | Ảnh giao diện (FE `localhost:5173`), chia theo nhóm ca trong `test_giao_dien.md`: `A_General` (chung mọi role), `B_Employee`, `C_ITStaff`, `D_ITManager`, `E_Admin`. Tên: `EV-HD-xx_fe_*` (03–04/11), `EV-xx_ui_<mã ca>_*` |
+| `ui/` | Ảnh giao diện (FE `localhost:5173`), chia **nhóm ca → ngày test**: `ui/<nhóm>/<YYYY-MM-DD>/`. Nhóm theo `test_giao_dien.md`: `A_General`, `B_Employee`, `C_ITStaff`, `D_ITManager`, `E_Admin`. Mốc ngày xem mục "Mốc ngày test" trong `test_giao_dien.md` |
 | `test_giao_dien.md` | Checklist test giao diện theo role (mã ca A–E), cột "Đã phát hiện" (lỗi đã biết, ai xử lý) và "Kết quả" |
 
 Quy ước tên: `EV-HD-<số FR>_<api|db|fe|ui>_<mô tả>.png`. Số FR theo SRS: 01 đăng nhập, 03 tạo ticket, 05 xem ticket, 06 phân công.
@@ -30,14 +30,14 @@ Môi trường: máy dev cá nhân (Windows). Backend nhánh `cuong/be` sau khi 
 
 | EV-ID | File | Ngày | Task / test | Mô tả | Kết quả quan sát |
 |---|---|---|---|---|---|
-| EV-HD-01 | ui/A_General/EV-HD-01_fe_login_sai_mat_khau.png | 2026-11-04 | T3-06, SRS UC-01 2a | Đăng nhập Employee với mật khẩu sai (mật khẩu thử, không phải mật khẩu thật) | Báo "Email hoặc mật khẩu không đúng.", ở lại trang login |
-| EV-HD-01 | ui/A_General/EV-HD-01_fe_token_het_han.png | 2026-11-04 | T3-06, SDD §6.1 | Để phiên quá 15 phút (jwt.expiration-ms 900000) | Tự đăng xuất, báo "Phiên đăng nhập đã hết hạn" |
-| EV-HD-03 | ui/B_Employee/EV-HD-03_fe_tao_ticket_thanh_cong.png | 2026-11-04 | T3-06, SRS HD03 / UC-02 | Employee tạo ticket (Yêu cầu CNTT khác, mức Cao) | Có HD-2026-0001, trạng thái Mới, chưa phân công |
-| EV-HD-05 | ui/B_Employee/EV-HD-05_fe_chi_tiet_ticket_employee.png | 2026-11-04 | T3-06, SRS HD05, BR-HD-03 | Employee mở chi tiết ticket vừa tạo | Hiện đúng thông tin; hạn xử lý = tạo + 8 giờ (Cao). Bình luận/lịch sử/đính kèm báo lỗi do backend chưa có API (trả 500) |
-| EV-HD-05 | ui/B_Employee/EV-HD-05_fe_danh_sach_employee.png | 2026-11-04 | T3-06, SRS HD05 | Danh sách ticket của Employee | Chỉ thấy ticket do mình tạo |
-| EV-HD-05 | ui/C_ITStaff/EV-HD-05_fe_danh_sach_staff.png | 2026-11-04 | T3-06, SRS HD05 / UC-04 | IT Staff xem danh sách | Thấy ticket NEW (hàng đợi) dù chưa được giao |
-| EV-HD-05 | ui/D_ITManager/EV-HD-05_fe_tong_quan_manager.png | 2026-11-04 | T3-06, SRS HD05 | IT Manager xem tổng quan | Thấy toàn bộ ticket (1 đang mở, 1 chưa phân công) |
-| EV-HD-05 | ui/E_Admin/EV-HD-05_fe_admin_khong_co_trang_ticket.png | 2026-11-04 | T3-06, SRS HD05 | Admin đăng nhập | **Chưa đạt:** frontend không có trang ticket cho Admin; SRS HD05 yêu cầu Admin xem toàn bộ ở chế độ chỉ đọc. Đã báo Chính |
+| EV-HD-01 | ui/A_General/2026-11-04/EV-HD-01_fe_login_sai_mat_khau.png | 2026-11-04 | T3-06, SRS UC-01 2a | Đăng nhập Employee với mật khẩu sai (mật khẩu thử, không phải mật khẩu thật) | Báo "Email hoặc mật khẩu không đúng.", ở lại trang login |
+| EV-HD-01 | ui/A_General/2026-11-04/EV-HD-01_fe_token_het_han.png | 2026-11-04 | T3-06, SDD §6.1 | Để phiên quá 15 phút (jwt.expiration-ms 900000) | Tự đăng xuất, báo "Phiên đăng nhập đã hết hạn" |
+| EV-HD-03 | ui/B_Employee/2026-11-04/EV-HD-03_fe_tao_ticket_thanh_cong.png | 2026-11-04 | T3-06, SRS HD03 / UC-02 | Employee tạo ticket (Yêu cầu CNTT khác, mức Cao) | Có HD-2026-0001, trạng thái Mới, chưa phân công |
+| EV-HD-05 | ui/B_Employee/2026-11-04/EV-HD-05_fe_chi_tiet_ticket_employee.png | 2026-11-04 | T3-06, SRS HD05, BR-HD-03 | Employee mở chi tiết ticket vừa tạo | Hiện đúng thông tin; hạn xử lý = tạo + 8 giờ (Cao). Bình luận/lịch sử/đính kèm báo lỗi do backend chưa có API (trả 500) |
+| EV-HD-05 | ui/B_Employee/2026-11-04/EV-HD-05_fe_danh_sach_employee.png | 2026-11-04 | T3-06, SRS HD05 | Danh sách ticket của Employee | Chỉ thấy ticket do mình tạo |
+| EV-HD-05 | ui/C_ITStaff/2026-11-04/EV-HD-05_fe_danh_sach_staff.png | 2026-11-04 | T3-06, SRS HD05 / UC-04 | IT Staff xem danh sách | Thấy ticket NEW (hàng đợi) dù chưa được giao. **Phạm vi cũ**: từ 05/11 SRS §4 HD05 đổi thành Staff chỉ xem ticket được giao |
+| EV-HD-05 | ui/D_ITManager/2026-11-04/EV-HD-05_fe_tong_quan_manager.png | 2026-11-04 | T3-06, SRS HD05 | IT Manager xem tổng quan | Thấy toàn bộ ticket (1 đang mở, 1 chưa phân công) |
+| EV-HD-05 | ui/E_Admin/2026-11-04/EV-HD-05_fe_admin_khong_co_trang_ticket.png | 2026-11-04 | T3-06, SRS HD05 | Admin đăng nhập | **Chưa đạt:** frontend không có trang ticket cho Admin; SRS HD05 yêu cầu Admin xem toàn bộ ở chế độ chỉ đọc. Đã báo Chính |
 
 Chưa kiểm được: Employee A xem ticket của Employee B (cần thêm 1 tài khoản Employee). Đã biết: F5 bị về trang login vì backend chưa có `GET /auth/me` (làm ở B7).
 
@@ -70,29 +70,29 @@ Theo `test_giao_dien.md`. Backend `cuong/be` sau commit `05cc318` + sửa cột 
 
 | EV-ID | File | Ca | Kết quả quan sát |
 |---|---|---|---|
-| EV-HD-01 | ui/A_General/EV-HD-01_ui_A1_sai_mat_khau.png, ui/A_General/EV-HD-01_ui_A1_sai_email.png | A1 | Sai mật khẩu và email không tồn tại cùng 1 thông báo chung |
-| EV-HD-01 | ui/A_General/EV-HD-01_ui_A8_het_phien.png | A8 | Quá 15 phút tự đăng xuất, báo hết phiên |
-| EV-HD-05 | ui/A_General/EV-HD-05_ui_A6_403_manager_tickets.png, ui/A_General/EV-HD-05_ui_A6_403_admin_users.png | A6 | Employee gõ URL trang Manager/Admin → trang 403 |
-| EV-HD-05 | ui/A_General/EV-HD-05_ui_A7_404_trang_khong_ton_tai.png, ui/A_General/EV-HD-05_ui_A7_ticket_khong_ton_tai.png | A7 | URL sai → 404; ticket không có → "Không tìm thấy ticket hoặc bạn không có quyền xem" |
-| EV-HD-03 | ui/B_Employee/EV-HD-03_ui_B2_*.png (3 ảnh) | B2 | Bỏ trống tiêu đề/danh mục/mô tả (kể cả mô tả chỉ có xuống dòng) → báo lỗi tại ô, không tạo |
-| EV-HD-05 | ui/B_Employee/EV-HD-05_ui_B4_danh_sach_employee.png | B1, B4 | HD-2026-0002 tạo thành công (Mới, Nghiêm trọng); đủ cột, cột Người xử lý đúng |
-| EV-HD-05 | ui/B_Employee/EV-HD-05_ui_B5_*.png (3 ảnh), ui/B_Employee/EV-HD-05_ui_B6_loc_danh_muc.png | B5, B6 | Tìm "Cà phê" / "trà sữa" ra đúng ticket, từ khóa không có → trống; lọc danh mục đúng |
-| EV-HD-05 | ui/C_ITStaff/EV-HD-05_ui_C1_C2_tong_quan_staff.png | C1, C2 | Staff thấy ticket được giao + Mới; thẻ "Ticket được giao" = 2 (**lỗi FE**: đếm cả ticket Mới) |
-| EV-HD-05 | ui/C_ITStaff/EV-HD-05_ui_C3_staff_xem_ticket_moi.png | C3, B1 | Staff xem ticket Mới không có nút thao tác; **lỗi FE**: vẫn hiện ô bình luận. Hạn xử lý = tạo + 4 giờ (Critical) |
-| EV-HD-05 | ui/C_ITStaff/EV-HD-05_ui_C4_staff_ticket_duoc_giao.png | C4 | Ticket được giao có nút "Bắt đầu xử lý", không có nút Phân công |
-| EV-HD-05 | ui/D_ITManager/EV-HD-05_ui_D1_tong_quan_manager.png | D1 | Manager thấy toàn bộ ticket (2 đang mở, 1 chưa phân công) |
-| EV-HD-06 | ui/D_ITManager/EV-HD-06_ui_D2_dropdown_it_staff.png | D2 | Hộp thoại phân công chỉ liệt kê IT Staff đang hoạt động |
-| EV-HD-06 | ui/D_ITManager/EV-HD-06_ui_D3_sau_phan_cong.png | D3 | HD-2026-0002: Đã phân công, ưu tiên Cao, hạn xử lý = tạo + 8 giờ, toast thành công |
-| EV-HD-06 | ui/D_ITManager/EV-HD-06_ui_D4_giao_lai_nguoi_cu.png | D4 | Giao lại đúng người cũ, không đổi ưu tiên → FE chặn, báo "Ticket đang giao cho người này…" |
-| EV-HD-05 | ui/D_ITManager/EV-HD-05_ui_D7_staff_sau_phan_cong.png | D7 | Staff thấy ticket vừa được giao, cột Người xử lý đúng |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E1_tao_danh_muc.png | E1 | Admin tạo danh mục TESTUI, toast thành công |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E1_employee_thay_danh_muc_moi.png | E1 | Employee thấy danh mục mới trong dropdown |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E2_trung_ma.png | E2 | Tạo trùng mã → "Mã danh mục đã tồn tại" |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E3_tat_danh_muc.png | E3 | Tắt TESTUI → trạng thái Tạm ẩn |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E3_employee_khong_con_danh_muc.png | E3 | Employee không còn thấy danh mục đã tắt |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E5_sla_bang_0.png | E5 | SLA = 0 → "Hạn xử lý phải lớn hơn 0." |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E5_sla_am.png | E5 | SLA = -1 → bị chặn |
-| EV-UC-10 | ui/E_Admin/EV-UC-10_ui_E6_admin_tong_quan_khong_co_menu_ticket.png | E6 | Menu Admin không có trang ticket chỉ đọc (lỗi FE) |
+| EV-HD-01 | ui/A_General/2026-11-04/EV-HD-01_ui_A1_sai_mat_khau.png, ui/A_General/2026-11-04/EV-HD-01_ui_A1_sai_email.png | A1 | Sai mật khẩu và email không tồn tại cùng 1 thông báo chung |
+| EV-HD-01 | ui/A_General/2026-11-04/EV-HD-01_ui_A8_het_phien.png | A8 | Quá 15 phút tự đăng xuất, báo hết phiên |
+| EV-HD-05 | ui/A_General/2026-11-04/EV-HD-05_ui_A6_403_manager_tickets.png, ui/A_General/2026-11-04/EV-HD-05_ui_A6_403_admin_users.png | A6 | Employee gõ URL trang Manager/Admin → trang 403 |
+| EV-HD-05 | ui/A_General/2026-11-04/EV-HD-05_ui_A7_404_trang_khong_ton_tai.png, ui/A_General/2026-11-04/EV-HD-05_ui_A7_ticket_khong_ton_tai.png | A7 | URL sai → 404; ticket không có → "Không tìm thấy ticket hoặc bạn không có quyền xem" |
+| EV-HD-03 | ui/B_Employee/2026-11-04/EV-HD-03_ui_B2_*.png (3 ảnh) | B2 | Bỏ trống tiêu đề/danh mục/mô tả (kể cả mô tả chỉ có xuống dòng) → báo lỗi tại ô, không tạo |
+| EV-HD-05 | ui/B_Employee/2026-11-04/EV-HD-05_ui_B4_danh_sach_employee.png | B1, B4 | HD-2026-0002 tạo thành công (Mới, Nghiêm trọng); đủ cột, cột Người xử lý đúng |
+| EV-HD-05 | ui/B_Employee/2026-11-04/EV-HD-05_ui_B5_*.png (3 ảnh), ui/B_Employee/2026-11-04/EV-HD-05_ui_B6_loc_danh_muc.png | B5, B6 | Tìm "Cà phê" / "trà sữa" ra đúng ticket, từ khóa không có → trống; lọc danh mục đúng |
+| EV-HD-05 | ui/C_ITStaff/2026-11-04/EV-HD-05_ui_C1_C2_tong_quan_staff.png | C1, C2 | Staff thấy ticket được giao + Mới; thẻ "Ticket được giao" = 2 (**lỗi FE**: đếm cả ticket Mới) |
+| EV-HD-05 | ui/C_ITStaff/2026-11-04/EV-HD-05_ui_C3_staff_xem_ticket_moi.png | C3, B1 | Staff xem ticket Mới không có nút thao tác; **lỗi FE**: vẫn hiện ô bình luận. Hạn xử lý = tạo + 4 giờ (Critical) |
+| EV-HD-05 | ui/C_ITStaff/2026-11-04/EV-HD-05_ui_C4_staff_ticket_duoc_giao.png | C4 | Ticket được giao có nút "Bắt đầu xử lý", không có nút Phân công |
+| EV-HD-05 | ui/D_ITManager/2026-11-04/EV-HD-05_ui_D1_tong_quan_manager.png | D1 | Manager thấy toàn bộ ticket (2 đang mở, 1 chưa phân công) |
+| EV-HD-06 | ui/D_ITManager/2026-11-04/EV-HD-06_ui_D2_dropdown_it_staff.png | D2 | Hộp thoại phân công chỉ liệt kê IT Staff đang hoạt động |
+| EV-HD-06 | ui/D_ITManager/2026-11-04/EV-HD-06_ui_D3_sau_phan_cong.png | D3 | HD-2026-0002: Đã phân công, ưu tiên Cao, hạn xử lý = tạo + 8 giờ, toast thành công |
+| EV-HD-06 | ui/D_ITManager/2026-11-04/EV-HD-06_ui_D4_giao_lai_nguoi_cu.png | D4 | Giao lại đúng người cũ, không đổi ưu tiên → FE chặn, báo "Ticket đang giao cho người này…" |
+| EV-HD-05 | ui/D_ITManager/2026-11-04/EV-HD-05_ui_D7_staff_sau_phan_cong.png | D7 | Staff thấy ticket vừa được giao, cột Người xử lý đúng |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E1_tao_danh_muc.png | E1 | Admin tạo danh mục TESTUI, toast thành công |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E1_employee_thay_danh_muc_moi.png | E1 | Employee thấy danh mục mới trong dropdown |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E2_trung_ma.png | E2 | Tạo trùng mã → "Mã danh mục đã tồn tại" |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E3_tat_danh_muc.png | E3 | Tắt TESTUI → trạng thái Tạm ẩn |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E3_employee_khong_con_danh_muc.png | E3 | Employee không còn thấy danh mục đã tắt |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E5_sla_bang_0.png | E5 | SLA = 0 → "Hạn xử lý phải lớn hơn 0." |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E5_sla_am.png | E5 | SLA = -1 → bị chặn |
+| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E6_admin_tong_quan_khong_co_menu_ticket.png | E6 | Menu Admin không có trang ticket chỉ đọc (lỗi FE) |
 
 ## Audit log JSONL (05/11/2026)
 
@@ -107,6 +107,19 @@ Backend ghi `src/backend/logs/audit_events.jsonl` theo SDD §7 (11 trường; kh
 
 | EV-ID | File | Ngày | Task / test | Mô tả | Kết quả quan sát |
 |---|---|---|---|---|---|
-| EV-HD-05 | api/EV-HD-05_api_staff_thay_ve_new.png | 2026-11-05 | T3-06, SRS §4 HD05, SecRS IA-HD02 | IT Staff GET /tickets | Thấy vé được giao + vé NEW chưa giao (HD-2026-0003) |
+| EV-HD-05 | api/EV-HD-05_api_staff_thay_ve_new.png | 2026-11-05 | T3-06, SRS §4 HD05, SecRS IA-HD02 | IT Staff GET /tickets | Thấy vé được giao + vé NEW chưa giao (HD-2026-0003). **Phạm vi cũ**, đã đổi ngay sau đó theo SRS §4 HD05 sửa 05/11 |
 | EV-HD-03 | api/EV-HD-03_api_upload_doi_duoi_bi_chan_400.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload tệp chữ đổi đuôi thành .png | 400 FILE_TYPE_NOT_ALLOWED (sai chữ ký nội dung) |
 | EV-HD-03 | api/EV-HD-03_api_upload_png_hop_le_200.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload ảnh PNG thật | 200, mimeType image/png do server xác định |
+
+## Sau khi đổi phạm vi IT Staff (05/11/2026)
+
+| EV-ID | File | Mã ca | Kết quả quan sát |
+|---|---|---|---|
+| EV-HD-05 | ui/C_ITStaff/2026-11-05/EV-HD-05_ui_C1_staff_chi_thay_ve_duoc_giao.png | C1 | Staff chỉ thấy ticket được giao (SRS §4 HD05 sửa 05/11) |
+| EV-HD-05 | ui/C_ITStaff/2026-11-05/EV-HD-05_ui_C2_tong_quan_staff_dem_2.png | C2 | Thẻ "Ticket được giao" = 2 |
+| EV-HD-05 | ui/C_ITStaff/2026-11-05/EV-HD-05_ui_C3_staff_mo_ve_new_khong_tim_thay.png | C3 | Staff gõ URL ticket NEW không được giao → không tìm thấy (BE 404) |
+| EV-HD-07 | ui/C_ITStaff/2026-11-05/EV-HD-07_ui_C4_bat_dau_xu_ly.png | C4 | Bắt đầu xử lý → Đang xử lý, lịch sử ghi đổi trạng thái |
+| EV-HD-10 | ui/D_ITManager/2026-11-05/EV-HD-10_ui_D6_employee_xac_nhan_dong.png, ui/D_ITManager/2026-11-05/EV-HD-10_ui_D6_employee_da_dong.png | D6 | Employee đóng ticket đã giải quyết → Đã đóng |
+| EV-HD-10 | ui/D_ITManager/2026-11-05/EV-HD-10_ui_D6_manager_khong_con_phan_cong.png | D6 | Ticket đã đóng: Manager không còn nút Phân công |
+| EV-HD-04 | api/EV-HD-04_api_admin_upload_403.png | — | Admin upload tệp → 403 FORBIDDEN (SecRS §5: Admin "Deny 403") |
+| EV-HD-07 | api/EV-HD-07_api_patch_status_closed_422.png | — | PATCH /tickets/2/status: IN_PROGRESS 200, RESOLVED 200, CLOSED → 422 INVALID_STATUS_TRANSITION, trạng thái vẫn RESOLVED (SecRS AC-08) |

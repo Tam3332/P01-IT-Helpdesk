@@ -100,6 +100,9 @@ public class SecurityConfig {
 
                 // --- Chỉ IT_MANAGER (SDD §6.2; SRS UC-06 4a) ---
                 .requestMatchers(HttpMethod.PUT, "/api/v1/tickets/*/assign").hasRole("IT_MANAGER")
+                // Upload tệp: Admin bị từ chối 403 (SecRS §5 POST /tickets/{id}/attachments: Admin "Deny 403"); 403 tự ghi AUTHZ_DENIED
+                .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/attachments")
+                    .hasAnyRole("EMPLOYEE", "IT_STAFF", "IT_MANAGER")
                 .requestMatchers("/api/v1/users/it-staff", "/api/v1/reopen-requests/**",
                                  "/api/v1/dashboard/stats", "/api/v1/dashboard/sla-monitor").hasRole("IT_MANAGER")
 
