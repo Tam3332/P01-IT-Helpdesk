@@ -26,3 +26,6 @@ npm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+# Maven build va ban sao luu DB
+target/
+p01_db_backup.sql

@@ -54,6 +54,8 @@ services:
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-900000}
       FILE_UPLOAD_DIR: /app/uploads
       FILE_UPLOAD_MAX_SIZE: 10MB
+      # [ĐỔI] Backend đọc đường dẫn audit log từ AUDIT_LOG_FILE (application.yml); trỏ vào volume audit_logs
+      AUDIT_LOG_FILE: /app/logs/audit_events.jsonl
       # [ĐỔI] Khớp SRS HD04: jpg, jpeg, png, gif, pdf, docx, xlsx, txt, log
       FILE_UPLOAD_ALLOWED_EXTENSIONS: ${FILE_UPLOAD_ALLOWED_EXTENSIONS:-jpg,jpeg,png,gif,pdf,docx,xlsx,txt,log}
       SECURITY_LOG_DIR: /app/logs
@@ -71,23 +73,23 @@ services:
         [
           "CMD",
           "wget",
-          "--no-verbose",
+          "-q",
+          "-O",
+          "/dev/null",
           "--tries=1",
-          "--spider",
-          "http://localhost:8080/actuator/health",
+          "http://localhost:8080/v3/api-docs",
         ]
-      interval: 30s
+      interval: 15s
       timeout: 5s
-      start_period: 40s
-      retries: 3
+      start_period: 60s
+      retries: 5
 
   # ReactJS Frontend - build bằng Vite rồi phục vụ file tĩnh bằng Nginx trong container
   frontend:
-    build: # [ĐỔI] bản gốc chỉ chạy nginx rỗng, chưa có giao diện
+    build: # giao diện React gọi API thật qua /api/v1 (không còn chế độ dữ liệu giả)
       context: ./src/frontend
       dockerfile: Dockerfile
       args:
-        VITE_USE_MOCK: ${VITE_USE_MOCK:-true} # true = dữ liệu giả; đổi false khi Backend sẵn sàng
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
     image: p01-frontend:latest
     container_name: p01-frontend
