@@ -2,6 +2,7 @@ package com.ojt.p01.service;
 
 import com.ojt.p01.dto.request.CreateFeedbackRequest;
 import com.ojt.p01.dto.response.FeedbackResponse;
+import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.entity.Ticket;
 import com.ojt.p01.entity.TicketFeedback;
 import com.ojt.p01.entity.TicketHistory;
@@ -26,15 +27,18 @@ public class FeedbackService {
     private final TicketRepository ticketRepository;
     private final TicketHistoryRepository historyRepository;
     private final UserRepository userRepository;
+    private final AuditLogger auditLogger;
 
     public FeedbackService(TicketFeedbackRepository feedbackRepository,
                            TicketRepository ticketRepository,
                            TicketHistoryRepository historyRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           AuditLogger auditLogger) {
         this.feedbackRepository = feedbackRepository;
         this.ticketRepository = ticketRepository;
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
+        this.auditLogger = auditLogger;
     }
 
     /**
@@ -64,6 +68,7 @@ public class FeedbackService {
 
         // 1. Kiểm tra quyền: Chỉ Employee tạo vé mới được đánh giá
         if (!ticket.getRequester().getId().equals(currentUser.getId())) {
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CREATE_FEEDBACK", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ người tạo ticket mới có quyền gửi đánh giá");
         }
 
@@ -139,12 +144,15 @@ public class FeedbackService {
 
         if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
             if (!ticket.getRequester().getId().equals(currentUser.getId())) {
+                // Trái quyền → 404 + audit AUTHZ_DENIED (SDD §7)
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "VIEW_FEEDBACK", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
             if (!isAssignedToMe) {
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "VIEW_FEEDBACK", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         }

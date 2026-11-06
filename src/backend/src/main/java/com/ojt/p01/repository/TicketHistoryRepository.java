@@ -2,6 +2,7 @@ package com.ojt.p01.repository;
 
 import com.ojt.p01.entity.TicketHistory;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,7 @@ import java.util.List;
 public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Long> {
 
     /** Lấy toàn bộ lịch sử xử lý của ticket theo thực tế thời gian tăng dần (HD09, Timeline FE). */
+    @EntityGraph(attributePaths = {"actor"})
     List<TicketHistory> findByTicket_IdOrderByTimestampAsc(Long ticketId);
 
     /**

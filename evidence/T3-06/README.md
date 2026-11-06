@@ -123,3 +123,12 @@ Backend ghi `src/backend/logs/audit_events.jsonl` theo SDD §7 (11 trường; kh
 | EV-HD-10 | ui/D_ITManager/2026-11-05/EV-HD-10_ui_D6_manager_khong_con_phan_cong.png | D6 | Ticket đã đóng: Manager không còn nút Phân công |
 | EV-HD-04 | api/EV-HD-04_api_admin_upload_403.png | — | Admin upload tệp → 403 FORBIDDEN (SecRS §5: Admin "Deny 403") |
 | EV-HD-07 | api/EV-HD-07_api_patch_status_closed_422.png | — | PATCH /tickets/2/status: IN_PROGRESS 200, RESOLVED 200, CLOSED → 422 INVALID_STATUS_TRANSITION, trạng thái vẫn RESOLVED (SecRS AC-08) |
+
+## IP thật qua Nginx, correlation_id, audit AUTHZ_DENIED mở rộng (06/11/2026)
+
+Phát hiện khi chạy thử lab (nhánh feature/docker-compose): audit log ghi src_ip = IP Nginx (172.18.0.3). Sửa: `server.forward-headers-strategy: native`; CorrelationIdFilter đọc thêm `X-Request-Id` của Nginx; ghi AUTHZ_DENIED ở bình luận/đính kèm/đánh giá; addComment chặn Staff không được giao (404) và Admin (403).
+
+| EV-ID | File | Ngày | Task / test | Mô tả | Kết quả quan sát |
+|---|---|---|---|---|---|
+| EV-HD-05 | api/EV-HD-05_api_authz_denied_comment_attachment_feedback.png | 2026-11-06 | T3-06; SRS §4 HD05, UC-04; SecRS §5; SDD §5.4 | Staff xem comment/attachment/feedback ticket 4 (không được giao); Manager gửi đánh giá ticket 2; Staff gửi bình luận ticket 4; Admin gửi bình luận ticket 1; login giả lập Nginx | 404, 404, 404; 403; 404; 403; 200 |
+| EV-HD-01 | api/EV-HD-01_api_audit_authz_denied_va_ip_that.png | 2026-11-06 | T3-06; SDD §7 | Audit log sau các lệnh trên | AUTHZ_DENIED: ACCESS_ATTACHMENT, VIEW_FEEDBACK (404), CREATE_FEEDBACK (403), ADD_COMMENT (404 Staff, 403 Admin); LOGIN_SUCCESS có src_ip 1.2.3.4 và correlation_id abc123test lấy từ header |

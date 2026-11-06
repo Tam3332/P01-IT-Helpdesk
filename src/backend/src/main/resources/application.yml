@@ -1,5 +1,9 @@
 server:
   port: ${SERVER_PORT:8080}
+  # Chạy sau Nginx (lab): lấy IP thật của người dùng từ X-Forwarded-For do Nginx gửi.
+  # Tomcat chỉ tin header này khi request đến từ địa chỉ nội bộ (mạng Docker), nên client ngoài không giả được.
+  # Ảnh hưởng mọi chỗ gọi getRemoteAddr(): audit log src_ip (SDD §7), ticket_history.ip_address.
+  forward-headers-strategy: native
 
 spring:
   application:
@@ -33,6 +37,16 @@ jwt:
 # Security Audit Log JSON Lines (SDD §7). Khi chạy Docker: đặt AUDIT_LOG_FILE trỏ vào log volume
 audit:
   log-file: ${AUDIT_LOG_FILE:logs/audit_events.jsonl}
+
+# Actuator: chỉ mở endpoint health, không hiện chi tiết DB/disk (tránh lộ thông tin hạ tầng, IA-HD07)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 # OpenAPI / Swagger UI
 springdoc:
