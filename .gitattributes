@@ -1,0 +1,7 @@
+# Giữ LF cho các file chạy trên Linux (tránh lỗi "\r: command not found" khi sửa trên Windows)
+*.sh        text eol=lf
+*.conf      text eol=lf
+Dockerfile  text eol=lf
+mvnw        text eol=lf
+*.yml       text eol=lf
+*.sql       text eol=lf

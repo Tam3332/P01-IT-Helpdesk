@@ -11,7 +11,11 @@ import { PRIORITY, PRIORITY_KEYS } from '@/config/domain'
 import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
 import { apiError } from '@/services/apiClient'
-import { adminCreateCategory, adminListCategories, adminSetCategoryActive, adminUpdateCategory } from '@/services/referenceService'
+import { adminCreateCategory, adminDeleteCategory, adminListCategories, adminSetCategoryActive, adminUpdateCategory } from '@/services/referenceService'
+
+// Backend không dùng 409: trùng mã/tên trả 400 kèm error.code (SRS UC-10 3a)
+const DUPLICATE = { CATEGORY_CODE_DUPLICATE: 'Mã danh mục đã tồn tại.', CATEGORY_NAME_DUPLICATE: 'Tên danh mục đã tồn tại.' }
+const duplicateMessage = (e) => (e?.response?.status === 400 ? DUPLICATE[e.response.data?.error?.code] : undefined)
 
 export default function CategoriesPage() {
   const item = NAV[ROLES.ADMIN].find((i) => i.path === '/admin/categories')
@@ -20,6 +24,7 @@ export default function CategoriesPage() {
   const list = useAsync(adminListCategories, [])
   const [open, setOpen] = useState(false)
   const [edit, setEdit] = useState(null)
+  const [del, setDel] = useState(null)
   const [f, setF] = useState({ categoryCode: '', categoryName: '', defaultPriority: 'MEDIUM' })
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
   const items = list.data || []
@@ -53,7 +58,8 @@ export default function CategoriesPage() {
                       <td><span className={`badge ${c.isActive === false ? 'b-Closed' : 's-done'}`}>{c.isActive === false ? 'Tạm ẩn' : 'Đang dùng'}</span></td>
                       <td>
                         <button type="button" className="btn sm" onClick={() => setEdit(c)}><Icon name="edit" />Sửa</button>{' '}
-                        <button type="button" className="btn sm" onClick={() => toggle(c)}>{c.isActive === false ? 'Bật' : 'Tắt'}</button>
+                        <button type="button" className="btn sm" onClick={() => toggle(c)}>{c.isActive === false ? 'Bật' : 'Tắt'}</button>{' '}
+                        <button type="button" className="btn sm" onClick={() => setDel(c)}>Xóa</button>
                       </td>
                     </tr>
                   ))}
@@ -65,7 +71,8 @@ export default function CategoriesPage() {
           )}
         </Async>
       </section>
-      <p className="sm muted">Danh mục không xóa được; tắt danh mục để ẩn khỏi form tạo ticket.</p>
+      <p className="sm muted">Chỉ xóa được danh mục chưa có ticket nào tham chiếu. Danh mục đã có ticket thì tắt để ẩn khỏi form tạo ticket.</p>
+      {del && <DeleteCategory cat={del} onClose={() => setDel(null)} onDone={() => list.reload()} />}
       {edit && <EditCategory cat={edit} onClose={() => setEdit(null)} onSaved={() => list.reload()} />}
       {open && (
         <Modal title="Thêm danh mục" okText="Thêm" onClose={() => setOpen(false)} onOk={async () => {
@@ -75,7 +82,7 @@ export default function CategoriesPage() {
           try {
             await adminCreateCategory({ categoryCode: code, categoryName: f.categoryName.trim(), defaultPriority: f.defaultPriority })
           } catch (e) {
-            throw new Error(e?.response?.status === 409 ? 'Mã hoặc tên danh mục đã tồn tại.' : apiError(e, 'Không thêm được danh mục.'))
+            throw new Error(duplicateMessage(e) || apiError(e, 'Không thêm được danh mục.'))
           }
           toast('Đã thêm danh mục.')
           setF({ categoryCode: '', categoryName: '', defaultPriority: 'MEDIUM' })
@@ -102,7 +109,7 @@ function EditCategory({ cat, onClose, onSaved }) {
       try {
         await adminUpdateCategory(cat.id, { categoryName: name.trim(), defaultPriority: pri })
       } catch (e) {
-        throw new Error(apiError(e, 'Không lưu được danh mục.'))
+        throw new Error(duplicateMessage(e) || apiError(e, 'Không lưu được danh mục.'))
       }
       toast('Đã lưu thay đổi.')
       onSaved()
@@ -112,6 +119,25 @@ function EditCategory({ cat, onClose, onSaved }) {
       <Field label="Mức ưu tiên mặc định" htmlFor="ce-pri">
         <select className="sel" id="ce-pri" value={pri} onChange={(e) => setPri(e.target.value)}>{PRIORITY_KEYS.map((p) => <option key={p} value={p}>{PRIORITY[p].label}</option>)}</select>
       </Field>
+    </Modal>
+  )
+}
+
+function DeleteCategory({ cat, onClose, onDone }) {
+  const toast = useToast()
+  return (
+    <Modal title="Xóa danh mục" okText="Xóa vĩnh viễn" okClass="danger" onClose={onClose} onOk={async () => {
+      try {
+        await adminDeleteCategory(cat.id)
+      } catch (e) {
+        if (e?.response?.status === 404) onDone() // danh mục đã bị xóa ở nơi khác: làm mới danh sách
+        throw new Error(apiError(e, 'Không xóa được danh mục.'))
+      }
+      toast('Đã xóa danh mục.')
+      onDone()
+    }}>
+      <p>Xóa vĩnh viễn danh mục <b>{cat.categoryName}</b> (<code>{cat.categoryCode}</code>)? Thao tác này không hoàn tác được.</p>
+      <p className="sm muted">Chỉ xóa được khi chưa có ticket nào dùng danh mục này. Nếu chỉ muốn ẩn khỏi form tạo ticket, hãy dùng nút Tắt.</p>
     </Modal>
   )
 }

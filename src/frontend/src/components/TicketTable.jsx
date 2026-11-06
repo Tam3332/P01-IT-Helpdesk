@@ -54,7 +54,7 @@ export default function TicketTable({ tickets, categories = [], showSla, onClear
                 <td className="cat">{catName(t)}</td>
                 <td><PriorityBadge priority={t.priority} /></td>
                 <td><StatusBadge status={t.status} /></td>
-                <td className={`cat ${a ? '' : 'faint'}`}>{a || 'Chưa phân công'}</td>
+                <td className={`cat ${a ? '' : 'faint'}`}>{a || (t.status === 'NEW' ? 'Chưa phân công' : '—')}</td>
                 <td className="nw num">{fmtDate(t.createdAt)}</td>
                 {showSla && <td><SlaBadge ticket={t} /></td>}
               </tr>

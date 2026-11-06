@@ -42,7 +42,7 @@ export default function TicketDetailPage() {
   if (detail.error && !t) {
     // 404 có thể là ticket không tồn tại hoặc cơ chế chống IDOR (backend che sự tồn tại)
     const msg = detail.status === 404 ? 'Không tìm thấy ticket hoặc bạn không có quyền xem ticket này.' : detail.error
-    return <>{back}<section className="card"><ErrorState message={msg} status={detail.status} onRetry={detail.reload} /></section></>
+    return <>{back}<section className="card"><ErrorState message={msg} status={detail.status} onRetry={detail.status === 404 ? undefined : detail.reload} /></section></>
   }
 
   const afterAction = async (msg) => {
@@ -61,6 +61,7 @@ export default function TicketDetailPage() {
     return id != null ? `Người dùng #${id}` : '—'
   }
 
+  const mine = (t.currentAssigneeId ?? t.assigneeId) === user.id // ticket đang giao cho người đăng nhập
   const s = slaOf(t)
   const si = stepIndex(t.status)
   const isOpen = OPEN_STATUSES.includes(t.status)
@@ -81,7 +82,8 @@ export default function TicketDetailPage() {
     }
     if (t.status === 'REOPEN_PENDING') note = <div className="banner info"><Icon name="clock" /><div className="grow">Yêu cầu mở lại của bạn đang chờ IT Manager xem xét.</div></div>
   }
-  if (role === ROLES.STAFF) {
+  if (role === ROLES.STAFF && !mine) note = <div className="banner info"><Icon name="info" /><div className="grow">Ticket này chưa được giao cho bạn nên bạn chỉ xem, không thao tác được.</div></div>
+  if (role === ROLES.STAFF && mine) {
     if (t.status === 'ASSIGNED') actions = <button type="button" className="btn pri" onClick={() => open('start')}>Bắt đầu xử lý</button>
     if (t.status === 'IN_PROGRESS') actions = <button type="button" className="btn ok" onClick={() => open('resolve')}><Icon name="check" />Hoàn tất xử lý</button>
   }
@@ -109,9 +111,12 @@ export default function TicketDetailPage() {
     }
   }
 
+  if (role === ROLES.ADMIN) note = <div className="banner info"><Icon name="shield" /><div className="grow">Quản trị viên chỉ xem ticket (chế độ chỉ đọc), không thao tác được.</div></div>
+
   const involved = role === ROLES.EMPLOYEE || role === ROLES.STAFF || role === ROLES.MANAGER
-  const canComment = t.status !== 'CLOSED' && involved
-  const canUpload = t.status !== 'CLOSED' && involved
+  const canWrite = involved && (role !== ROLES.STAFF || mine)
+  const canComment = t.status !== 'CLOSED' && canWrite
+  const canUpload = t.status !== 'CLOSED' && canWrite
   const assigneeLabel = t.assigneeName || (t.currentAssigneeId ?? t.assigneeId ? `Người dùng #${t.currentAssigneeId ?? t.assigneeId}` : 'Chưa phân công')
   const dialogProps = { ticket: t, ref_, onClose: closeDlg, onDone: afterAction }
 

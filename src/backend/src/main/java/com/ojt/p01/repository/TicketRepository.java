@@ -3,6 +3,8 @@ package com.ojt.p01.repository;
 import com.ojt.p01.entity.Ticket;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +17,16 @@ import java.util.Optional;
 @Repository
 public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecificationExecutor<Ticket> {
 
+    @Override
+    @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})
+    Optional<Ticket> findById(Long id);
+
+    @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})
     Optional<Ticket> findByTicketNumber(String ticketNumber);
+
+    @Override
+    @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})
+    Page<Ticket> findAll(Specification<Ticket> spec, Pageable pageable);
 
     boolean existsByTicketNumber(String ticketNumber);
 
@@ -27,9 +38,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
     long countByYearPrefix(@Param("yearPrefix") String yearPrefix);
 
     /** Ticket của Employee (màn hình "Ticket của tôi") */
+    @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})
     Page<Ticket> findByRequester_IdOrderByCreatedAtDesc(Long requesterId, Pageable pageable);
 
     /** Ticket được giao cho IT Staff */
+    @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})
     Page<Ticket> findByCurrentAssignee_IdOrderByCreatedAtDesc(Long assigneeId, Pageable pageable);
 
     /** Lấy danh sách ticket mới (NEW) hoặc mở lại (REOPENED, REOPEN_PENDING) cho thông báo của Manager */

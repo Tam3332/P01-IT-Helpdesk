@@ -34,7 +34,7 @@ public class User {
     @Column(name = "department", length = 100)
     private String department;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
