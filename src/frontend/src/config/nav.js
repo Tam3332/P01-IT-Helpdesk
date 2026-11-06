@@ -1,4 +1,4 @@
-import { ROLES } from './constants'
+import { ROLES, ROLE_HOME } from './constants'
 
 // Menu theo vai trò, giữ nguyên thứ tự và tên như prototype.
 // path: đường dẫn route; sub: mục con của "Cài đặt hệ thống"; title/subtitle: tiêu đề trang.
@@ -26,6 +26,7 @@ export const NAV = {
   ],
   [A]: [
     { path: '/admin', label: 'Tổng quan', icon: 'home', subtitle: 'Người dùng, cấu hình hệ thống và nhật ký chỉ đọc.' },
+    { path: '/admin/tickets', label: 'Ticket', icon: 'list', subtitle: 'Toàn bộ ticket ở chế độ chỉ đọc.' },
     { path: '/admin/users', label: 'Người dùng', icon: 'users', subtitle: 'Tạo tài khoản, gán vai trò, khóa hoặc kích hoạt tài khoản.' },
     { path: '/admin/settings', label: 'Cài đặt hệ thống', icon: 'sliders', subtitle: 'Chọn nhóm cấu hình cần quản lý.' },
     { path: '/admin/categories', label: 'Danh mục', icon: 'tag', sub: true, subtitle: 'Phân loại yêu cầu hiển thị khi nhân viên tạo ticket.' },
@@ -41,7 +42,7 @@ export const NAV = {
 export function findNavItem(role, pathname) {
   const items = NAV[role] || []
   const hit = items
-    .filter((i) => pathname === i.path || pathname.startsWith(i.path + '/'))
+    .filter((i) => pathname === i.path || (i.path !== ROLE_HOME[role] && pathname.startsWith(i.path + '/')))
     .sort((a, b) => b.path.length - a.path.length)
   return hit[0] || null
 }

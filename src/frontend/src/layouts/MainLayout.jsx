@@ -4,7 +4,7 @@ import Icon from '@/components/Icon'
 
 import NotificationBell from '@/components/NotificationBell'
 import { useAuth } from '@/context/AuthContext'
-import { ROLE_LABEL } from '@/config/constants'
+import { ROLE_HOME, ROLE_LABEL } from '@/config/constants'
 import { NAV, findNavItem, ticketListItem } from '@/config/nav'
 import { initials } from '@/utils/format'
 
@@ -32,6 +32,7 @@ export default function MainLayout() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
+  const forbidden = pathname !== '/' && !pathname.startsWith(ROLE_HOME[user.role]) // route của vai trò khác
   const isDetail = /\/tickets\/(?!new$)[^/]+$/.test(pathname)
   const list = ticketListItem(user.role)
 
@@ -109,7 +110,7 @@ export default function MainLayout() {
                     <span>/</span>
                   </>
                 )}
-                <b>{current?.label || 'Không tìm thấy'}</b>
+                <b>{forbidden ? 'Không có quyền truy cập' : current?.label || 'Không tìm thấy'}</b>
               </>
             )}
           </div>

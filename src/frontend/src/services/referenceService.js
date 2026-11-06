@@ -19,6 +19,7 @@ export const adminSetStatus = async (id, isActive) => unwrap(await api.patch(`/a
 export const adminListCategories = async () => unwrap(await api.get('/admin/categories')) || []
 export const adminCreateCategory = async (body) => unwrap(await api.post('/admin/categories', body))
 export const adminUpdateCategory = async (id, body) => unwrap(await api.put(`/admin/categories/${id}`, body))
+export const adminDeleteCategory = async (id) => unwrap(await api.delete(`/admin/categories/${id}`))
 export const adminSetCategoryActive = async (id, active) => unwrap(await api.patch(`/admin/categories/${id}/status`, { active }))
 
 export const listSlaConfigs = async () => unwrap(await api.get('/admin/sla-configs')) || []

@@ -27,7 +27,7 @@ export default function ManagerOverview() {
   const sl = open.map((t) => ({ t, s: slaOf(t) }))
   const near = sl.filter((x) => x.s.key === 'NEAR_BREACH').length
   const breach = sl.filter((x) => x.s.key === 'BREACHED').length
-  const unassigned = open.filter((t) => !(t.currentAssigneeId ?? t.assigneeId) && !t.assigneeName).length
+  const unassigned = open.filter((t) => t.status === 'NEW').length
   const okCount = open.length - near - breach
   const pct = open.length ? Math.round((okCount / open.length) * 100) : 100
   const mx = Math.max(1, ...PRIORITY_KEYS.map((p) => open.filter((t) => t.priority === p).length))

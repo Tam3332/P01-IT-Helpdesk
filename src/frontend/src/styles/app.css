@@ -110,7 +110,7 @@ td{padding:13px 14px;border-top:1px solid var(--border);vertical-align:middle;li
 tbody tr:first-child td{border-top:0}
 th:first-child,td:first-child{padding-left:20px}th:last-child,td:last-child{padding-right:20px}
 tbody tr[data-a]{cursor:pointer;transition:background .1s}tbody tr[data-a]:hover{background:color-mix(in srgb,var(--primary-soft) 55%,transparent)}
-td.tt{min-width:210px;font-weight:500;color:var(--text)}td.nw{white-space:nowrap;color:var(--muted)}td.nw.faint{color:var(--faint)}td.cat{color:var(--muted);white-space:nowrap}td.cat.faint{color:var(--faint)}
+td.tt{min-width:210px;font-weight:500;color:var(--text)}td.nw{white-space:nowrap;color:var(--muted)}td.nw.faint{color:var(--faint)}td.cat{color:var(--muted);min-width:110px;max-width:230px}td.cat.faint{color:var(--faint)}
 .idlink{border:0;background:none;color:var(--primary);font-weight:600;font-size:13px;padding:0;font-variant-numeric:tabular-nums;white-space:nowrap}
 .audit-f{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
 @media (max-width:560px){.audit-f{grid-template-columns:1fr}}
