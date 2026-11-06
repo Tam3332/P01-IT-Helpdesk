@@ -114,6 +114,15 @@ public class AuditLogger {
         log(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus);
     }
 
+    /**
+     * Ghi AUTHZ_DENIED khi ticket có tồn tại nhưng người gọi không có quyền (SDD §7, IA-HD05).
+     * Không gọi khi ticket không tồn tại (SDD §7: "không tính lỗi HTTP 404 thông thường").
+     */
+    public void ticketDenied(User user, String ticketNumber, String action, int httpStatus) {
+        String role = user.getRole() != null ? user.getRole().getRoleName() : null;
+        log("AUTHZ_DENIED", user.getId(), role, "TICKET", ticketNumber, action, "DENIED", httpStatus);
+    }
+
     private void append(String line) {
         try {
             Path parent = logFile.toAbsolutePath().getParent();

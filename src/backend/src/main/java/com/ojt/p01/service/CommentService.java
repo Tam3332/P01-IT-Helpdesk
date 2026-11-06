@@ -2,6 +2,7 @@ package com.ojt.p01.service;
 
 import com.ojt.p01.dto.request.CreateCommentRequest;
 import com.ojt.p01.dto.response.CommentResponse;
+import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.entity.Ticket;
 import com.ojt.p01.entity.TicketComment;
 import com.ojt.p01.entity.TicketHistory;
@@ -30,15 +31,18 @@ public class CommentService {
     private final TicketRepository ticketRepository;
     private final TicketHistoryRepository historyRepository;
     private final UserRepository userRepository;
+    private final AuditLogger auditLogger;
 
     public CommentService(TicketCommentRepository commentRepository,
                           TicketRepository ticketRepository,
                           TicketHistoryRepository historyRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          AuditLogger auditLogger) {
         this.commentRepository = commentRepository;
         this.ticketRepository = ticketRepository;
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
+        this.auditLogger = auditLogger;
     }
 
     /**
@@ -53,14 +57,16 @@ public class CommentService {
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
-        // Anti-IDOR: Employee chỉ xem vé của mình, Staff chỉ xem vé được giao
+        // Anti-IDOR: Employee chỉ xem vé của mình, Staff chỉ xem vé được giao (trái quyền → 404 + audit AUTHZ_DENIED)
         if ("EMPLOYEE".equalsIgnoreCase(roleName) && !ticket.getRequester().getId().equals(currentUser.getId())) {
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "VIEW_COMMENTS", 404);
             throw new AppException(ErrorCode.TICKET_NOT_FOUND);
         }
         if ("IT_STAFF".equalsIgnoreCase(roleName)) {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
             if (!isAssignedToMe) {
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "VIEW_COMMENTS", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         }
@@ -84,16 +90,36 @@ public class CommentService {
     public CommentResponse addComment(String idOrNumber, CreateCommentRequest request, String ipAddress) {
         Ticket ticket = findTicket(idOrNumber);
 
-        if ("CLOSED".equalsIgnoreCase(ticket.getStatus())) {
-            throw new AppException(ErrorCode.TICKET_CLOSED);
-        }
-
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
-        // Anti-IDOR: Employee chỉ bình luận trên vé của mình
+        // Anti-IDOR: Employee chỉ bình luận trên vé của mình (trái quyền → 404 + audit AUTHZ_DENIED)
         if ("EMPLOYEE".equalsIgnoreCase(roleName) && !ticket.getRequester().getId().equals(currentUser.getId())) {
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "ADD_COMMENT", 404);
             throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+        }
+
+        // IT Staff chỉ bình luận trên vé được giao cho mình (SRS §4 HD05 sửa 05/11; SecRS §5 POST comments: "Assigned only").
+        // Vé không được giao thì Staff cũng không xem được → 404 như GET (Anti-IDOR, IA-HD02)
+        if ("IT_STAFF".equalsIgnoreCase(roleName)) {
+            boolean isAssignedToMe = ticket.getCurrentAssignee() != null
+                    && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
+            if (!isAssignedToMe) {
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "ADD_COMMENT", 404);
+                throw new AppException(ErrorCode.TICKET_NOT_FOUND);
+            }
+        }
+
+        // Admin chỉ đọc ticket, không bình luận (SRS §4 HD05, UC-04 bước 2: "chỉ đọc"; SDD §5.4; SecRS §5: Admin "Deny 403")
+        if ("ADMIN".equalsIgnoreCase(roleName)) {
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "ADD_COMMENT", 403);
+            throw new AppException(ErrorCode.FORBIDDEN, "Quản trị viên chỉ xem ticket, không được bình luận");
+        }
+
+        // Kiểm tra trạng thái SAU khi kiểm tra quyền: người không có quyền luôn nhận 404/403,
+        // không biết được ticket có tồn tại hay đã đóng (Anti-IDOR, IA-HD02)
+        if ("CLOSED".equalsIgnoreCase(ticket.getStatus())) {
+            throw new AppException(ErrorCode.TICKET_CLOSED);
         }
 
         // Quy tắc is_internal: chỉ IT Staff, IT Manager mới được ghi chú nội bộ

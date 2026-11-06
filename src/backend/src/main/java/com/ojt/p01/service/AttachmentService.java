@@ -1,6 +1,7 @@
 package com.ojt.p01.service;
 
 import com.ojt.p01.dto.response.AttachmentResponse;
+import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.entity.Ticket;
 import com.ojt.p01.entity.TicketAttachment;
 import com.ojt.p01.entity.TicketHistory;
@@ -65,15 +66,18 @@ public class AttachmentService {
     private final TicketRepository ticketRepository;
     private final TicketHistoryRepository historyRepository;
     private final UserRepository userRepository;
+    private final AuditLogger auditLogger;
 
     public AttachmentService(TicketAttachmentRepository attachmentRepository,
                              TicketRepository ticketRepository,
                              TicketHistoryRepository historyRepository,
-                             UserRepository userRepository) {
+                             UserRepository userRepository,
+                             AuditLogger auditLogger) {
         this.attachmentRepository = attachmentRepository;
         this.ticketRepository = ticketRepository;
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
+        this.auditLogger = auditLogger;
 
         try {
             Files.createDirectories(this.uploadRoot);
@@ -262,6 +266,8 @@ public class AttachmentService {
 
         if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
             if (!ticket.getRequester().getId().equals(currentUser.getId())) {
+                // Trái quyền → 404 như vé không tồn tại + audit AUTHZ_DENIED (SDD §7)
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "ACCESS_ATTACHMENT", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
@@ -269,6 +275,7 @@ public class AttachmentService {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
             if (!isAssignedToMe) {
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "ACCESS_ATTACHMENT", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         }
