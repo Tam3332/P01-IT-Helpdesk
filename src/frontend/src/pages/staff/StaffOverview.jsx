@@ -8,11 +8,12 @@ import { fetchOpenTickets, countTickets } from '@/services/ticketService'
 import { slaOf } from '@/utils/sla'
 import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
+import { STATUS_KEYS } from '@/config/domain'
 
-// Backend cho Staff thấy cả ticket NEW chưa phân công; "được giao" chỉ tính ticket đã qua bước phân công.
+// Backend chỉ trả ticket được giao cho Staff (SRS §4 HD05), không còn ticket NEW.
 async function load() {
-  const [open, total, fresh] = await Promise.all([fetchOpenTickets(), countTickets(), countTickets({ status: 'NEW' })])
-  return { open: open.filter((t) => t.status !== 'NEW'), total: total - fresh }
+  const [open, total] = await Promise.all([fetchOpenTickets(), countTickets()])
+  return { open, total }
 }
 
 export default function StaffOverview() {
@@ -33,7 +34,7 @@ export default function StaffOverview() {
           </div>
         )}
       </Async>
-      <TicketListCard title="Ticket cần xử lý" fixed={{ assigneeId: user.id }} />
+      <TicketListCard title="Ticket cần xử lý" fixed={{ assigneeId: user.id }} statuses={STATUS_KEYS.filter((s) => s !== 'NEW')} />
     </>
   )
 }

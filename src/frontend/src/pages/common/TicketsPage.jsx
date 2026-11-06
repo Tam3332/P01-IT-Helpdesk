@@ -5,6 +5,7 @@ import TicketListCard from '@/components/TicketListCard'
 import { useAuth } from '@/context/AuthContext'
 import { ROLES } from '@/config/constants'
 import { findNavItem } from '@/config/nav'
+import { STATUS_KEYS } from '@/config/domain'
 import { useLocation } from 'react-router-dom'
 
 // Danh sách ticket cho Employee / Staff / Manager. Backend tự giới hạn theo quyền (HD05, IA-HD02).
@@ -25,6 +26,7 @@ export default function TicketsPage() {
       <TicketListCard
         title={user.role === ROLES.MANAGER || user.role === ROLES.ADMIN ? 'Tất cả ticket' : 'Danh sách ticket'}
         fixed={user.role === ROLES.STAFF ? { assigneeId: user.id } : undefined}
+        statuses={user.role === ROLES.STAFF ? STATUS_KEYS.filter((s) => s !== 'NEW') : undefined}
       />
     </>
   )

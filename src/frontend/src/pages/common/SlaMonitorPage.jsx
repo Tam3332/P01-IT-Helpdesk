@@ -7,7 +7,7 @@ import { Async, EmptyState } from '@/components/StateViews'
 import { useAuth } from '@/context/AuthContext'
 import useAsync from '@/hooks/useAsync'
 import { SLA } from '@/config/domain'
-import { ROLES, ROLE_HOME } from '@/config/constants'
+import { ROLE_HOME } from '@/config/constants'
 import { findNavItem } from '@/config/nav'
 import { fetchOpenTickets, ticketRef } from '@/services/ticketService'
 import { fmtDateTime } from '@/utils/format'
@@ -23,8 +23,8 @@ export default function SlaMonitorPage() {
   const open = useAsync(fetchOpenTickets, [])
   const [filter, setFilter] = useState('all')
 
-  // Staff chỉ giám sát ticket được giao cho mình, không gồm ticket NEW chưa phân công
-  const mine = (open.data || []).filter((t) => user.role !== ROLES.STAFF || t.status !== 'NEW')
+  // Backend đã giới hạn: Staff chỉ nhận ticket được giao cho mình
+  const mine = (open.data || [])
   const rows = mine.map((t) => ({ t, s: slaOf(t) })).sort((a, b) => b.s.pct - a.s.pct)
   const count = (k) => rows.filter((x) => x.s.key === k).length
   const shown = rows.filter((x) => filter === 'all' || x.s.key === filter)

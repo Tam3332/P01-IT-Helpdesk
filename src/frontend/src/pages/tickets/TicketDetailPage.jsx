@@ -82,7 +82,6 @@ export default function TicketDetailPage() {
     }
     if (t.status === 'REOPEN_PENDING') note = <div className="banner info"><Icon name="clock" /><div className="grow">Yêu cầu mở lại của bạn đang chờ IT Manager xem xét.</div></div>
   }
-  if (role === ROLES.STAFF && !mine) note = <div className="banner info"><Icon name="info" /><div className="grow">Ticket này chưa được giao cho bạn nên bạn chỉ xem, không thao tác được.</div></div>
   if (role === ROLES.STAFF && mine) {
     if (t.status === 'ASSIGNED') actions = <button type="button" className="btn pri" onClick={() => open('start')}>Bắt đầu xử lý</button>
     if (t.status === 'IN_PROGRESS') actions = <button type="button" className="btn ok" onClick={() => open('resolve')}><Icon name="check" />Hoàn tất xử lý</button>
