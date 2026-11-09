@@ -102,6 +102,9 @@ public class SecurityConfig {
 
                 // --- Chỉ IT_MANAGER (SDD §6.2; SRS UC-06 4a) ---
                 .requestMatchers(HttpMethod.PUT, "/api/v1/tickets/*/assign").hasRole("IT_MANAGER")
+                // Gửi yêu cầu mở lại: chỉ EMPLOYEE (SRS UC-08: Admin/IT Staff gọi API mở lại → 403; SDD §4 "Employee (Owner)").
+                // Kiểm chủ ticket (404 + AUTHZ_DENIED) nằm trong ReopenService
+                .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/reopen").hasRole("EMPLOYEE")
                 // Upload tệp: Admin bị từ chối 403 (SecRS §5 POST /tickets/{id}/attachments: Admin "Deny 403"); 403 tự ghi AUTHZ_DENIED
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/attachments")
                     .hasAnyRole("EMPLOYEE", "IT_STAFF", "IT_MANAGER")

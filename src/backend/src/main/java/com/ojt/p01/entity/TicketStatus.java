@@ -9,7 +9,7 @@ package com.ojt.p01.entity;
  *  ASSIGNED       → IN_PROGRESS     (IT_STAFF nhận xử lý — HD07)
  *  IN_PROGRESS    → RESOLVED        (IT_STAFF hoàn thành, bắt buộc resolution_note — HD07)
  *  RESOLVED       → CLOSED          (IT_MANAGER đóng hoặc auto sau 3 ngày)
- *  RESOLVED       → REOPEN_PENDING  (Employee yêu cầu mở lại trong 3 ngày — HD10, BR-HD-04)
+ *  RESOLVED       → REOPEN_PENDING  (Employee yêu cầu mở lại trong 7 ngày / 168 giờ — HD10, BR-HD-04)
  *  REOPEN_PENDING → REOPENED        (IT_MANAGER duyệt mở lại)
  *  REOPEN_PENDING → RESOLVED        (IT_MANAGER từ chối mở lại)
  *  REOPENED       → IN_PROGRESS     (IT_STAFF tiếp tục xử lý sau khi được mở lại)

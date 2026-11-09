@@ -57,7 +57,8 @@ public class FeedbackService {
 
     /**
      * Gửi đánh giá mức độ hài lòng (POST /api/v1/tickets/{id}/feedback).
-     * - Chỉ người tạo vé (Employee) mới được đánh giá (Anti-IDOR).
+     * - Người tạo vé (Employee) hoặc ADMIN được đánh giá (nhóm BE chốt 09/11 cho Admin gửi feedback).
+     *   Người khác → 404 + AUTHZ_DENIED (Anti-IDOR).
      * - Chỉ được đánh giá khi vé ở trạng thái CLOSED.
      * - Mỗi ticket chỉ được đánh giá 1 lần duy nhất.
      */
@@ -66,8 +67,9 @@ public class FeedbackService {
         Ticket ticket = findTicket(idOrNumber);
         User currentUser = getCurrentUser();
 
-        // 1. Kiểm tra quyền: Chỉ Employee tạo vé mới được đánh giá (Anti-IDOR: nếu không phải chủ vé trả 404 để không lộ tồn tại)
-        if (!ticket.getRequester().getId().equals(currentUser.getId())) {
+        // 1. Kiểm tra quyền: chủ vé hoặc ADMIN (nhóm BE chốt 09/11); người khác trả 404 để không lộ tồn tại (Anti-IDOR)
+        boolean isAdmin = currentUser.getRole() != null && "ADMIN".equalsIgnoreCase(currentUser.getRole().getRoleName());
+        if (!isAdmin && !ticket.getRequester().getId().equals(currentUser.getId())) {
             auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CREATE_FEEDBACK", 404);
             throw new AppException(ErrorCode.TICKET_NOT_FOUND);
         }

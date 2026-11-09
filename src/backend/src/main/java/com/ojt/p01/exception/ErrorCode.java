@@ -39,6 +39,8 @@ public enum ErrorCode {
     ASSIGNEE_UNCHANGED         ("ASSIGNEE_UNCHANGED", "IT Staff này đang phụ trách ticket", HttpStatus.UNPROCESSABLE_ENTITY), // 422: UC-06 3b (Trí chốt 04/11)
     INVALID_ASSIGNEE           ("INVALID_ASSIGNEE", "Người được giao phải là IT Staff đang hoạt động", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-06 3a, BR-HD-05
     INVALID_STATUS_TRANSITION  ("INVALID_STATUS_TRANSITION", "Chuyển trạng thái vé không hợp lệ", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-07 2a, SDD §6.5 bước 5
+    REOPEN_WINDOW_EXPIRED      ("REOPEN_WINDOW_EXPIRED", "Đã quá thời hạn 07 ngày kể từ khi giải quyết sự cố, vui lòng tạo phiếu yêu cầu mới", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS BR-HD-04, SDD §4 /reopen "quá 7 ngày"
+    REOPEN_ALREADY_PENDING     ("REOPEN_ALREADY_PENDING", "Ticket đã có yêu cầu mở lại đang chờ phê duyệt", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SDD §4 /reopen "đang có yêu cầu chờ duyệt" (nhóm không dùng 409)
 
     // -------------------------------------------------------------------------
     // Admin — Category & SLAConfig
