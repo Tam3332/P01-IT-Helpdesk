@@ -66,10 +66,10 @@ public class FeedbackService {
         Ticket ticket = findTicket(idOrNumber);
         User currentUser = getCurrentUser();
 
-        // 1. Kiểm tra quyền: Chỉ Employee tạo vé mới được đánh giá
+        // 1. Kiểm tra quyền: Chỉ Employee tạo vé mới được đánh giá (Anti-IDOR: nếu không phải chủ vé trả 404 để không lộ tồn tại)
         if (!ticket.getRequester().getId().equals(currentUser.getId())) {
-            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CREATE_FEEDBACK", 403);
-            throw new AppException(ErrorCode.FORBIDDEN, "Chỉ người tạo ticket mới có quyền gửi đánh giá");
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CREATE_FEEDBACK", 404);
+            throw new AppException(ErrorCode.TICKET_NOT_FOUND);
         }
 
         // 2. Kiểm tra trạng thái: Ticket phải ở trạng thái CLOSED

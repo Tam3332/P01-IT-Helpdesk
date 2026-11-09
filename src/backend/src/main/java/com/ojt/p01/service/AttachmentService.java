@@ -223,7 +223,7 @@ public class AttachmentService {
     @Transactional(readOnly = true)
     public Resource loadAttachmentFile(String idOrNumber, Long attachmentId) {
         Ticket ticket = findTicket(idOrNumber);
-        validateAccess(ticket);
+        validateDownloadAccess(ticket);
 
         TicketAttachment attachment = attachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.ATTACHMENT_NOT_FOUND));
@@ -248,7 +248,7 @@ public class AttachmentService {
     @Transactional(readOnly = true)
     public TicketAttachment getAttachmentEntity(String idOrNumber, Long attachmentId) {
         Ticket ticket = findTicket(idOrNumber);
-        validateAccess(ticket);
+        validateDownloadAccess(ticket);
 
         TicketAttachment attachment = attachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new AppException(ErrorCode.ATTACHMENT_NOT_FOUND));
@@ -258,6 +258,17 @@ public class AttachmentService {
         }
 
         return attachment;
+    }
+
+    private void validateDownloadAccess(Ticket ticket) {
+        validateAccess(ticket);
+        User currentUser = getCurrentUser();
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
+        if ("ADMIN".equalsIgnoreCase(roleName)) {
+            // Separation of Duties: Admin chỉ xem metadata danh sách file (GET /attachments), không tải byte nội dung (SecRS §5, SEC-TC-HD-03)
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "DOWNLOAD_ATTACHMENT", 403);
+            throw new AppException(ErrorCode.FORBIDDEN, "Quản trị viên không có quyền tải tệp tin đính kèm");
+        }
     }
 
     private void validateAccess(Ticket ticket) {

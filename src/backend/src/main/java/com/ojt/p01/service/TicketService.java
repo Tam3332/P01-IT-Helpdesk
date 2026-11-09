@@ -422,12 +422,14 @@ public class TicketService {
         boolean isManager = "IT_MANAGER".equalsIgnoreCase(roleName);
         boolean isStaff = "IT_STAFF".equalsIgnoreCase(roleName);
         if (!isManager && !isStaff) {
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "UPDATE_STATUS", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ IT Staff hoặc IT Manager mới được cập nhật trạng thái");
         }
 
         // Nếu là IT Staff: phải là người được phân công xử lý ticket này
         if (isStaff && !isManager) {
             if (ticket.getCurrentAssignee() == null || !ticket.getCurrentAssignee().getId().equals(currentUser.getId())) {
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "UPDATE_STATUS", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND); // Anti-IDOR (IA-HD02)
             }
         }
@@ -525,8 +527,10 @@ public class TicketService {
 
         if (!isManager && !isRequester) {
             if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CLOSE_TICKET", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND); // Anti-IDOR
             }
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CLOSE_TICKET", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ người tạo ticket hoặc IT Manager mới có quyền đóng ticket");
         }
 
