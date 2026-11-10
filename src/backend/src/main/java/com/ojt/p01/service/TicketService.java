@@ -42,8 +42,8 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Service xử lý nghiệp vụ Ticket (HD03 Tạo vé, HD05 Danh sách & Chi tiết vé).
- * Tuân thủ Access Matrix (02 §5), UC-02, UC-04, Anti-IDOR (IA-HD02), T3-09.
+ * Service xử lý nghiệp vụ Ticket.
+ * Tuân thủ Access Matrix (02 §5), , Anti-IDOR.
  */
 @Service
 public class TicketService {
@@ -76,22 +76,22 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // HD03: Tạo ticket mới (POST /api/v1/tickets)
+    // Tạo ticket mới (POST /api/v1/tickets)
     // -------------------------------------------------------------------------
 
-    /**
-     * Tạo ticket mới.
-     * Quy tắc phân quyền: CHỈ EMPLOYEE được tạo ticket (Access Matrix §5, UC-02).
-     * Role khác gọi đến → 403 FORBIDDEN.
-     */
+ /**
+ * Tạo ticket mới.
+ * Quy tắc phân quyền: CHỈ EMPLOYEE được tạo ticket (Access Matrix §5).
+ * Role khác gọi đến → 403 FORBIDDEN.
+ */
     @Transactional
     public TicketResponse createTicket(CreateTicketRequest request) {
         return createTicket(request, "127.0.0.1");
     }
 
-    /**
-     * Tạo ticket mới và ghi nhận TicketHistory ban đầu (action=CREATE, UC-02 bước 7, HD09).
-     */
+ /**
+ * Tạo ticket mới và ghi nhận TicketHistory ban đầu (action=CREATE).
+ */
     @Transactional
     public TicketResponse createTicket(CreateTicketRequest request, String ipAddress) {
 
@@ -108,15 +108,15 @@ public class TicketService {
         TicketCategory category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // 3. UC-02 5a: Chặn danh mục đã bị vô hiệu hóa (isActive = false)
+        // 3. : Chặn danh mục đã bị vô hiệu hóa (isActive = false)
         if (Boolean.FALSE.equals(category.getIsActive())) {
             throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
         }
 
-        // 4. Tính priority = impactLevel (quy tắc sơ bộ ở SRS)
+        // 4. Tính priority = impactLevel (quy tắc sơ bộ ở)
         String priority = request.impactLevel();
 
-        // 5. Tra SLA config + tính deadline (BR-HD-03)
+        // 5. Tra SLA config + tính deadline
         SLAConfig slaConfig = slaConfigRepository.findByPriorityLevel(priority)
                 .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
 
@@ -146,7 +146,7 @@ public class TicketService {
 
         Ticket saved = ticketRepository.save(ticket);
 
-        // Ghi nhận lịch sử tạo ticket (UC-02 bước 7, HD09)
+        // Ghi nhận lịch sử tạo ticket
         String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
         historyRepository.save(new TicketHistory(
                 saved,
@@ -160,7 +160,7 @@ public class TicketService {
                 saved.getCreatedAt()
         ));
 
-        // Audit TICKET_CREATED (SDD §7, T3-06): chỉ ghi sau khi transaction commit thành công,
+        // Audit TICKET_CREATED: chỉ ghi sau khi transaction commit thành công
         // tránh có dòng log cho ticket thực tế không được lưu
         Long actorId = requester.getId();
         String actorRole = requester.getRole() != null ? requester.getRole().getRoleName() : null;
@@ -176,28 +176,28 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // HD05: Lấy danh sách ticket có phân trang & lọc theo Role (GET /api/v1/tickets)
+    // Lấy danh sách ticket có phân trang & lọc theo Role (GET /api/v1/tickets)
     // -------------------------------------------------------------------------
 
-    /**
-     * Lấy danh sách ticket có phân quyền và bộ lọc:
-     * - EMPLOYEE   : chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
-     * - IT_STAFF   : xem vé được giao cho mình (currentAssignee) + tất cả vé trạng thái NEW (chờ tiếp nhận).
-     * - IT_MANAGER : xem toàn bộ vé trong hệ thống.
-     * - ADMIN      : xem toàn bộ vé (chế độ chỉ đọc).
-     *
-     * @param page     Số trang (0-indexed)
-     * @param size     Kích thước trang (mặc định 20 theo OpenAPI)
-     * @param status   Lọc trạng thái (tùy chọn: NEW, ASSIGNED, ...)
-     * @param priority Lọc độ ưu tiên (tùy chọn: LOW, MEDIUM, ...)
-     */
+ /**
+ * Lấy danh sách ticket có phân quyền và bộ lọc:
+ * EMPLOYEE : chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
+ * IT_STAFF : xem vé được giao cho mình (currentAssignee) + tất cả vé trạng thái NEW (chờ tiếp nhận).
+ * IT_MANAGER : xem toàn bộ vé trong hệ thống.
+ * ADMIN : xem toàn bộ vé (chế độ chỉ đọc).
+ *
+ * @param page Số trang (0-indexed)
+ * @param size Kích thước trang (mặc định 20 theo OpenAPI)
+ * @param status Lọc trạng thái (tùy chọn: NEW, ASSIGNED...)
+ * @param priority Lọc độ ưu tiên (tùy chọn: LOW, MEDIUM...)
+ */
     @Transactional(readOnly = true)
     public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority,
                                                    Integer categoryId, Long assigneeId, String search) {
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
-        // SRS UC-04 3b: tham số trang không hợp lệ thì dùng giá trị mặc định (trang 0, 20 dòng – HD05)
+        // tham số trang không hợp lệ thì dùng giá trị mặc định (trang 0, 20 dòng –)
         int safePage = page < 0 ? 0 : page;
         int safeSize = size < 1 ? 20 : size;
         PageRequest pageRequest = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -211,7 +211,7 @@ public class TicketService {
                 predicates.add(cb.equal(root.get("requester").get("id"), currentUser.getId()));
 
             } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-                // IT_STAFF chỉ thấy vé được giao cho mình (SRS §4 HD05, UC-04 bước 2 – bản sửa 05/11)
+                // IT_STAFF chỉ thấy vé được giao cho mình
                 predicates.add(cb.equal(root.get("currentAssignee").get("id"), currentUser.getId()));
             }
             // IT_MANAGER, ADMIN: thấy tất cả vé
@@ -226,8 +226,8 @@ public class TicketService {
                 predicates.add(cb.equal(root.get("priority"), priority.trim().toUpperCase()));
             }
 
-            // 4–6. Bộ lọc SDD §4 (categoryId, assigneeId, search). Tất cả AND thêm SAU phạm vi theo role ở bước 1,
-            // nên không thể dùng bộ lọc để lấy ticket ngoài phạm vi (SecRS AC-05).
+            // 4–6. Bộ lọc (categoryId, assigneeId, search). Tất cả AND thêm SAU phạm vi theo role ở bước 1
+            // nên không thể dùng bộ lọc để lấy ticket ngoài phạm vi.
             if (categoryId != null) {
                 predicates.add(cb.equal(root.get("category").get("id"), categoryId));
             }
@@ -253,21 +253,21 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // HD05: Xem chi tiết 1 ticket (GET /api/v1/tickets/{id})
+    // Xem chi tiết 1 ticket (GET /api/v1/tickets/{id})
     // -------------------------------------------------------------------------
 
-    /**
-     * Xem thông tin chi tiết một vé cụ thể theo ID số (Long) hoặc mã chuỗi (HD-YYYY-XXXX).
-     *
-     * Kiểm tra Owner ở Service Layer theo chính sách T3-09 & Anti-IDOR (IA-HD02):
-     * - EMPLOYEE: chỉ được xem vé do chính mình tạo ra. Xem vé người khác → 404 NOT_FOUND.
-     * - IT_STAFF: chỉ được xem vé được giao cho mình hoặc vé đang ở trạng thái NEW. Xem vé khác → 404 NOT_FOUND.
-     * - IT_MANAGER, ADMIN: xem được tất cả vé.
-     *
-     * Lý do trả 404 thay vì 403: Bảo vệ che giấu sự tồn tại của tài nguyên, chống tấn công IDOR thu thập ID.
-     *
-     * @param idOrNumber ID số của vé (ví dụ: 1) HOẶC mã vé (ví dụ: HD-2026-0001)
-     */
+ /**
+ * Xem thông tin chi tiết một vé cụ thể theo ID số (Long) hoặc mã chuỗi (HD-YYYY-XXXX).
+ *
+ * Kiểm tra Owner ở Service Layer theo chính sách & Anti-IDOR:
+ * EMPLOYEE: chỉ được xem vé do chính mình tạo ra. Xem vé người khác → 404 NOT_FOUND.
+ * IT_STAFF: chỉ được xem vé được giao cho mình hoặc vé đang ở trạng thái NEW. Xem vé khác → 404 NOT_FOUND.
+ * IT_MANAGER, ADMIN: xem được tất cả vé.
+ *
+ * Lý do trả 404 thay vì 403: Bảo vệ che giấu sự tồn tại của tài nguyên, chống tấn công IDOR thu thập ID.
+ *
+ * @param idOrNumber ID số của vé (ví dụ: 1) HOẶC mã vé (ví dụ: HD-2026-0001)
+ */
     @Transactional(readOnly = true)
     public TicketDetailResponse getTicketDetail(String idOrNumber) {
         Ticket ticket = findTicketByIdOrNumber(idOrNumber);
@@ -282,7 +282,7 @@ public class TicketService {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_TICKET");
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-            // IT_STAFF chỉ xem vé được giao cho mình (SRS §4 HD05 – bản sửa 05/11); vé khác → 404 + audit AUTHZ_DENIED
+            // IT_STAFF chỉ xem vé được giao cho mình; vé khác → 404 + audit AUTHZ_DENIED
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
             if (!isAssignedToMe) {
@@ -295,29 +295,29 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // HD06: Phân công / điều phối lại (PUT /api/v1/tickets/{id}/assign) — SRS UC-06, BR-HD-05
+    // Phân công / điều phối lại (PUT /api/v1/tickets/{id}/assign) —
     // -------------------------------------------------------------------------
 
-    /** Trạng thái được phép phân công: UC-06 tiền điều kiện + Reopened (SRS P3 bước 5, HD06 "P3 – bước 6"). */
+ /** Trạng thái được phép phân công: tiền điều kiện + Reopened. */
     private static final EnumSet<TicketStatus> ASSIGNABLE_STATUSES =
             EnumSet.of(TicketStatus.NEW, TicketStatus.ASSIGNED, TicketStatus.IN_PROGRESS, TicketStatus.REOPENED);
 
-    /**
-     * Phân công lần đầu (ticket NEW) hoặc điều phối lại (ASSIGNED / IN_PROGRESS / REOPENED).
-     * Toàn bộ chạy trong 1 transaction: lỗi ở bất kỳ bước nào thì rollback hết (UC-06 5a, NFR-04).
-     *
-     * - Lần đầu: NEW → ASSIGNED, chốt priority, tính lại 2 hạn SLA = created_at + giờ theo priority (UC-06 bước 5, BR-HD-03).
-     * - Điều phối lại ticket ASSIGNED / IN_PROGRESS: giữ nguyên trạng thái, không tính lại SLA
-     *   (UC-06 bước 5 "nếu phân công lần đầu từ New").
-     * - Phân công lại sau Reopen: REOPENED → ASSIGNED (SDD §2.1, Trí chốt 04/11), IT Staff nhận thì sang IN_PROGRESS;
-     *   không tính lại SLA vì hạn xử lý mới đã tính lúc duyệt mở lại (SRS P3 bước 5).
-     * - Không ghi first_responded_at: SRS P2 "Hạn phản hồi dừng tính ngay khi IT Staff tiếp nhận (In Progress)".
-     */
+ /**
+ * Phân công lần đầu (ticket NEW) hoặc điều phối lại (ASSIGNED / IN_PROGRESS / REOPENED).
+ * Toàn bộ chạy trong 1 transaction: lỗi ở bất kỳ bước nào thì rollback hết.
+ *
+ * Lần đầu: NEW → ASSIGNED, chốt priority, tính lại 2 hạn SLA = created_at + giờ theo priority.
+ * Điều phối lại ticket ASSIGNED / IN_PROGRESS: giữ nguyên trạng thái, không tính lại SLA
+ *.
+ * Phân công lại sau Reopen: REOPENED → ASSIGNED, IT Staff nhận thì sang IN_PROGRESS;
+ * không tính lại SLA vì hạn xử lý mới đã tính lúc duyệt mở lại.
+ * Không ghi first_responded_at: P2 "Hạn phản hồi dừng tính ngay khi IT Staff tiếp nhận (In Progress)".
+ */
     @Transactional
     public TicketDetailResponse assignTicket(String idOrNumber, AssignTicketRequest request, String ipAddress) {
         User manager = getCurrentUser();
 
-        // Lớp 2 kiểm quyền (lớp 1 là SecurityConfig): chỉ IT_MANAGER (UC-06 4a, SDD §6.2)
+        // Lớp 2 kiểm quyền (lớp 1 là SecurityConfig): chỉ IT_MANAGER
         String roleName = manager.getRole() != null ? manager.getRole().getRoleName() : "";
         if (!"IT_MANAGER".equalsIgnoreCase(roleName)) {
             throw new AppException(ErrorCode.FORBIDDEN);
@@ -331,7 +331,7 @@ public class TicketService {
                     "Không thể phân công ticket đang ở trạng thái " + current.name());
         }
 
-        // Người được giao: phải tồn tại, role IT_STAFF, đang hoạt động (UC-06 3a → 422)
+        // Người được giao: phải tồn tại, role IT_STAFF, đang hoạt động
         User assignee = userRepository.findById(request.assigneeId()).orElse(null);
         boolean validAssignee = assignee != null
                 && assignee.getRole() != null
@@ -350,7 +350,7 @@ public class TicketService {
         String note = request.assignmentNote() != null && !request.assignmentNote().isBlank()
                 ? request.assignmentNote().trim() : null;
 
-        // UC-06 3b (Trí chốt 04/11): ticket ASSIGNED / IN_PROGRESS mà giao lại đúng người đang phụ trách
+        // ticket ASSIGNED / IN_PROGRESS mà giao lại đúng người đang phụ trách
         // và không đổi priority → 422, không ghi lịch sử. REOPENED thì vẫn cho giao lại người cũ (chuyển sang ASSIGNED).
         boolean sameAssignee = oldAssignee != null && oldAssignee.getId().equals(assignee.getId());
         boolean reassignable = current == TicketStatus.ASSIGNED || current == TicketStatus.IN_PROGRESS;
@@ -358,7 +358,7 @@ public class TicketService {
             throw new AppException(ErrorCode.ASSIGNEE_UNCHANGED);
         }
 
-        // BR-HD-05 / SDD §3.4: kết thúc phân công cũ TRƯỚC (flush ngay), rồi mới thêm dòng mới,
+        // / : kết thúc phân công cũ TRƯỚC (flush ngay), rồi mới thêm dòng mới
         // để không vi phạm unique index "mỗi ticket 1 dòng is_current = true"
         assignmentRepository.findByTicket_IdAndIsCurrentTrue(ticket.getId()).ifPresent(old -> {
             old.end(now);
@@ -373,7 +373,7 @@ public class TicketService {
             transitionValidator.assertTransitionAllowed(TicketStatus.NEW, TicketStatus.ASSIGNED);
             ticket.setStatus(TicketStatus.ASSIGNED.name());
 
-            // BR-HD-03: hạn = created_at + giờ theo SLAConfig của mức ưu tiên chính thức
+            // hạn = created_at + giờ theo SLAConfig của mức ưu tiên chính thức
             SLAConfig sla = slaConfigRepository.findByPriorityLevel(newPriority)
                     .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
             OffsetDateTime created = ticket.getCreatedAt();
@@ -386,7 +386,7 @@ public class TicketService {
         }
         ticketRepository.save(ticket);
 
-        // TicketHistory (UC-06 bước 6): 1 dòng người phụ trách, thêm 1 dòng nếu đổi priority
+        // TicketHistory: 1 dòng người phụ trách, thêm 1 dòng nếu đổi priority
         String action = firstAssign ? "ASSIGN" : "REASSIGN";
         historyRepository.save(new TicketHistory(ticket, manager, action, "current_assignee_id",
                 oldAssignee != null ? String.valueOf(oldAssignee.getId()) : null,
@@ -396,22 +396,22 @@ public class TicketService {
                     oldPriority, newPriority, null, ipAddress, now));
         }
 
-        // Chưa làm: audit TICKET_ASSIGNED (UC-06 bước 7, chờ schema Hoà); gửi thông báo IT Staff (UC-06 bước 8, chưa có cơ chế)
+        // Chưa làm: audit TICKET_ASSIGNED; gửi thông báo IT Staff
         return toDetailResponse(ticket);
     }
 
     // -------------------------------------------------------------------------
     // Helper: Tìm vé bằng ID số hoặc Mã vé chuỗi
     // -------------------------------------------------------------------------
-    // HD07: Cập nhật trạng thái xử lý ticket (PATCH /api/v1/tickets/{id}/status)
+    // Cập nhật trạng thái xử lý ticket (PATCH /api/v1/tickets/{id}/status)
     // -------------------------------------------------------------------------
 
-    /**
-     * IT Staff nhận xử lý (IN_PROGRESS) hoặc hoàn tất sự cố (RESOLVED).
-     * - Chỉ IT_STAFF được giao hoặc IT_MANAGER mới được đổi trạng thái.
-     * - Chuyển RESOLVED bắt buộc có resolutionNote >= 20 ký tự (BR-HD-01).
-     * - Chuyển IN_PROGRESS: ghi nhận first_responded_at để dừng tính Response SLA.
-     */
+ /**
+ * IT Staff nhận xử lý (IN_PROGRESS) hoặc hoàn tất sự cố (RESOLVED).
+ * Chỉ IT_STAFF được giao hoặc IT_MANAGER mới được đổi trạng thái.
+ * Chuyển RESOLVED bắt buộc có resolutionNote >= 20 ký tự.
+ * Chuyển IN_PROGRESS: ghi nhận first_responded_at để dừng tính Response SLA.
+ */
     @Transactional
     public TicketDetailResponse updateTicketStatus(String idOrNumber, UpdateTicketStatusRequest request, String ipAddress) {
         Ticket ticket = findTicketByIdOrNumber(idOrNumber);
@@ -422,13 +422,15 @@ public class TicketService {
         boolean isManager = "IT_MANAGER".equalsIgnoreCase(roleName);
         boolean isStaff = "IT_STAFF".equalsIgnoreCase(roleName);
         if (!isManager && !isStaff) {
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "UPDATE_STATUS", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ IT Staff hoặc IT Manager mới được cập nhật trạng thái");
         }
 
         // Nếu là IT Staff: phải là người được phân công xử lý ticket này
         if (isStaff && !isManager) {
             if (ticket.getCurrentAssignee() == null || !ticket.getCurrentAssignee().getId().equals(currentUser.getId())) {
-                throw new AppException(ErrorCode.TICKET_NOT_FOUND); // Anti-IDOR (IA-HD02)
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "UPDATE_STATUS", 404);
+                throw new AppException(ErrorCode.TICKET_NOT_FOUND); // Anti-IDOR
             }
         }
 
@@ -445,7 +447,7 @@ public class TicketService {
         transitionValidator.assertTransitionAllowed(currentStatus, targetStatus);
 
         // API này chỉ xử lý IN_PROGRESS và RESOLVED; trạng thái khác (vd REOPENED → ASSIGNED, đóng ticket)
-        // đi qua API riêng → 422, trạng thái không đổi (SecRS §4.1 AC-08)
+        // đi qua API riêng → 422, trạng thái không đổi
         if (targetStatus != TicketStatus.IN_PROGRESS && targetStatus != TicketStatus.RESOLVED) {
             throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION,
                     "API này chỉ cập nhật sang IN_PROGRESS hoặc RESOLVED");
@@ -475,7 +477,7 @@ public class TicketService {
             ));
 
         } else if (targetStatus == TicketStatus.RESOLVED) {
-            // Kiểm tra resolution_note >= 20 ký tự (BR-HD-01)
+            // Kiểm tra resolution_note >= 20 ký tự
             String note = request.resolutionNote() != null ? request.resolutionNote().trim() : "";
             if (note.length() < 20) {
                 throw new AppException(ErrorCode.RESOLUTION_NOTE_REQUIRED);
@@ -506,14 +508,14 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // HD10: Đóng ticket hoàn tất (POST /api/v1/tickets/{id}/close)
+    // Đóng ticket hoàn tất (POST /api/v1/tickets/{id}/close)
     // -------------------------------------------------------------------------
 
-    /**
-     * Xác nhận đóng ticket sau khi được giải quyết (HD10, UC-08, BR-HD-02, BR-HD-04).
-     * - Chỉ Employee chủ ticket hoặc IT_MANAGER mới được đóng.
-     * - Chỉ đóng được ticket khi đang ở trạng thái RESOLVED.
-     */
+ /**
+ * Xác nhận đóng ticket sau khi được giải quyết.
+ * Chỉ Employee chủ ticket hoặc IT_MANAGER mới được đóng.
+ * Chỉ đóng được ticket khi đang ở trạng thái RESOLVED.
+ */
     @Transactional
     public TicketDetailResponse closeTicket(String idOrNumber, String ipAddress) {
         Ticket ticket = findTicketByIdOrNumber(idOrNumber);
@@ -525,8 +527,10 @@ public class TicketService {
 
         if (!isManager && !isRequester) {
             if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
+                auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CLOSE_TICKET", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND); // Anti-IDOR
             }
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CLOSE_TICKET", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Chỉ người tạo ticket hoặc IT Manager mới có quyền đóng ticket");
         }
 
@@ -540,7 +544,7 @@ public class TicketService {
         OffsetDateTime now = OffsetDateTime.now();
         ticket.setStatus("CLOSED");
         ticket.setClosedAt(now);
-        // SLA xử lý chỉ tính tới lúc Resolved (SRS §5 BR-HD-03: "đồng hồ xử lý dừng khi sang Resolved"),
+        // SLA xử lý chỉ tính tới lúc Resolved
         // không tính thời gian chờ Employee xác nhận đóng
         if (ticket.getResolvedAt() != null && ticket.getResolutionDeadline() != null
                 && ticket.getResolvedAt().isAfter(ticket.getResolutionDeadline())) {
@@ -565,13 +569,13 @@ public class TicketService {
     }
 
     // -------------------------------------------------------------------------
-    // HD09: Xem lịch sử xử lý ticket (GET /api/v1/tickets/{id}/history)
+    // Xem lịch sử xử lý ticket (GET /api/v1/tickets/{id}/history)
     // -------------------------------------------------------------------------
 
-    /**
-     * Lấy toàn bộ dòng thời gian / lịch sử biến động của ticket (HD09, UC-02 bước 7, UC-06 bước 6).
-     * Áp dụng kiểm tra quyền truy cập chống IDOR (IA-HD02) tương tự chi tiết ticket.
-     */
+ /**
+ * Lấy toàn bộ dòng thời gian / lịch sử biến động của ticket.
+ * Áp dụng kiểm tra quyền truy cập chống IDOR tương tự chi tiết ticket.
+ */
     @Transactional(readOnly = true)
     public List<TicketHistoryResponse> getTicketHistory(String idOrNumber) {
         Ticket ticket = findTicketByIdOrNumber(idOrNumber);
@@ -587,7 +591,7 @@ public class TicketService {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
 
-            // IT_STAFF chỉ xem lịch sử vé được giao cho mình (SRS §4 HD05 – bản sửa 05/11)
+            // IT_STAFF chỉ xem lịch sử vé được giao cho mình
             if (!isAssignedToMe) {
                 throw denyTicketAccess(currentUser, roleName, ticket, "VIEW_HISTORY");
             }
@@ -612,10 +616,10 @@ public class TicketService {
 
     // -------------------------------------------------------------------------
 
-    /**
-     * Ticket có tồn tại nhưng người gọi không được xem: ghi AUTHZ_DENIED (SDD §7, IA-HD05) rồi trả 404 như ticket không tồn tại (IA-HD02).
-     * Không ghi khi ticket thật sự không tồn tại (SDD §7: "không tính lỗi HTTP 404 thông thường").
-     */
+ /**
+ * Ticket có tồn tại nhưng người gọi không được xem: ghi AUTHZ_DENIED rồi trả 404 như ticket không tồn tại.
+ * Không ghi khi ticket thật sự không tồn tại.
+ */
     private AppException denyTicketAccess(User user, String roleName, Ticket ticket, String action) {
         auditLogger.log("AUTHZ_DENIED", user.getId(), roleName, "TICKET", ticket.getTicketNumber(), action, "DENIED", 404);
         return new AppException(ErrorCode.TICKET_NOT_FOUND);

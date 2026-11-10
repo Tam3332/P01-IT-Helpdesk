@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         new UsernamePasswordAuthenticationToken(username, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // Token đã logout (jti nằm trong token_blacklist) thì không xác thực → 401 (SDD §6.1, SecRS TH-08)
+                // Token đã logout (jti nằm trong token_blacklist) thì không xác thực → 401
                 if (!tokenBlacklistRepository.existsByJti(claims.getId())) {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }

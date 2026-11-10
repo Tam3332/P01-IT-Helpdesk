@@ -10,11 +10,11 @@ import java.util.List;
 @Repository
 public interface TicketCommentRepository extends JpaRepository<TicketComment, Long> {
 
-    /** Toàn bộ bình luận của ticket sắp xếp tăng dần theo thời gian (IT Staff, Manager, Admin). */
+ /** Toàn bộ bình luận của ticket sắp xếp tăng dần theo thời gian (IT Staff, Manager, Admin). */
     @EntityGraph(attributePaths = {"author", "author.role"})
     List<TicketComment> findByTicket_IdOrderByCreatedAtAsc(Long ticketId);
 
-    /** Chỉ bình luận công khai dành cho Employee (isInternal = false, BR-HD-06). */
+ /** Chỉ bình luận công khai dành cho Employee (isInternal = false). */
     @EntityGraph(attributePaths = {"author", "author.role"})
     List<TicketComment> findByTicket_IdAndIsInternalFalseOrderByCreatedAtAsc(Long ticketId);
 }

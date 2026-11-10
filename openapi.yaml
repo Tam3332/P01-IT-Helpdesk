@@ -447,7 +447,7 @@ paths:
   /tickets/{id}/reopen:
     post:
       tags: [Tickets]
-      summary: "[Chưa triển khai – tuần 4] Gửi yêu cầu mở lại ticket trong vòng 7 ngày (HD10, UC-08 Nhánh B bước 1-4, BR-HD-04)"
+      summary: "Gửi yêu cầu mở lại ticket trong vòng 7 ngày (HD10, UC-08 Nhánh B bước 1-4, BR-HD-04)"
       description: >
         Chỉ Employee là chủ ticket mới được gửi (không phải Manager tự Reopen).
         Hệ thống tạo bản ghi reopen_requests với status=PENDING, chuyển trạng thái ticket sang REOPEN_PENDING và trả về 201.
@@ -459,8 +459,9 @@ paths:
         - name: id
           in: path
           required: true
+          description: ID số hoặc mã ticket (HD-YYYY-XXXX)
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -472,6 +473,7 @@ paths:
                 reopenReason:
                   type: string
                   minLength: 20
+                  maxLength: 2000
                   description: Lý do mở lại phải >= 20 ký tự (BR-HD-04)
                   example: Mạng vẫn tiếp tục bị chập chờn rớt gói tin sau 15 phút cắm lại dây.
       responses:
@@ -495,7 +497,7 @@ paths:
   /reopen-requests:
     get:
       tags: [Tickets]
-      summary: "[Chưa triển khai – tuần 4] Danh sách yêu cầu mở lại để IT Manager xem xét (HD10, UC-08)"
+      summary: "Danh sách yêu cầu mở lại để IT Manager xem xét (HD10, UC-08)"
       description: Chỉ dành cho IT_MANAGER. Mặc định trả các yêu cầu PENDING.
       security:
         - BearerAuth: []
@@ -523,7 +525,7 @@ paths:
   /reopen-requests/{requestId}/approve:
     post:
       tags: [Tickets]
-      summary: "[Chưa triển khai – tuần 4] IT Manager duyệt yêu cầu mở lại (HD10, UC-08, BR-HD-03, BR-HD-04)"
+      summary: "IT Manager duyệt yêu cầu mở lại ticket (HD10, UC-08, BR-HD-03, BR-HD-04, BPMN P3)"
       description: >
         Chỉ dành cho IT_MANAGER. Ticket chuyển REOPEN_PENDING -> REOPENED; hạn xử lý mới tính từ lúc duyệt,
         không tính lại hạn phản hồi, giữ nguyên cờ vi phạm SLA cũ (UC-08 nhánh B, bước 6).
@@ -554,7 +556,7 @@ paths:
   /reopen-requests/{requestId}/reject:
     post:
       tags: [Tickets]
-      summary: "[Chưa triển khai – tuần 4] IT Manager từ chối yêu cầu mở lại (HD10, UC-08, BR-HD-04)"
+      summary: "IT Manager từ chối yêu cầu mở lại ticket (HD10, UC-08, BR-HD-04, BPMN P3)"
       description: >
         Chỉ dành cho IT_MANAGER. Ticket chuyển REOPEN_PENDING -> RESOLVED, bản ghi reopen_requests chuyển REJECTED.
         Hạn xử lý và cờ vi phạm SLA giữ nguyên (UC-08 nhánh B, bước 6).
@@ -808,6 +810,7 @@ paths:
     post:
       tags: [Feedback]
       summary: Đánh giá chất lượng dịch vụ CSAT (HD15)
+      description: Chỉ Employee chủ ticket được gửi đánh giá khi ticket CLOSED, mỗi ticket 1 lần. Admin bị từ chối 403 (chỉ xem readonly). Người khác nhận 404 + audit AUTHZ_DENIED (Anti-IDOR).
       security:
         - BearerAuth: []
       parameters:
@@ -1527,6 +1530,9 @@ components:
         ticketNumber:
           type: string
           example: HD-2026-0042
+        ticketTitle:
+          type: string
+          example: Mạng phòng kế toán chập chờn
         requesterId:
           type: integer
           example: 3
@@ -1536,6 +1542,11 @@ components:
         reopenReason:
           type: string
           example: Mạng vẫn tiếp tục bị chập chờn rớt gói tin sau 15 phút cắm lại dây.
+        previousResolutionNote:
+          type: string
+          nullable: true
+          description: Giải pháp IT Staff đã ghi lúc Resolved (tickets.resolution_note), để IT Manager đối chiếu
+          example: Đã thay dây mạng và khởi động lại switch tầng 3.
         status:
           type: string
           enum: [PENDING, APPROVED, REJECTED]

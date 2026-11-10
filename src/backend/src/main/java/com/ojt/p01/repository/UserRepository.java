@@ -21,6 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
 
-    /** Tài khoản đang hoạt động theo role, xếp theo tên (dùng cho GET /users/it-staff). */
+ /** Tài khoản đang hoạt động theo role, xếp theo tên (dùng cho GET /users/it-staff). */
     List<User> findByRole_RoleNameAndIsActiveTrueOrderByFullNameAsc(String roleName);
 }

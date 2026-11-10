@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/tickets/{idOrNumber}/feedback")
-@Tag(name = "Ticket Feedback", description = "API đánh giá chất lượng hỗ trợ sau khi đóng ticket (CSAT, HD15)")
+@Tag(name = "Ticket Feedback", description = "API đánh giá chất lượng hỗ trợ sau khi đóng ticket (CSAT, )")
 public class TicketFeedbackController {
 
     private final FeedbackService feedbackService;

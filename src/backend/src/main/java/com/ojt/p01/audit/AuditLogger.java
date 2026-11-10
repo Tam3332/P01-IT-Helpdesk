@@ -27,14 +27,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Ghi Security Audit Log dạng JSON Lines (SDD §7, IA-HD04): mỗi sự kiện là 1 dòng JSON trong audit_events.jsonl.
+ * Ghi Security Audit Log dạng JSON Lines: mỗi sự kiện là 1 dòng JSON trong audit_events.jsonl.
  *
- * - Log riêng với bảng ticket_history (SDD §7: "Security Audit Log được lưu riêng với bảng ticket_history").
- * - Trường theo SDD §7: timestamp (UTC), event_type, actor_id, role, target_type, target_id, action, outcome,
- *   src_ip, correlation_id, http_status.
- * - KHÔNG truyền mật khẩu, JWT hay token vào bất kỳ trường nào (SDD §7).
- * - Ghi file trên 1 luồng riêng để không chặn request (SDD, thành phần Audit Logger: "Non-blocking async"); lỗi ghi log chỉ in ra console, không làm hỏng API.
- * - Đường dẫn file đọc từ audit.log-file (biến môi trường AUDIT_LOG_FILE) để gắn vào log volume khi chạy Docker.
+ * Log riêng với bảng ticket_history.
+ * Trường theo : timestamp (UTC), event_type, actor_id, role, target_type, target_id, action, outcome
+ * src_ip, correlation_id, http_status.
+ * KHÔNG truyền mật khẩu, JWT hay token vào bất kỳ trường nào.
+ * Ghi file trên 1 luồng riêng để không chặn request; lỗi ghi log chỉ in ra console, không làm hỏng API.
+ * Đường dẫn file đọc từ audit.log-file (biến môi trường AUDIT_LOG_FILE) để gắn vào log volume khi chạy Docker.
  */
 @Component
 public class AuditLogger {
@@ -58,15 +58,15 @@ public class AuditLogger {
         this.logFile = Path.of(logFile);
     }
 
-    /**
-     * Ghi 1 sự kiện. IP nguồn và correlation_id lấy từ request hiện tại (phải gọi trên luồng xử lý request).
-     *
-     * @param actorId    id người thực hiện; null nếu chưa xác định (vd đăng nhập bằng email không tồn tại)
-     * @param role       role người thực hiện; null nếu chưa xác định
-     * @param targetType loại đối tượng: USER, USER_EMAIL, TICKET, ENDPOINT
-     * @param targetId   định danh đối tượng (id, mã ticket, email đăng nhập, method + URL)
-     * @param outcome    SUCCESS / FAILURE / DENIED
-     */
+ /**
+ * Ghi 1 sự kiện. IP nguồn và correlation_id lấy từ request hiện tại (phải gọi trên luồng xử lý request).
+ *
+ * @param actorId id người thực hiện; null nếu chưa xác định (vd đăng nhập bằng email không tồn tại)
+ * @param role role người thực hiện; null nếu chưa xác định
+ * @param targetType loại đối tượng: USER, USER_EMAIL, TICKET, ENDPOINT
+ * @param targetId định danh đối tượng (id, mã ticket, email đăng nhập, method + URL)
+ * @param outcome SUCCESS / FAILURE / DENIED
+ */
     public void log(String eventType, Long actorId, String role, String targetType, String targetId,
                     String action, String outcome, Integer httpStatus) {
         HttpServletRequest request = currentRequest();
@@ -95,10 +95,10 @@ public class AuditLogger {
         writer.submit(() -> append(line));
     }
 
-    /**
-     * Ghi sự kiện cho người đang đăng nhập (lấy từ SecurityContext).
-     * Dùng ở chỗ chỉ có token mà chưa có đối tượng User, vd AccessDeniedHandler của Spring Security.
-     */
+ /**
+ * Ghi sự kiện cho người đang đăng nhập (lấy từ SecurityContext).
+ * Dùng ở chỗ chỉ có token mà chưa có đối tượng User, vd AccessDeniedHandler của Spring Security.
+ */
     public void logForCurrentUser(String eventType, String targetType, String targetId,
                                   String action, String outcome, Integer httpStatus) {
         Long actorId = null;
@@ -114,10 +114,10 @@ public class AuditLogger {
         log(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus);
     }
 
-    /**
-     * Ghi AUTHZ_DENIED khi ticket có tồn tại nhưng người gọi không có quyền (SDD §7, IA-HD05).
-     * Không gọi khi ticket không tồn tại (SDD §7: "không tính lỗi HTTP 404 thông thường").
-     */
+ /**
+ * Ghi AUTHZ_DENIED khi ticket có tồn tại nhưng người gọi không có quyền.
+ * Không gọi khi ticket không tồn tại.
+ */
     public void ticketDenied(User user, String ticketNumber, String action, int httpStatus) {
         String role = user.getRole() != null ? user.getRole().getRoleName() : null;
         log("AUTHZ_DENIED", user.getId(), role, "TICKET", ticketNumber, action, "DENIED", httpStatus);
@@ -150,7 +150,7 @@ public class AuditLogger {
         return UUID.randomUUID().toString();
     }
 
-    /** Khi tắt ứng dụng: ghi nốt các dòng còn trong hàng đợi. */
+ /** Khi tắt ứng dụng: ghi nốt các dòng còn trong hàng đợi. */
     @PreDestroy
     public void shutdown() {
         writer.shutdown();

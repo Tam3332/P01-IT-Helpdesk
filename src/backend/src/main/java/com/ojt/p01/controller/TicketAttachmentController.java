@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * Controller quản lý tệp đính kèm an toàn trên ticket (HD04, IA-HD03).
+ * Controller quản lý tệp đính kèm an toàn trên ticket.
  */
 @Tag(name = "Attachments", description = "Quản lý tệp đính kèm và tải xuống an toàn")
 @SecurityRequirement(name = "BearerAuth")
@@ -36,10 +36,10 @@ public class TicketAttachmentController {
         this.attachmentService = attachmentService;
     }
 
-    /**
-     * GET /api/v1/tickets/{ticketId}/attachments (HD04, UC-04 bước 4).
-     */
-    @Operation(summary = "Lấy danh sách tệp đính kèm của ticket (HD04)")
+ /**
+ * GET /api/v1/tickets/{ticketId}/attachments.
+ */
+    @Operation(summary = "Lấy danh sách tệp đính kèm của ticket")
     @GetMapping
     public ResponseEntity<ApiResponse<List<AttachmentResponse>>> getAttachments(
             @Parameter(description = "ID số hoặc mã ticket (HD-YYYY-XXXX)") @PathVariable String ticketId
@@ -47,10 +47,10 @@ public class TicketAttachmentController {
         return ResponseEntity.ok(ApiResponse.success(attachmentService.getAttachments(ticketId)));
     }
 
-    /**
-     * POST /api/v1/tickets/{ticketId}/attachments (HD04, IA-HD03).
-     */
-    @Operation(summary = "Tải tệp đính kèm lên ticket (HD04, IA-HD03)")
+ /**
+ * POST /api/v1/tickets/{ticketId}/attachments.
+ */
+    @Operation(summary = "Tải tệp đính kèm lên ticket")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<AttachmentResponse>> uploadAttachment(
             @Parameter(description = "ID số hoặc mã ticket (HD-YYYY-XXXX)") @PathVariable String ticketId,
@@ -62,10 +62,10 @@ public class TicketAttachmentController {
                 .body(ApiResponse.success("Tải tệp lên thành công", response));
     }
 
-    /**
-     * GET /api/v1/tickets/{ticketId}/attachments/{attachmentId} (IA-HD03).
-     */
-    @Operation(summary = "Tải xuống tệp tin đính kèm an toàn (IA-HD03)")
+ /**
+ * GET /api/v1/tickets/{ticketId}/attachments/{attachmentId}.
+ */
+    @Operation(summary = "Tải xuống tệp tin đính kèm an toàn")
     @GetMapping("/{attachmentId}")
     public ResponseEntity<Resource> downloadAttachment(
             @Parameter(description = "ID số hoặc mã ticket (HD-YYYY-XXXX)") @PathVariable String ticketId,

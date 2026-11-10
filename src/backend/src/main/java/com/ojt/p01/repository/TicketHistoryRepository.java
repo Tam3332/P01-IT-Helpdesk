@@ -13,13 +13,13 @@ import java.util.List;
 @Repository
 public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Long> {
 
-    /** Lấy toàn bộ lịch sử xử lý của ticket theo thực tế thời gian tăng dần (HD09, Timeline FE). */
+ /** Lấy toàn bộ lịch sử xử lý của ticket theo thực tế thời gian tăng dần. */
     @EntityGraph(attributePaths = {"actor"})
     List<TicketHistory> findByTicket_IdOrderByTimestampAsc(Long ticketId);
 
-    /**
-     * 1. Thông báo cho STAFF: Chỉ hiện ticket khi Manager phân công cho Staff đó.
-     */
+ /**
+ * 1. Thông báo cho STAFF: Chỉ hiện ticket khi Manager phân công cho Staff đó.
+ */
     @Query("SELECT h FROM TicketHistory h " +
            "JOIN FETCH h.ticket t " +
            "JOIN FETCH h.actor a " +
@@ -29,9 +29,9 @@ public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Lo
            "ORDER BY h.timestamp DESC")
     List<TicketHistory> findNotificationsForStaff(@Param("userIdStr") String userIdStr, Pageable pageable);
 
-    /**
-     * 2. Thông báo cho EMPLOYEE: Chỉ hiện ticket khi chuyển sang trạng thái RESOLVED (Staff nhấn Submit giải quyết).
-     */
+ /**
+ * 2. Thông báo cho EMPLOYEE: Chỉ hiện ticket khi chuyển sang trạng thái RESOLVED (Staff nhấn Submit giải quyết).
+ */
     @Query("SELECT h FROM TicketHistory h " +
            "JOIN FETCH h.ticket t " +
            "JOIN FETCH h.actor a " +
@@ -42,9 +42,9 @@ public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Lo
            "ORDER BY h.timestamp DESC")
     List<TicketHistory> findNotificationsForEmployee(@Param("userId") Long userId, Pageable pageable);
 
-    /**
-     * 3. Thông báo cho MANAGER: Chỉ hiện khi có ticket mới tạo (CREATE) hoặc mở lại (REOPEN).
-     */
+ /**
+ * 3. Thông báo cho MANAGER: Chỉ hiện khi có ticket mới tạo (CREATE) hoặc mở lại (REOPEN).
+ */
     @Query("SELECT h FROM TicketHistory h " +
            "JOIN FETCH h.ticket t " +
            "JOIN FETCH h.actor a " +

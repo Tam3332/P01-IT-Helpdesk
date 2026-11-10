@@ -24,18 +24,18 @@ import java.nio.charset.StandardCharsets;
 /**
  * Cấu hình Spring Security 6 (Stateless JWT).
  *
- * Access Matrix (SRS §02 §5, SDD §4.2):
- * - POST /api/v1/auth/login          → public (API public duy nhất, SDD §6.2)
- * - /api/v1/auth/me, /auth/logout    → cần token
- * - /api/v1/categories                → tất cả đã xác thực
- * - /api/v1/tickets/**                → tất cả đã xác thực
- * - /api/v1/admin/sla-configs GET     → IT_MANAGER + ADMIN
- * - /api/v1/admin/**                  → ADMIN only
- * - /v3/api-docs/**, /swagger-ui/**   → public
+ * Access Matrix:
+ * POST /api/v1/auth/login → public (API public duy nhất)
+ * /api/v1/auth/me, /auth/logout → cần token
+ * /api/v1/categories → tất cả đã xác thực
+ * /api/v1/tickets/** → tất cả đã xác thực
+ * /api/v1/admin/sla-configs GET → IT_MANAGER + ADMIN
+ * /api/v1/admin/** → ADMIN only
+ * /v3/api-docs/** /swagger-ui/** → public
  *
- * Exception handling (SDD §4.2):
- * - 401 AuthenticationEntryPoint: request thiếu/sai token → trả JSON ApiResponse UNAUTHORIZED
- * - 403 AccessDeniedHandler: không đủ role (hasRole) → trả JSON ApiResponse FORBIDDEN
+ * Exception handling:
+ * 401 AuthenticationEntryPoint: request thiếu/sai token → trả JSON ApiResponse UNAUTHORIZED
+ * 403 AccessDeniedHandler: không đủ role (hasRole) → trả JSON ApiResponse FORBIDDEN
  */
 @Configuration
 @EnableWebSecurity
@@ -67,7 +67,7 @@ public class SecurityConfig {
                     response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    // Đã đăng nhập nhưng sai role → ghi AUTHZ_DENIED (SDD §7, IA-HD05), target là method + URL bị chặn
+                    // Đã đăng nhập nhưng sai role → ghi AUTHZ_DENIED, target là method + URL bị chặn
                     auditLogger.logForCurrentUser("AUTHZ_DENIED", "ENDPOINT",
                             request.getMethod() + " " + request.getRequestURI(),
                             request.getMethod(), "DENIED", HttpServletResponse.SC_FORBIDDEN);
@@ -84,35 +84,38 @@ public class SecurityConfig {
                 // Trang lỗi nội bộ của Spring (forward tới /error): cho qua để giữ đúng mã lỗi gốc
                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
 
-                // --- Public ---
-                // SDD §6.2: chỉ POST /api/v1/auth/login không cần token; /auth/me và /auth/logout bắt buộc token
+                // -- Public ---
+                // chỉ POST /api/v1/auth/login không cần token; /auth/me và /auth/logout bắt buộc token
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 // Healthcheck Docker: chỉ trả {"status":"UP"}, không có chi tiết (xem management.* trong application.yml)
                 .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
 
-                // --- SLAConfig: GET cho IT_MANAGER + ADMIN, PUT chỉ ADMIN ---
+                // -- SLAConfig: GET cho IT_MANAGER + ADMIN, PUT chỉ ADMIN ---
                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/sla-configs/**")
                     .hasAnyRole("IT_MANAGER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/admin/sla-configs/**")
                     .hasRole("ADMIN")
 
-                // --- Admin endpoints: ADMIN only ---
+                // -- Admin endpoints: ADMIN only ---
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
-                // --- Chỉ IT_MANAGER (SDD §6.2; SRS UC-06 4a) ---
+                // -- Chỉ IT_MANAGER ---
                 .requestMatchers(HttpMethod.PUT, "/api/v1/tickets/*/assign").hasRole("IT_MANAGER")
-                // Upload tệp: Admin bị từ chối 403 (SecRS §5 POST /tickets/{id}/attachments: Admin "Deny 403"); 403 tự ghi AUTHZ_DENIED
+                // Gửi yêu cầu mở lại: chỉ EMPLOYEE").
+                // Kiểm chủ ticket (404 + AUTHZ_DENIED) nằm trong ReopenService
+                .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/reopen").hasRole("EMPLOYEE")
+                // Upload tệp: Admin bị từ chối 403; 403 tự ghi AUTHZ_DENIED
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/attachments")
                     .hasAnyRole("EMPLOYEE", "IT_STAFF", "IT_MANAGER")
                 .requestMatchers("/api/v1/users/it-staff", "/api/v1/reopen-requests/**",
                                  "/api/v1/dashboard/stats", "/api/v1/dashboard/sla-monitor").hasRole("IT_MANAGER")
 
-                // --- Authenticated endpoints ---
+                // -- Authenticated endpoints ---
                 .requestMatchers("/api/v1/categories/**").authenticated()
                 .requestMatchers("/api/v1/tickets/**").authenticated()
 
-                // --- Mọi request khác cần xác thực ---
+                // -- Mọi request khác cần xác thực ---
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
@@ -121,9 +124,9 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Băm mật khẩu BCrypt cost 12 (SDD §2.1, HD01).
-     */
+ /**
+ * Băm mật khẩu BCrypt cost 12.
+ */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);

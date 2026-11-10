@@ -3,7 +3,7 @@ package com.ojt.p01.dto.response;
 import java.time.OffsetDateTime;
 
 /**
- * DTO phản hồi thông tin bình luận (HD08, UC-05).
+ * DTO phản hồi thông tin bình luận.
  */
 public record CommentResponse(
         Long id,

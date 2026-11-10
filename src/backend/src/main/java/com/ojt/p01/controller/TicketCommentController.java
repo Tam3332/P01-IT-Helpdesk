@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller quản lý bình luận và trao đổi trực tiếp trên ticket (HD08, UC-05).
+ * Controller quản lý bình luận và trao đổi trực tiếp trên ticket.
  */
 @Tag(name = "Comments", description = "Quản lý bình luận và ghi chú nội bộ trên ticket")
 @SecurityRequirement(name = "BearerAuth")
@@ -31,12 +31,12 @@ public class TicketCommentController {
         this.commentService = commentService;
     }
 
-    /**
-     * GET /api/v1/tickets/{ticketId}/comments (HD08, UC-05).
-     * Employee chỉ thấy bình luận công khai (isInternal = false).
-     * IT Staff, IT Manager, Admin thấy toàn bộ bao gồm ghi chú nội bộ.
-     */
-    @Operation(summary = "Lấy danh sách bình luận của ticket (HD08, UC-05)")
+ /**
+ * GET /api/v1/tickets/{ticketId}/comments.
+ * Employee chỉ thấy bình luận công khai (isInternal = false).
+ * IT Staff, IT Manager, Admin thấy toàn bộ bao gồm ghi chú nội bộ.
+ */
+    @Operation(summary = "Lấy danh sách bình luận của ticket")
     @GetMapping
     public ResponseEntity<ApiResponse<List<CommentResponse>>> getComments(
             @Parameter(description = "ID số hoặc mã ticket (HD-YYYY-XXXX)") @PathVariable String ticketId
@@ -44,11 +44,11 @@ public class TicketCommentController {
         return ResponseEntity.ok(ApiResponse.success(commentService.getComments(ticketId)));
     }
 
-    /**
-     * POST /api/v1/tickets/{ticketId}/comments (HD08, UC-05, IA-HD06).
-     * Gửi bình luận công khai hoặc ghi chú nội bộ.
-     */
-    @Operation(summary = "Gửi bình luận mới hoặc ghi chú nội bộ (HD08, UC-05)")
+ /**
+ * POST /api/v1/tickets/{ticketId}/comments.
+ * Gửi bình luận công khai hoặc ghi chú nội bộ.
+ */
+    @Operation(summary = "Gửi bình luận mới hoặc ghi chú nội bộ")
     @PostMapping
     public ResponseEntity<ApiResponse<CommentResponse>> addComment(
             @Parameter(description = "ID số hoặc mã ticket (HD-YYYY-XXXX)") @PathVariable String ticketId,

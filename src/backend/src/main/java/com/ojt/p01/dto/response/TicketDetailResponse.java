@@ -32,7 +32,7 @@ public record TicketDetailResponse(
         String assigneeName,
         String assigneeEmail,
         
-        // SLA Deadlines (BR-HD-03)
+        // SLA Deadlines
         OffsetDateTime responseDeadline,
         OffsetDateTime resolutionDeadline,
         Boolean isSlaBreached,

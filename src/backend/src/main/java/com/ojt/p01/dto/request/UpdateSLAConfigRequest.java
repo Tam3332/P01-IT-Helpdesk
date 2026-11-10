@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 /**
  * DTO chỉnh sửa cấu hình SLA (PUT /api/v1/admin/sla-configs/{priority}).
- * BR-HD-03: giờ liên tục (không phải giờ làm việc), phải > 0.
+ * giờ liên tục (không phải giờ làm việc), phải > 0.
  * Quyền: ADMIN only.
  */
 public record UpdateSLAConfigRequest(

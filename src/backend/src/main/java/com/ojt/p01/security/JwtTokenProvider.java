@@ -14,10 +14,10 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * Tạo và kiểm tra JWT (Task C2, SDD §6.1, ADR-02).
- * - Thuật toán HS256 (HMAC-SHA256), khóa lấy từ jwt.secret (biến môi trường JWT_SECRET).
- * - Payload: sub (userId), username, email, role, iat, exp, jti.
- * - Hạn dùng: jwt.expiration-ms (mặc định 900000 ms = 15 phút).
+ * Tạo và kiểm tra JWT (Task C2).
+ * Thuật toán HS256 (HMAC-SHA256), khóa lấy từ jwt.secret (biến môi trường JWT_SECRET).
+ * Payload: sub (userId), username, email, role, iat, exp, jti.
+ * Hạn dùng: jwt.expiration-ms (mặc định 900000 ms = 15 phút).
  */
 @Component
 public class JwtTokenProvider {
@@ -35,15 +35,15 @@ public class JwtTokenProvider {
             // Dừng ứng dụng ngay khi khởi động nếu khóa quá ngắn, tránh chạy với khóa yếu
             throw new IllegalStateException("JWT_SECRET phải dài tối thiểu 32 byte cho HS256");
         }
-        // Gắn rõ thuật toán HmacSHA256 để token luôn ký bằng HS256 như SDD §6.1
+        // Gắn rõ thuật toán HmacSHA256 để token luôn ký bằng HS256 như
         this.signingKey = new SecretKeySpec(keyBytes, "HmacSHA256");
         this.expirationMs = expirationMs;
     }
 
-    /**
-     * Tạo access token cho user đã đăng nhập thành công.
-     * Role lấy từ DB (user.getRole()), không lấy từ dữ liệu client gửi lên (IA-HD01).
-     */
+ /**
+ * Tạo access token cho user đã đăng nhập thành công.
+ * Role lấy từ DB (user.getRole), không lấy từ dữ liệu client gửi lên.
+ */
     public String generateToken(User user) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expirationMs);
@@ -60,10 +60,10 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    /**
-     * Kiểm tra chữ ký và hạn dùng, rồi trả về phần payload (claims).
-     * Token sai chữ ký / hết hạn / sai định dạng sẽ ném JwtException.
-     */
+ /**
+ * Kiểm tra chữ ký và hạn dùng, rồi trả về phần payload (claims).
+ * Token sai chữ ký / hết hạn / sai định dạng sẽ ném JwtException.
+ */
     public Claims getClaimsFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey)
@@ -72,7 +72,7 @@ public class JwtTokenProvider {
                 .getPayload();
     }
 
-    /** Trả về true nếu token hợp lệ (đúng chữ ký, còn hạn). */
+ /** Trả về true nếu token hợp lệ (đúng chữ ký, còn hạn). */
     public boolean validateToken(String token) {
         try {
             getClaimsFromToken(token);
@@ -82,7 +82,7 @@ public class JwtTokenProvider {
         }
     }
 
-    /** Thời gian sống của token tính bằng giây, trả về cho client ở trường expiresIn. */
+ /** Thời gian sống của token tính bằng giây, trả về cho client ở trường expiresIn. */
     public long getExpirationSeconds() {
         return expirationMs / 1000;
     }

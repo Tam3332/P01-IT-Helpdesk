@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Controller quản trị SLA Config (UC-09, BR-HD-03, Access Matrix §5).
+ * Controller quản trị SLA Config.
  *
- * GET  /api/v1/admin/sla-configs              — IT_MANAGER + ADMIN xem
- * GET  /api/v1/admin/sla-configs/{priority}   — IT_MANAGER + ADMIN xem theo priority
- * PUT  /api/v1/admin/sla-configs/{priority}   — ADMIN only chỉnh giờ SLA
+ * GET /api/v1/admin/sla-configs — IT_MANAGER + ADMIN xem
+ * GET /api/v1/admin/sla-configs/{priority} — IT_MANAGER + ADMIN xem theo priority
+ * PUT /api/v1/admin/sla-configs/{priority} — ADMIN only chỉnh giờ SLA
  *
  * Phân quyền: Spring Security @PreAuthorize (xem SecurityConfig).
  * Employee / IT_STAFF gọi /admin/** → 403 FORBIDDEN tự động.
@@ -37,7 +37,7 @@ public class SLAConfigController {
     }
 
     @Operation(summary = "[Manager/Admin] Xem toàn bộ cấu hình SLA",
-               description = "Trả về 4 mức: CRITICAL → HIGH → MEDIUM → LOW. BR-HD-03: giờ liên tục 24/7.")
+               description = "Trả về 4 mức: CRITICAL → HIGH → MEDIUM → LOW. giờ liên tục 24/7.")
     @GetMapping
     public ResponseEntity<ApiResponse<List<SLAConfigResponse>>> getAllSLAConfigs() {
         return ResponseEntity.ok(ApiResponse.success(slaConfigService.getAllSLAConfigs()));
@@ -52,7 +52,7 @@ public class SLAConfigController {
         return ResponseEntity.ok(ApiResponse.success(slaConfigService.getSLAConfigByPriority(priority)));
     }
 
-    @Operation(summary = "[Admin] Cập nhật cấu hình SLA theo priority (UC-10, BR-HD-03)",
+    @Operation(summary = "[Admin] Cập nhật cấu hình SLA theo priority",
                description = "Chỉnh thời gian phản hồi và giải quyết. Giờ là giờ liên tục (không phải giờ làm việc). Admin only.")
     @PutMapping("/{priority}")
     public ResponseEntity<ApiResponse<SLAConfigResponse>> updateSLAConfig(

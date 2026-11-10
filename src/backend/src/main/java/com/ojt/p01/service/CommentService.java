@@ -22,7 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
- * Service xử lý bình luận và trao đổi trực tiếp trên ticket (HD08, UC-05, BR-HD-06).
+ * Service xử lý bình luận và trao đổi trực tiếp trên ticket.
  */
 @Service
 public class CommentService {
@@ -45,12 +45,12 @@ public class CommentService {
         this.auditLogger = auditLogger;
     }
 
-    /**
-     * Lấy danh sách bình luận của ticket (GET /api/v1/tickets/{id}/comments).
-     * Phân quyền (BR-HD-06):
-     * - Employee chỉ thấy bình luận công khai (is_internal = false).
-     * - IT Staff, IT Manager, Admin thấy tất cả (cả ghi chú nội bộ).
-     */
+ /**
+ * Lấy danh sách bình luận của ticket (GET /api/v1/tickets/{id}/comments).
+ * Phân quyền:
+ * Employee chỉ thấy bình luận công khai (is_internal = false).
+ * IT Staff, IT Manager, Admin thấy tất cả (cả ghi chú nội bộ).
+ */
     @Transactional(readOnly = true)
     public List<CommentResponse> getComments(String idOrNumber) {
         Ticket ticket = findTicket(idOrNumber);
@@ -81,11 +81,11 @@ public class CommentService {
         return comments.stream().map(this::toResponse).toList();
     }
 
-    /**
-     * Gửi bình luận mới hoặc ghi chú nội bộ (POST /api/v1/tickets/{id}/comments).
-     * - Ticket CLOSED không nhận bình luận (422).
-     * - Employee gửi isInternal = true sẽ tự động ép về false (BR-HD-06).
-     */
+ /**
+ * Gửi bình luận mới hoặc ghi chú nội bộ (POST /api/v1/tickets/{id}/comments).
+ * Ticket CLOSED không nhận bình luận (422).
+ * Employee gửi isInternal = true sẽ tự động ép về false.
+ */
     @Transactional
     public CommentResponse addComment(String idOrNumber, CreateCommentRequest request, String ipAddress) {
         Ticket ticket = findTicket(idOrNumber);
@@ -99,8 +99,8 @@ public class CommentService {
             throw new AppException(ErrorCode.TICKET_NOT_FOUND);
         }
 
-        // IT Staff chỉ bình luận trên vé được giao cho mình (SRS §4 HD05 sửa 05/11; SecRS §5 POST comments: "Assigned only").
-        // Vé không được giao thì Staff cũng không xem được → 404 như GET (Anti-IDOR, IA-HD02)
+        // IT Staff chỉ bình luận trên vé được giao cho mình.
+        // Vé không được giao thì Staff cũng không xem được → 404 như GET (Anti-IDOR)
         if ("IT_STAFF".equalsIgnoreCase(roleName)) {
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
@@ -110,14 +110,14 @@ public class CommentService {
             }
         }
 
-        // Admin chỉ đọc ticket, không bình luận (SRS §4 HD05, UC-04 bước 2: "chỉ đọc"; SDD §5.4; SecRS §5: Admin "Deny 403")
+        // Admin chỉ đọc ticket, không bình luận
         if ("ADMIN".equalsIgnoreCase(roleName)) {
             auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "ADD_COMMENT", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Quản trị viên chỉ xem ticket, không được bình luận");
         }
 
-        // Kiểm tra trạng thái SAU khi kiểm tra quyền: người không có quyền luôn nhận 404/403,
-        // không biết được ticket có tồn tại hay đã đóng (Anti-IDOR, IA-HD02)
+        // Kiểm tra trạng thái SAU khi kiểm tra quyền: người không có quyền luôn nhận 404/403
+        // không biết được ticket có tồn tại hay đã đóng (Anti-IDOR)
         if ("CLOSED".equalsIgnoreCase(ticket.getStatus())) {
             throw new AppException(ErrorCode.TICKET_CLOSED);
         }
@@ -131,7 +131,7 @@ public class CommentService {
         TicketComment comment = new TicketComment(ticket, currentUser, request.commentText().trim(), isInternal);
         TicketComment saved = commentRepository.save(comment);
 
-        // Ghi nhận vào TicketHistory (HD09)
+        // Ghi nhận vào TicketHistory
         String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
         String note = isInternal ? "[Ghi chú nội bộ]" : "[Bình luận công khai]";
         historyRepository.save(new TicketHistory(

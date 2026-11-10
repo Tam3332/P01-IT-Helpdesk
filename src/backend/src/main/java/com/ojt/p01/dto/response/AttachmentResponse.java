@@ -3,7 +3,7 @@ package com.ojt.p01.dto.response;
 import java.time.OffsetDateTime;
 
 /**
- * DTO phản hồi thông tin tệp đính kèm (HD04, IA-HD03).
+ * DTO phản hồi thông tin tệp đính kèm.
  */
 public record AttachmentResponse(
         Long id,
