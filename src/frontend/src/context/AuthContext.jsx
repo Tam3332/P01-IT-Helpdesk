@@ -17,6 +17,8 @@ function normalizeUser(u) {
     email: u.email,
     fullName: u.fullName || u.username || u.email || '',
     department: u.department,
+    isActive: u.isActive,
+    mustChangePassword: u.mustChangePassword === true, // backend chưa gửi; true khi Admin vừa cấp lại mật khẩu
     role,
   }
 }
@@ -112,7 +114,13 @@ export function AuthProvider({ children }) {
     endSession('')
   }, [endSession])
 
-  const value = useMemo(() => ({ user, ready, notice, login, logout }), [user, ready, notice, login, logout])
+  // Tải lại thông tin tài khoản từ /auth/me (ví dụ sau khi đổi mật khẩu)
+  const reloadUser = useCallback(async () => {
+    const nu = normalizeUser(await authService.fetchMe())
+    if (VALID_ROLES.includes(nu?.role)) setUser(nu)
+  }, [])
+
+  const value = useMemo(() => ({ user, ready, notice, login, logout, reloadUser }), [user, ready, notice, login, logout, reloadUser])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
