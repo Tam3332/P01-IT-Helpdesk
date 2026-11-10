@@ -7,7 +7,7 @@ export const listReopenRequests = async (status = 'PENDING') => {
   const d = unwrap(await api.get('/reopen-requests', { params: { status } }))
   return Array.isArray(d) ? d : d?.content || []
 }
-export const approveReopen = async (id) => unwrap(await api.post(`/reopen-requests/${id}/approve`))
+export const approveReopen = async (id, body = {}) => unwrap(await api.post(`/reopen-requests/${id}/approve`, body))
 export const rejectReopen = async (id, reviewNote) => unwrap(await api.post(`/reopen-requests/${id}/reject`, { reviewNote }))
 
 // ---- Admin ----

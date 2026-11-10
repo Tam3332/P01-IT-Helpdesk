@@ -156,7 +156,7 @@ export default function TicketDetailPage() {
           </section>
           <CommentsCard ticketRef={ref_} nameOf={nameOf} canComment={canComment} canInternal={role !== ROLES.EMPLOYEE} closed={t.status === 'CLOSED'} onChanged={() => setTick((n) => n + 1)} />
           <AttachmentsCard ticketRef={ref_} canUpload={canUpload} onChanged={() => setTick((n) => n + 1)} />
-          {role === ROLES.EMPLOYEE && t.status === 'CLOSED' && <FeedbackCard ticketRef={ref_} />}
+          {role === ROLES.EMPLOYEE && t.requesterId === user.id && t.status === 'CLOSED' && <FeedbackCard ticketRef={ref_} />}
         </div>
         <div className="stack">
           <section className="card">

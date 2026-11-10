@@ -9,7 +9,7 @@ import useAsync from '@/hooks/useAsync'
 import { LIMITS } from '@/config/domain'
 import { apiError } from '@/services/apiClient'
 import { getTicket, listHistory } from '@/services/ticketService'
-import { approveReopen, listReopenRequests, rejectReopen } from '@/services/referenceService'
+import { approveReopen, listItStaff, listReopenRequests, rejectReopen } from '@/services/referenceService'
 import { fmtDateTime } from '@/utils/format'
 
 async function load(id) {
@@ -29,6 +29,37 @@ async function load(id) {
   return { req, ticket, history }
 }
 
+// Duyệt mở lại: ghi chú tùy chọn; có thể chọn IT Staff mới, để trống thì giữ người xử lý cũ.
+function ApproveDialog({ req, ticket, onClose, onDone }) {
+  const staff = useAsync(listItStaff, [])
+  const [note, setNote] = useState('')
+  const [assigneeId, setAssigneeId] = useState('')
+  const current = ticket?.assigneeName
+  return (
+    <Modal
+      title="Phê duyệt mở lại" okText="Phê duyệt" okClass="ok" onClose={onClose}
+      onOk={async () => {
+        const body = {}
+        if (note.trim()) body.reviewNote = note.trim()
+        if (assigneeId) body.newAssigneeId = Number(assigneeId)
+        try { await approveReopen(req.id, body) } catch (e) { throw new Error(apiError(e, 'Không duyệt được.')) }
+        onDone(`Đã phê duyệt, ticket ${req.ticketNumber} được mở lại với thời hạn SLA mới.`)
+      }}
+    >
+      <p className="muted">Ticket <b>{req.ticketNumber}</b> sẽ chuyển sang <b>Mở lại</b> và tính thời hạn xử lý SLA mới từ lúc duyệt.</p>
+      <Field label="IT Staff xử lý" htmlFor="rsf" hint={staff.error || 'Để trống để giữ nguyên người xử lý trước đó.'}>
+        <select className="sel" id="rsf" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} disabled={staff.loading}>
+          <option value="">{staff.loading ? 'Đang tải...' : `Giữ người xử lý cũ${current ? ` (${current})` : ''}`}</option>
+          {(staff.data || []).map((u) => <option key={u.id} value={u.id}>{u.fullName}{u.department ? ` · ${u.department}` : ''}</option>)}
+        </select>
+      </Field>
+      <Field label="Ghi chú duyệt" htmlFor="rvn" hint={`${note.length}/${LIMITS.reviewNoteMax} ký tự (không bắt buộc)`}>
+        <textarea className="ta" id="rvn" style={{ minHeight: 64 }} maxLength={LIMITS.reviewNoteMax} value={note} onChange={(e) => setNote(e.target.value)} />
+      </Field>
+    </Modal>
+  )
+}
+
 export default function ReopenReviewPage() {
   const { requestId } = useParams()
   const navigate = useNavigate()
@@ -46,6 +77,7 @@ export default function ReopenReviewPage() {
   const pending = req.status === 'PENDING'
   const done = (msg, type) => { toast(msg, type); navigate(list) }
   const wrap = async (fn, fallback) => { try { return await fn() } catch (e) { throw new Error(apiError(e, fallback)) } }
+  const rejectLen = note.trim().length
 
   return (
     <>
@@ -89,19 +121,15 @@ export default function ReopenReviewPage() {
           <button type="button" className="btn danger" onClick={() => setDialog('no')}><Icon name="x" />Từ chối</button>
         </div>
       )}
-      {dialog === 'ok' && (
-        <Modal title="Phê duyệt mở lại" okText="Phê duyệt" okClass="ok" onClose={() => setDialog(null)} onOk={async () => { await wrap(() => approveReopen(req.id), 'Không duyệt được.'); done(`Đã phê duyệt, ticket ${req.ticketNumber} được mở lại. Hãy phân công người xử lý.`) }}>
-          <p className="muted">Ticket <b>{req.ticketNumber}</b> sẽ chuyển sang <b>Mở lại</b> với thời hạn SLA mới tính từ lúc duyệt. Sau đó bạn phân công người xử lý ở trang chi tiết ticket.</p>
-        </Modal>
-      )}
+      {dialog === 'ok' && <ApproveDialog req={req} ticket={ticket} onClose={() => setDialog(null)} onDone={(msg) => done(msg)} />}
       {dialog === 'no' && (
         <Modal title="Từ chối mở lại" okText="Từ chối" okClass="danger" onClose={() => setDialog(null)} onOk={async () => {
-          if (note.trim().length < LIMITS.rejectNoteMin) throw new Error(`Vui lòng nhập lý do từ chối (ít nhất ${LIMITS.rejectNoteMin} ký tự).`)
+          if (note.trim().length < LIMITS.rejectNoteMin) throw new Error(`Lý do từ chối cần ít nhất ${LIMITS.rejectNoteMin} ký tự (hiện có ${rejectLen}).`)
           await wrap(() => rejectReopen(req.id, note.trim()), 'Không từ chối được.')
           done('Đã từ chối yêu cầu mở lại.', 'info')
         }}>
-          <p className="muted">Ticket <b>{req.ticketNumber}</b> giữ nguyên trạng thái Đã giải quyết.</p>
-          <Field label="Lý do từ chối" required htmlFor="rjn"><textarea className="ta" id="rjn" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Giải thích để nhân viên hiểu quyết định" /></Field>
+          <p className="muted">Ticket <b>{req.ticketNumber}</b> sẽ quay về trạng thái Đã giải quyết.</p>
+          <Field label="Lý do từ chối" required htmlFor="rjn" hint={`${rejectLen}/${LIMITS.rejectNoteMin} ký tự tối thiểu`}><textarea className="ta" id="rjn" maxLength={LIMITS.reviewNoteMax} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Giải thích để nhân viên hiểu quyết định" /></Field>
         </Modal>
       )}
     </>
