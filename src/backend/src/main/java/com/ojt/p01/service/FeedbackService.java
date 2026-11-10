@@ -41,10 +41,10 @@ public class FeedbackService {
         this.auditLogger = auditLogger;
     }
 
-    /**
-     * Lấy thông tin đánh giá CSAT của ticket (GET /api/v1/tickets/{id}/feedback).
-     * Trả về null nếu vé chưa được đánh giá.
-     */
+ /**
+ * Lấy thông tin đánh giá CSAT của ticket (GET /api/v1/tickets/{id}/feedback).
+ * Trả về null nếu vé chưa được đánh giá.
+ */
     @Transactional(readOnly = true)
     public FeedbackResponse getFeedback(String idOrNumber) {
         Ticket ticket = findTicket(idOrNumber);
@@ -55,14 +55,14 @@ public class FeedbackService {
                 .orElse(null);
     }
 
-    /**
-     * Gửi đánh giá mức độ hài lòng (POST /api/v1/tickets/{id}/feedback).
-     * - Chỉ người tạo vé (Employee) mới được đánh giá.
-     * - Admin chỉ được xem (readonly), không có quyền gửi feedback (SecRS §5, SRS §2 Separation of Duties) → 403 Forbidden.
-     * - Employee khác không phải chủ ticket → 404 + AUTHZ_DENIED (Anti-IDOR).
-     * - Chỉ được đánh giá khi vé ở trạng thái CLOSED.
-     * - Mỗi ticket chỉ được đánh giá 1 lần duy nhất.
-     */
+ /**
+ * Gửi đánh giá mức độ hài lòng (POST /api/v1/tickets/{id}/feedback).
+ * Chỉ người tạo vé (Employee) mới được đánh giá.
+ * Admin chỉ được xem (readonly), không có quyền gửi feedback → 403 Forbidden.
+ * Employee khác không phải chủ ticket → 404 + AUTHZ_DENIED (Anti-IDOR).
+ * Chỉ được đánh giá khi vé ở trạng thái CLOSED.
+ * Mỗi ticket chỉ được đánh giá 1 lần duy nhất.
+ */
     @Transactional
     public FeedbackResponse createFeedback(String idOrNumber, CreateFeedbackRequest request, String ipAddress) {
         Ticket ticket = findTicket(idOrNumber);
@@ -71,7 +71,7 @@ public class FeedbackService {
         // 1. Kiểm tra quyền: Chỉ Employee chủ vé mới được gửi đánh giá
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
         if ("ADMIN".equalsIgnoreCase(roleName)) {
-            // Admin chỉ được xem (readonly), không được gửi feedback (SecRS §5, SRS §2 Separation of Duties)
+            // Admin chỉ được xem (readonly), không được gửi feedback
             auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CREATE_FEEDBACK", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Quản trị viên chỉ có quyền xem, không có quyền gửi đánh giá");
         }
@@ -100,7 +100,7 @@ public class FeedbackService {
         );
         TicketFeedback saved = feedbackRepository.save(feedback);
 
-        // 5. Ghi nhận vào nhật ký TicketHistory (HD09)
+        // 5. Ghi nhận vào nhật ký TicketHistory
         OffsetDateTime now = OffsetDateTime.now();
         String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
         String note = "Đánh giá chất lượng hỗ trợ: " + request.ratingStars() + " sao" +
@@ -153,7 +153,7 @@ public class FeedbackService {
 
         if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
             if (!ticket.getRequester().getId().equals(currentUser.getId())) {
-                // Trái quyền → 404 + audit AUTHZ_DENIED (SDD §7)
+                // Trái quyền → 404 + audit AUTHZ_DENIED
                 auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "VIEW_FEEDBACK", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }

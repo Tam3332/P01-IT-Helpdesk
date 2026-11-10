@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 
 /**
- * Đánh giá mức độ hài lòng khách hàng CSAT (bảng ticket_feedbacks, HD15).
+ * Đánh giá mức độ hài lòng khách hàng CSAT (bảng ticket_feedbacks).
  */
 @Entity
 @Table(name = "ticket_feedbacks")

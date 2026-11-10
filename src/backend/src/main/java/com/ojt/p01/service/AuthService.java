@@ -24,25 +24,25 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Logic đăng nhập (Task C2, SRS UC-01, SDD §6.1).
+ * Logic đăng nhập (Task C2).
  *
  * Thứ tự kiểm tra:
- *   1. Tìm user theo email        → không có: 401 "Email hoặc mật khẩu không đúng" (UC-01 2a)
- *   2. So mật khẩu với hash BCrypt → sai: 401 cùng thông báo (không nói rõ sai trường nào)
- *   3. Tài khoản bị Admin khóa    → từ chối, 403 (UC-01 2c)
- *   4. Hợp lệ                     → cấp JWT 15 phút
+ * 1. Tìm user theo email → không có: 401 "Email hoặc mật khẩu không đúng"
+ * 2. So mật khẩu với hash BCrypt → sai: 401 cùng thông báo (không nói rõ sai trường nào)
+ * 3. Tài khoản bị Admin khóa → từ chối, 403
+ * 4. Hợp lệ → cấp JWT 15 phút
  *
- * Chưa làm trong tuần 3 (theo file phân công T3-06): đếm số lần sai, khóa 15 phút, HTTP 429 (UC-01 2b) → tuần 5.
- * Mỗi lần đăng nhập ghi 1 dòng audit LOGIN_SUCCESS / LOGIN_FAILED (SDD §7, T3-06). Không ghi mật khẩu.
+ * Chưa làm trong tuần 3 (theo file phân công): đếm số lần sai, khóa 15 phút, HTTP 429 → tuần 5.
+ * Mỗi lần đăng nhập ghi 1 dòng audit LOGIN_SUCCESS / LOGIN_FAILED. Không ghi mật khẩu.
  */
 @Service
 public class AuthService {
 
-    /*
-     * Hash BCrypt (cost 12) của một chuỗi ngẫu nhiên, không thuộc tài khoản nào.
-     * Khi email không tồn tại vẫn chạy BCrypt với hash này để thời gian phản hồi
-     * gần bằng trường hợp sai mật khẩu → kẻ tấn công khó đoán email nào có thật.
-     */
+ /*
+ * Hash BCrypt (cost 12) của một chuỗi ngẫu nhiên, không thuộc tài khoản nào.
+ * Khi email không tồn tại vẫn chạy BCrypt với hash này để thời gian phản hồi
+ * gần bằng trường hợp sai mật khẩu → kẻ tấn công khó đoán email nào có thật.
+ */
     private static final String DUMMY_HASH =
             "$2b$12$gLmxogPMpfdQi1/FvfnB3ePHKmjWKk93/7IAPDLHzAI61Y/xedzzO";
 
@@ -72,7 +72,7 @@ public class AuthService {
         Optional<User> found = userRepository.findByEmail(email);
         if (found.isEmpty()) {
             passwordEncoder.matches(request.password(), DUMMY_HASH);
-            // Email không tồn tại: chưa biết actor → ghi email đã nhập để Monitoring đếm theo email + IP (IA-HD05)
+            // Email không tồn tại: chưa biết actor → ghi email đã nhập để Monitoring đếm theo email + IP
             auditLogger.log("LOGIN_FAILED", null, null, "USER_EMAIL", email, "LOGIN", "FAILURE", 401);
             throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
@@ -97,11 +97,11 @@ public class AuthService {
         return new LoginResponse(token, "Bearer", jwtTokenProvider.getExpirationSeconds(), UserResponse.from(user));
     }
 
-    /**
-     * GET /api/v1/auth/me: thông tin người dùng đang đăng nhập.
-     * Lấy username từ SecurityContext (do JwtAuthenticationFilter nạp từ token đã kiểm chữ ký),
-     * rồi đọc lại từ DB để trả đúng dữ liệu hiện tại (tên, phòng ban, role).
-     */
+ /**
+ * GET /api/v1/auth/me: thông tin người dùng đang đăng nhập.
+ * Lấy username từ SecurityContext (do JwtAuthenticationFilter nạp từ token đã kiểm chữ ký)
+ * rồi đọc lại từ DB để trả đúng dữ liệu hiện tại (tên, phòng ban, role).
+ */
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -113,11 +113,11 @@ public class AuthService {
         return UserResponse.from(user);
     }
 
-    /**
-     * POST /api/v1/auth/logout: thu hồi token đang dùng (ADR-02, SDD §6.1, SecRS TH-08).
-     * Lưu jti vào token_blacklist; từ đó JwtAuthenticationFilter từ chối token này (→ 401).
-     * Gọi lại logout bằng cùng token sẽ bị 401 ngay ở filter, nên không ghi trùng.
-     */
+ /**
+ * POST /api/v1/auth/logout: thu hồi token đang dùng.
+ * Lưu jti vào token_blacklist; từ đó JwtAuthenticationFilter từ chối token này (→ 401).
+ * Gọi lại logout bằng cùng token sẽ bị 401 ngay ở filter, nên không ghi trùng.
+ */
     @Transactional
     public void logout(String token) {
         Claims claims = jwtTokenProvider.getClaimsFromToken(token);

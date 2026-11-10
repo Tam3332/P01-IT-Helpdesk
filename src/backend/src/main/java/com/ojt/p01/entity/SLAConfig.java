@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 /**
- * Entity mapping bảng sla_configs (BR-HD-03).
+ * Entity mapping bảng sla_configs.
  */
 @Entity
 @Table(name = "sla_configs")
@@ -15,23 +15,23 @@ public class SLAConfig {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    /** LOW | MEDIUM | HIGH | CRITICAL — unique per level */
+ /** LOW | MEDIUM | HIGH | CRITICAL — unique per level */
     @Column(name = "priority_level", nullable = false, unique = true, length = 20)
     private String priorityLevel;
 
-    /** Thời gian phản hồi lần đầu tối đa (giờ) */
+ /** Thời gian phản hồi lần đầu tối đa (giờ) */
     @Column(name = "response_time_hours", nullable = false, precision = 5, scale = 2)
     private BigDecimal responseTimeHours;
 
-    /** Thời gian giải quyết ticket tối đa (giờ) */
+ /** Thời gian giải quyết ticket tối đa (giờ) */
     @Column(name = "resolution_time_hours", nullable = false, precision = 5, scale = 2)
     private BigDecimal resolutionTimeHours;
 
-    /** Ngưỡng % cảnh báo SLA sắp vi phạm (mặc định 80%) */
+ /** Ngưỡng % cảnh báo SLA sắp vi phạm (mặc định 80%) */
     @Column(name = "warning_threshold_pct", nullable = false)
     private Integer warningThresholdPct;
 
-    /** Ngưỡng % đánh dấu SLA bị vi phạm (mặc định 100%) */
+ /** Ngưỡng % đánh dấu SLA bị vi phạm (mặc định 100%) */
     @Column(name = "breach_threshold_pct", nullable = false)
     private Integer breachThresholdPct;
 

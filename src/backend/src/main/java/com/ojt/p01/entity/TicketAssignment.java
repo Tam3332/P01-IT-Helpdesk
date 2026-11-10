@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
- * Một lần phân công người phụ trách (bảng ticket_assignments, SDD §3, BR-HD-05).
+ * Một lần phân công người phụ trách (bảng ticket_assignments).
  * Mỗi ticket chỉ có 1 dòng is_current = true (partial unique index uq_ticket_active_assignment).
  */
 @Entity
@@ -54,7 +54,7 @@ public class TicketAssignment {
         this.isCurrent = true;
     }
 
-    /** Kết thúc lần phân công này (khi điều phối lại cho người khác, SDD §3.4). */
+ /** Kết thúc lần phân công này (khi điều phối lại cho người khác). */
     public void end(OffsetDateTime at) {
         this.isCurrent = false;
         this.unassignedAt = at;

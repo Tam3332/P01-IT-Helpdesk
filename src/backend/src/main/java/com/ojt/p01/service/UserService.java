@@ -19,10 +19,10 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Danh sách IT Staff đang hoạt động để IT Manager chọn khi phân công (SRS UC-06 bước 4).
-     * SecRS §5: "Chỉ trả IT Staff đang hoạt động". UserResponse không có password_hash.
-     */
+ /**
+ * Danh sách IT Staff đang hoạt động để IT Manager chọn khi phân công.
+ * : "Chỉ trả IT Staff đang hoạt động". UserResponse không có password_hash.
+ */
     @Transactional(readOnly = true)
     public List<UserResponse> getActiveItStaff() {
         return userRepository.findByRole_RoleNameAndIsActiveTrueOrderByFullNameAsc("IT_STAFF")

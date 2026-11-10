@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
- * Nhật ký xử lý ticket, chỉ thêm mới, không sửa/xóa (bảng ticket_history, SRS HD09, SDD §3.4).
+ * Nhật ký xử lý ticket, chỉ thêm mới, không sửa/xóa (bảng ticket_history).
  * Không có setter: tạo một lần qua constructor rồi lưu.
  */
 @Entity
@@ -24,7 +24,7 @@ public class TicketHistory {
     @JoinColumn(name = "actor_id", nullable = false, updatable = false)
     private User actor;
 
-    /** CREATE, ASSIGN, REASSIGN, STATUS_CHANGE, ... (theo comment trong schema.sql) */
+ /** CREATE, ASSIGN, REASSIGN, STATUS_CHANGE... (theo comment trong schema.sql) */
     @Column(name = "action", nullable = false, length = 50, updatable = false)
     private String action;
 

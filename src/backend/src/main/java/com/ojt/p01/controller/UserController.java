@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * API tra cứu người dùng cho nghiệp vụ (khác /admin/users của Admin).
- * Quyền kiểm ở SecurityConfig: /api/v1/users/it-staff chỉ IT_MANAGER (SDD §6.2).
+ * Quyền kiểm ở SecurityConfig: /api/v1/users/it-staff chỉ IT_MANAGER.
  */
 @Tag(name = "Users", description = "Tra cứu người dùng phục vụ phân công")
 @RestController
@@ -27,8 +27,8 @@ public class UserController {
         this.userService = userService;
     }
 
-    /** GET /api/v1/users/it-staff: IT Staff đang hoạt động (UC-06 bước 4). 401 thiếu token, 403 không phải IT_MANAGER. */
-    @Operation(summary = "Danh sách IT Staff đang hoạt động để phân công (UC-06)")
+ /** GET /api/v1/users/it-staff: IT Staff đang hoạt động. 401 thiếu token, 403 không phải IT_MANAGER. */
+    @Operation(summary = "Danh sách IT Staff đang hoạt động để phân công")
     @GetMapping("/it-staff")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getItStaff() {
         return ResponseEntity.ok(ApiResponse.success(userService.getActiveItStaff()));

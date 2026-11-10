@@ -33,12 +33,12 @@ public class NotificationService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Lấy danh sách thông báo chính xác theo từng vai trò:
-     * 1. IT_MANAGER / ADMIN: Hiện thông báo khi có ticket MỚI (NEW) do Employee tạo hoặc mở lại (REOPENED, REOPEN_PENDING).
-     * 2. IT_STAFF: Chỉ hiện ticket khi Manager phân công cho mình (ASSIGNED).
-     * 3. EMPLOYEE: Chỉ hiện ticket khi được chuyển sang trạng thái Solved (RESOLVED) do Staff bấm Submit/Resolve.
-     */
+ /**
+ * Lấy danh sách thông báo chính xác theo từng vai trò:
+ * 1. IT_MANAGER / ADMIN: Hiện thông báo khi có ticket MỚI (NEW) do Employee tạo hoặc mở lại (REOPENED, REOPEN_PENDING).
+ * 2. IT_STAFF: Chỉ hiện ticket khi Manager phân công cho mình (ASSIGNED).
+ * 3. EMPLOYEE: Chỉ hiện ticket khi được chuyển sang trạng thái Solved (RESOLVED) do Staff bấm Submit/Resolve.
+ */
     @Transactional(readOnly = true)
     public List<NotificationResponse> getMyNotifications(int limit) {
         User currentUser = getCurrentUser();

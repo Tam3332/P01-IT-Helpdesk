@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
- * Entity mapping bảng ticket_categories (UC-10).
+ * Entity mapping bảng ticket_categories.
  */
 @Entity
 @Table(name = "ticket_categories")
@@ -14,7 +14,7 @@ public class TicketCategory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    /** Mã danh mục: HARDWARE, SOFTWARE, NETWORK, ACCOUNT, OTHER */
+ /** Mã danh mục: HARDWARE, SOFTWARE, NETWORK, ACCOUNT, OTHER */
     @Column(name = "category_code", nullable = false, unique = true, length = 50)
     private String categoryCode;
 
@@ -24,7 +24,7 @@ public class TicketCategory {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    /** Mức ưu tiên mặc định: LOW, MEDIUM, HIGH, CRITICAL */
+ /** Mức ưu tiên mặc định: LOW, MEDIUM, HIGH, CRITICAL */
     @Column(name = "default_priority", nullable = false, length = 20)
     private String defaultPriority;
 

@@ -5,8 +5,8 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
- * Token đã bị thu hồi khi đăng xuất (bảng token_blacklist, ADR-02, SDD §6.1).
- * Chỉ lưu jti (mã riêng của token), không lưu token gốc (IA-HD07).
+ * Token đã bị thu hồi khi đăng xuất (bảng token_blacklist).
+ * Chỉ lưu jti (mã riêng của token), không lưu token gốc.
  */
 @Entity
 @Table(name = "token_blacklist")

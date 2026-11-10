@@ -10,10 +10,10 @@ import java.util.List;
 @Repository
 public interface ReopenRequestRepository extends JpaRepository<ReopenRequest, Long> {
 
-    /** Kiểm tra ticket đã có yêu cầu đang chờ duyệt chưa (BR-HD-04, uq_ticket_pending_reopen). */
+ /** Kiểm tra ticket đã có yêu cầu đang chờ duyệt chưa. */
     boolean existsByTicket_IdAndStatus(Long ticketId, String status);
 
-    /** Danh sách cho IT Manager; nạp sẵn ticket, requester, reviewedBy để tránh N+1 khi map DTO. */
+ /** Danh sách cho IT Manager; nạp sẵn ticket, requester, reviewedBy để tránh N+1 khi map DTO. */
     @EntityGraph(attributePaths = {"ticket", "requester", "reviewedBy"})
     List<ReopenRequest> findByStatusOrderByCreatedAtAsc(String status);
 }

@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface TicketAssignmentRepository extends JpaRepository<TicketAssignment, Long> {
 
-    /** Lần phân công đang hiệu lực của ticket (tối đa 1 dòng, BR-HD-05). */
+ /** Lần phân công đang hiệu lực của ticket (tối đa 1 dòng). */
     Optional<TicketAssignment> findByTicket_IdAndIsCurrentTrue(Long ticketId);
 }

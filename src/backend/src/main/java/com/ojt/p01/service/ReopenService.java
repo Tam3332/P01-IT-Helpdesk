@@ -23,16 +23,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Quản lý quy trình mở lại ticket (HD10, BPMN P3, BR-HD-02, BR-HD-03, BR-HD-04).
- * - Employee gửi yêu cầu mở lại (POST /tickets/{id}/reopen)
- * - IT Manager xem danh sách (GET /reopen-requests)
- * - IT Manager phê duyệt (POST /reopen-requests/{id}/approve)
- * - IT Manager từ chối (POST /reopen-requests/{id}/reject)
+ * Quản lý quy trình mở lại ticket.
+ * Employee gửi yêu cầu mở lại (POST /tickets/{id}/reopen)
+ * IT Manager xem danh sách (GET /reopen-requests)
+ * IT Manager phê duyệt (POST /reopen-requests/{id}/approve)
+ * IT Manager từ chối (POST /reopen-requests/{id}/reject)
  */
 @Service
 public class ReopenService {
 
-    /** BR-HD-04: chỉ mở lại trong 07 ngày (168 giờ) kể từ lúc Resolved. */
+ /** chỉ mở lại trong 07 ngày (168 giờ) kể từ lúc Resolved. */
     private static final Duration REOPEN_WINDOW = Duration.ofHours(168);
     private static final int MIN_REASON_LENGTH = 20;
     private static final Set<String> REQUEST_STATUSES = Set.of("PENDING", "APPROVED", "REJECTED");
@@ -156,7 +156,7 @@ public class ReopenService {
     }
 
     // -------------------------------------------------------------------------
-    // POST /api/v1/reopen-requests/{id}/approve — IT Manager phê duyệt mở lại (BPMN P3)
+    // POST /api/v1/reopen-requests/{id}/approve — IT Manager phê duyệt mở lại
     // -------------------------------------------------------------------------
 
     @Transactional
@@ -196,7 +196,7 @@ public class ReopenService {
         reopenRequest.setReviewedAt(now);
         reopenRequestRepository.save(reopenRequest);
 
-        // 2. Kích hoạt hạn SLA mới (SRS BR-HD-03: hạn xử lý mới tính từ lúc IT Manager duyệt mở lại; không tính lại hạn phản hồi)
+        // 2. Kích hoạt hạn SLA mới
         SLAConfig sla = slaConfigRepository.findByPriorityLevel(ticket.getPriority())
                 .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
         long resolutionMinutes = Math.round(sla.getResolutionTimeHours().doubleValue() * 60.0);
@@ -207,7 +207,7 @@ public class ReopenService {
         int currentCount = ticket.getReopenCount() == null ? 0 : ticket.getReopenCount();
         ticket.setReopenCount(currentCount + 1);
 
-        // 4. Xử lý phân công lại (Reassign to New IT Staff?) theo sơ đồ BPMN P3
+        // 4. Xử lý phân công lại (Reassign to New IT Staff?) theo sơ đồ
         boolean hasNewAssignee = request != null && request.newAssigneeId() != null;
         User newAssignee = null;
         if (hasNewAssignee) {
@@ -242,7 +242,7 @@ public class ReopenService {
         ticket.setStatus(TicketStatus.REOPENED.name());
         ticketRepository.save(ticket);
 
-        // 6. Ghi TicketHistory (HD09)
+        // 6. Ghi TicketHistory
         String historyNote = "Duyệt mở lại ticket (Đợt " + (currentCount + 1) + ")"
                 + (reviewNote != null && !reviewNote.isBlank() ? " - Ghi chú: " + reviewNote : "")
                 + (hasNewAssignee ? " - Phân công lại cho: " + newAssignee.getFullName() : " - Kỹ thuật viên cũ tiếp tục xử lý");
@@ -259,7 +259,7 @@ public class ReopenService {
                 now
         ));
 
-        // 7. Security Audit Log (SDD §7)
+        // 7. Security Audit Log
         Long actorId = currentUser.getId();
         String ticketNumber = ticket.getTicketNumber();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
@@ -274,7 +274,7 @@ public class ReopenService {
     }
 
     // -------------------------------------------------------------------------
-    // POST /api/v1/reopen-requests/{id}/reject — IT Manager từ chối mở lại (BPMN P3)
+    // POST /api/v1/reopen-requests/{id}/reject — IT Manager từ chối mở lại
     // -------------------------------------------------------------------------
 
     @Transactional
@@ -318,12 +318,12 @@ public class ReopenService {
         reopenRequest.setReviewedAt(now);
         reopenRequestRepository.save(reopenRequest);
 
-        // 2. Chuyển trạng thái ticket quay trở lại RESOLVED (BPMN P3: Revert Status to 'Resolved' & Record History)
+        // 2. Chuyển trạng thái ticket quay trở lại RESOLVED
         transitionValidator.assertTransitionAllowed(currentStatus, TicketStatus.RESOLVED);
         ticket.setStatus(TicketStatus.RESOLVED.name());
         ticketRepository.save(ticket);
 
-        // 3. Ghi TicketHistory (HD09)
+        // 3. Ghi TicketHistory
         historyRepository.save(new TicketHistory(
                 ticket,
                 currentUser,
@@ -336,7 +336,7 @@ public class ReopenService {
                 now
         ));
 
-        // 4. Security Audit Log (SDD §7)
+        // 4. Security Audit Log
         Long actorId = currentUser.getId();
         String ticketNumber = ticket.getTicketNumber();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

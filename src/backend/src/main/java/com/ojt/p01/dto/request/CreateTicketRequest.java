@@ -8,9 +8,9 @@ import jakarta.validation.constraints.Size;
 /**
  * Request body để tạo ticket mới (POST /api/v1/tickets).
  *
- * @param title       Tiêu đề ticket (bắt buộc, tối đa 200 ký tự)
+ * @param title Tiêu đề ticket (bắt buộc, tối đa 200 ký tự)
  * @param description Mô tả chi tiết sự cố (bắt buộc, tối đa 2000 ký tự)
- * @param categoryId  ID danh mục sự cố (lấy từ GET /api/v1/categories)
+ * @param categoryId ID danh mục sự cố (lấy từ GET /api/v1/categories)
  * @param impactLevel Mức độ ảnh hưởng: LOW | MEDIUM | HIGH | CRITICAL
  */
 public record CreateTicketRequest(

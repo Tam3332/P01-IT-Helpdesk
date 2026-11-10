@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
 /**
- * Entity mapping bảng ticket_attachments (HD04, IA-HD03).
+ * Entity mapping bảng ticket_attachments.
  */
 @Entity
 @Table(name = "ticket_attachments")

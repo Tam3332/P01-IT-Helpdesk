@@ -15,12 +15,12 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
- * Gán correlation_id cho mỗi request (SDD §7) để nối các dòng audit của cùng 1 request với nhau.
+ * Gán correlation_id cho mỗi request để nối các dòng audit của cùng 1 request với nhau.
  *
- * - Ưu tiên header X-Correlation-Id; nếu không có thì dùng X-Request-Id do Nginx gửi (khớp "rid" trong access log Nginx),
- *   để nối dòng log Nginx với dòng audit của cùng request. Không có/không hợp lệ thì tự sinh UUID.
- * - Chạy trước Spring Security (HIGHEST_PRECEDENCE) để cả AccessDeniedHandler cũng có id.
- * - Trả lại id trong header phản hồi để đối chiếu khi debug.
+ * Ưu tiên header X-Correlation-Id; nếu không có thì dùng X-Request-Id do Nginx gửi (khớp "rid" trong access log Nginx)
+ * để nối dòng log Nginx với dòng audit của cùng request. Không có/không hợp lệ thì tự sinh UUID.
+ * Chạy trước Spring Security (HIGHEST_PRECEDENCE) để cả AccessDeniedHandler cũng có id.
+ * Trả lại id trong header phản hồi để đối chiếu khi debug.
  */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)

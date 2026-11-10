@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 /**
  * Wrapper chuẩn cho mọi HTTP response của P01 backend.
  *
- * Success:  { success: true,  message, data, timestamp }
- * Error:    { success: false, message, error: { code, message, details }, timestamp }
+ * Success: { success: true, message, data, timestamp }
+ * Error: { success: false, message, error: { code, message, details }, timestamp }
  *
- * Ref: SDD §4.2
+ * Ref:
  */
 @Getter
 @Setter
@@ -25,7 +25,7 @@ public class ApiResponse<T> {
     private String message;
     private T data;
 
-    /** Chỉ có khi success=false. Ref: ErrorResponse inner class bên dưới. */
+ /** Chỉ có khi success=false. Ref: ErrorResponse inner class bên dưới. */
     private ErrorDetail error;
 
     @Builder.Default
@@ -52,7 +52,7 @@ public class ApiResponse<T> {
     }
 
     // -------------------------------------------------------------------------
-    // Factory — Error  (dùng trong GlobalExceptionHandler)
+    // Factory — Error (dùng trong GlobalExceptionHandler)
     // -------------------------------------------------------------------------
 
     public static <T> ApiResponse<T> error(String errorCode, String errorMessage) {
@@ -81,10 +81,10 @@ public class ApiResponse<T> {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ErrorDetail {
-        /** Mã lỗi nghiệp vụ, ví dụ: INVALID_CREDENTIALS, CATEGORY_NOT_FOUND */
+ /** Mã lỗi nghiệp vụ, ví dụ: INVALID_CREDENTIALS, CATEGORY_NOT_FOUND */
         private String code;
         private String message;
-        /** Danh sách lỗi validation field (chỉ có khi 400 Validation Failed) */
+ /** Danh sách lỗi validation field (chỉ có khi 400 Validation Failed) */
         private Object details;
 
         public static ErrorDetail of(String code, String message, Object details) {

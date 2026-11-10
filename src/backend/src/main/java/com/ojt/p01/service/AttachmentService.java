@@ -35,19 +35,19 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Service xử lý tệp đính kèm an toàn (HD04, IA-HD03).
+ * Service xử lý tệp đính kèm an toàn.
  */
 @Service
 public class AttachmentService {
 
-    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB (IA-HD03)
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
     private static final long MAX_FILES_PER_TICKET = 5;
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
             "jpg", "jpeg", "png", "gif", "pdf", "docx", "xlsx", "txt", "log"
     );
 
-    // MIME đúng cho từng đuôi file (SRS §4 HD04 / SecRS IA-HD03: kiểm tra MIME type). Lưu DB theo bảng này, không tin giá trị client gửi.
+    // MIME đúng cho từng đuôi file. Lưu DB theo bảng này, không tin giá trị client gửi.
     private static final java.util.Map<String, String> EXPECTED_MIME = java.util.Map.of(
             "jpg", "image/jpeg",
             "jpeg", "image/jpeg",
@@ -86,9 +86,9 @@ public class AttachmentService {
         }
     }
 
-    /**
-     * Lấy danh sách tệp đính kèm (GET /api/v1/tickets/{id}/attachments).
-     */
+ /**
+ * Lấy danh sách tệp đính kèm (GET /api/v1/tickets/{id}/attachments).
+ */
     @Transactional(readOnly = true)
     public List<AttachmentResponse> getAttachments(String idOrNumber) {
         Ticket ticket = findTicket(idOrNumber);
@@ -100,10 +100,10 @@ public class AttachmentService {
                 .toList();
     }
 
-    /**
-     * Tải tệp lên ticket (POST /api/v1/tickets/{id}/attachments).
-     * Kiểm tra dung lượng <= 10MB, tối đa 5 file/ticket, định dạng whitelist, hash SHA-256 (IA-HD03).
-     */
+ /**
+ * Tải tệp lên ticket (POST /api/v1/tickets/{id}/attachments).
+ * Kiểm tra dung lượng <= 10MB, tối đa 5 file/ticket, định dạng whitelist, hash SHA-256.
+ */
     @Transactional
     public AttachmentResponse uploadAttachment(String idOrNumber, MultipartFile file, String ipAddress) {
         Ticket ticket = findTicket(idOrNumber);
@@ -140,7 +140,7 @@ public class AttachmentService {
         String extLower = ext.toLowerCase(java.util.Locale.ROOT);
         String expectedMime = EXPECTED_MIME.get(extLower);
 
-        // 3b. MIME client khai báo phải khớp đuôi file (SecRS IA-HD03).
+        // 3b. MIME client khai báo phải khớp đuôi file.
         // Bỏ qua khi client không gửi hoặc gửi chung chung application/octet-stream; tệp văn bản chấp nhận mọi text/*.
         String declaredMime = file.getContentType();
         if (declaredMime != null && !declaredMime.isBlank()
@@ -154,7 +154,7 @@ public class AttachmentService {
             }
         }
 
-        // 3c. Chữ ký nội dung (magic bytes) phải đúng loại tệp, chống đổi đuôi file (SecRS IA-HD03)
+        // 3c. Chữ ký nội dung (magic bytes) phải đúng loại tệp, chống đổi đuôi file
         if (!hasValidSignature(file, extLower)) {
             throw new AppException(ErrorCode.FILE_TYPE_NOT_ALLOWED);
         }
@@ -200,7 +200,7 @@ public class AttachmentService {
 
         TicketAttachment saved = attachmentRepository.save(attachment);
 
-        // Ghi nhận vào TicketHistory (HD09)
+        // Ghi nhận vào TicketHistory
         String clientIp = (ipAddress != null && !ipAddress.isBlank()) ? ipAddress : "127.0.0.1";
         historyRepository.save(new TicketHistory(
                 ticket,
@@ -217,9 +217,9 @@ public class AttachmentService {
         return toResponse(saved);
     }
 
-    /**
-     * Tải xuống tệp đính kèm an toàn (GET /api/v1/tickets/{id}/attachments/{attachmentId}).
-     */
+ /**
+ * Tải xuống tệp đính kèm an toàn (GET /api/v1/tickets/{id}/attachments/{attachmentId}).
+ */
     @Transactional(readOnly = true)
     public Resource loadAttachmentFile(String idOrNumber, Long attachmentId) {
         Ticket ticket = findTicket(idOrNumber);
@@ -265,7 +265,7 @@ public class AttachmentService {
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
         if ("ADMIN".equalsIgnoreCase(roleName)) {
-            // Separation of Duties: Admin chỉ xem metadata danh sách file (GET /attachments), không tải byte nội dung (SecRS §5, SEC-TC-HD-03)
+            // Separation of Duties: Admin chỉ xem metadata danh sách file (GET /attachments), không tải byte nội dung
             auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "DOWNLOAD_ATTACHMENT", 403);
             throw new AppException(ErrorCode.FORBIDDEN, "Quản trị viên không có quyền tải tệp tin đính kèm");
         }
@@ -277,12 +277,12 @@ public class AttachmentService {
 
         if ("EMPLOYEE".equalsIgnoreCase(roleName)) {
             if (!ticket.getRequester().getId().equals(currentUser.getId())) {
-                // Trái quyền → 404 như vé không tồn tại + audit AUTHZ_DENIED (SDD §7)
+                // Trái quyền → 404 như vé không tồn tại + audit AUTHZ_DENIED
                 auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "ACCESS_ATTACHMENT", 404);
                 throw new AppException(ErrorCode.TICKET_NOT_FOUND);
             }
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-            // IT_STAFF chỉ thao tác trên vé được giao cho mình (SRS §4 HD05 – bản sửa 05/11; SecRS §5 POST attachments: "Assigned only")
+            // IT_STAFF chỉ thao tác trên vé được giao cho mình
             boolean isAssignedToMe = ticket.getCurrentAssignee() != null
                     && ticket.getCurrentAssignee().getId().equals(currentUser.getId());
             if (!isAssignedToMe) {
@@ -305,10 +305,10 @@ public class AttachmentService {
         );
     }
 
-    /**
-     * Kiểm tra vài byte đầu của tệp có đúng chữ ký của loại tệp không (SecRS IA-HD03: "chữ ký nội dung").
-     * docx/xlsx là tệp ZIP (bắt đầu bằng byte 50 4B 03 04, tức "PK.."); txt/log không có chữ ký nên chỉ chặn tệp nhị phân (có byte 0).
-     */
+ /**
+ * Kiểm tra vài byte đầu của tệp có đúng chữ ký của loại tệp không.
+ * docx/xlsx là tệp ZIP (bắt đầu bằng byte 50 4B 03 04, tức "PK.."); txt/log không có chữ ký nên chỉ chặn tệp nhị phân (có byte 0).
+ */
     private boolean hasValidSignature(MultipartFile file, String ext) {
         byte[] head = new byte[8192];
         int n;

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
- * Request gửi đánh giá chất lượng hỗ trợ (HD15).
+ * Request gửi đánh giá chất lượng hỗ trợ.
  */
 public record CreateFeedbackRequest(
         @NotNull(message = "Số sao đánh giá không được để trống")

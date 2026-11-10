@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Mở lại ticket (HD10, UC-08 Nhánh B, BR-HD-04, BPMN P3).
+ * Mở lại ticket.
  * Quyền theo SecurityConfig:
- * - POST /tickets/{id}/reopen chỉ EMPLOYEE (chủ vé)
- * - /reopen-requests/** chỉ IT_MANAGER (SDD §6.2)
+ * POST /tickets/{id}/reopen chỉ EMPLOYEE (chủ vé)
+ * /reopen-requests/** chỉ IT_MANAGER
  */
-@Tag(name = "Reopen", description = "Yêu cầu mở lại ticket và quy trình IT Manager duyệt/từ chối (BPMN P3)")
+@Tag(name = "Reopen", description = "Yêu cầu mở lại ticket và quy trình IT Manager duyệt/từ chối")
 @RestController
 @RequestMapping("/api/v1")
 @SecurityRequirement(name = "BearerAuth")
@@ -37,7 +37,7 @@ public class ReopenController {
     }
 
     @Operation(
-            summary = "Gửi yêu cầu mở lại ticket (HD10, UC-08)",
+            summary = "Gửi yêu cầu mở lại ticket",
             description = "Chỉ Employee chủ ticket; ticket RESOLVED trong 7 ngày (168 giờ); lý do >= 20 ký tự. Ticket chuyển REOPEN_PENDING."
     )
     @PostMapping("/tickets/{id}/reopen")
@@ -52,7 +52,7 @@ public class ReopenController {
     }
 
     @Operation(
-            summary = "Danh sách yêu cầu mở lại (IT Manager, HD10)",
+            summary = "Danh sách yêu cầu mở lại (IT Manager)",
             description = "Mặc định trả các yêu cầu PENDING, kèm giải pháp cũ (previousResolutionNote) để đối chiếu."
     )
     @GetMapping("/reopen-requests")
@@ -63,7 +63,7 @@ public class ReopenController {
     }
 
     @Operation(
-            summary = "Phê duyệt yêu cầu mở lại ticket (IT Manager, BPMN P3)",
+            summary = "Phê duyệt yêu cầu mở lại ticket (IT Manager)",
             description = "Chuyển ticket sang REOPENED, kích hoạt SLA xử lý mới, tăng reopen_count, có thể chọn phân công lại IT Staff mới."
     )
     @PostMapping({"/reopen-requests/{id}/approve", "/reopen-requests/{requestId}/approve"})
@@ -79,7 +79,7 @@ public class ReopenController {
     }
 
     @Operation(
-            summary = "Từ chối yêu cầu mở lại ticket (IT Manager, BPMN P3)",
+            summary = "Từ chối yêu cầu mở lại ticket (IT Manager)",
             description = "Bắt buộc có reviewNote (lý do từ chối), chuyển ticket quay lại trạng thái RESOLVED."
     )
     @PostMapping({"/reopen-requests/{id}/reject", "/reopen-requests/{requestId}/reject"})

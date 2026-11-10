@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 
 /**
  * Entity mapping bảng tickets — trung tâm nghiệp vụ Helpdesk.
- * Bám sát schema.sql (BR-HD-03, BR-HD-04).
+ * Bám sát schema.sql.
  */
 @Entity
 @Table(name = "tickets")
@@ -15,7 +15,7 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Mã vé: HD-YYYY-XXXX (ví dụ HD-2026-0001) — sinh bởi TicketService */
+ /** Mã vé: HD-YYYY-XXXX (ví dụ HD-2026-0001) — sinh bởi TicketService */
     @Column(name = "ticket_number", nullable = false, unique = true, length = 30)
     private String ticketNumber;
 
@@ -29,29 +29,29 @@ public class Ticket {
     @JoinColumn(name = "category_id", nullable = false)
     private TicketCategory category;
 
-    /** Mức độ ảnh hưởng: LOW | MEDIUM | HIGH | CRITICAL */
+ /** Mức độ ảnh hưởng: LOW | MEDIUM | HIGH | CRITICAL */
     @Column(name = "impact_level", nullable = false, length = 20)
     private String impactLevel;
 
-    /** Mức ưu tiên xử lý: LOW | MEDIUM | HIGH | CRITICAL */
+ /** Mức ưu tiên xử lý: LOW | MEDIUM | HIGH | CRITICAL */
     @Column(name = "priority", nullable = false, length = 20)
     private String priority;
 
-    /** Trạng thái: NEW | ASSIGNED | IN_PROGRESS | RESOLVED | CLOSED | REOPENED | REOPEN_PENDING */
+ /** Trạng thái: NEW | ASSIGNED | IN_PROGRESS | RESOLVED | CLOSED | REOPENED | REOPEN_PENDING */
     @Column(name = "status", nullable = false, length = 30)
     private String status;
 
-    /** Người tạo ticket (Employee) */
+ /** Người tạo ticket (Employee) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
 
-    /** Người IT Staff đang xử lý (nullable) */
+ /** Người IT Staff đang xử lý (nullable) */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_assignee_id")
     private User currentAssignee;
 
-    // SLA Deadlines (BR-HD-03)
+    // SLA Deadlines
     @Column(name = "response_deadline", nullable = false)
     private OffsetDateTime responseDeadline;
 
@@ -71,7 +71,7 @@ public class Ticket {
     @Column(name = "reopened_at")
     private OffsetDateTime reopenedAt;
 
-    // Reopen tracking (BR-HD-04)
+    // Reopen tracking
     @Column(name = "reopen_count", nullable = false)
     private Integer reopenCount;
 
@@ -81,7 +81,7 @@ public class Ticket {
     @Column(name = "resolution_note", columnDefinition = "TEXT")
     private String resolutionNote;
 
-    /** Cờ SLA vi phạm — KHÔNG bao giờ reset về false */
+ /** Cờ SLA vi phạm — KHÔNG bao giờ reset về false */
     @Column(name = "is_sla_breached", nullable = false)
     private Boolean isSlaBreached;
 

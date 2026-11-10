@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller xác thực (Task C3, SRS HD01, UC-01).
+ * Controller xác thực (Task C3).
  * Base path: /api/v1/auth
  */
 @Tag(name = "Authentication", description = "Đăng nhập, đăng xuất thu hồi token, thông tin người dùng hiện tại")
@@ -33,13 +33,13 @@ public class AuthController {
         this.authService = authService;
     }
 
-    /**
-     * POST /api/v1/auth/login
-     * API public duy nhất (không cần token) theo SDD §6.2.
-     * 200: trả JWT | 400: thiếu/sai định dạng | 401: sai email hoặc mật khẩu | 403: tài khoản bị Admin khóa.
-     */
+ /**
+ * POST /api/v1/auth/login
+ * API public duy nhất (không cần token) theo .
+ * 200: trả JWT | 400: thiếu/sai định dạng | 401: sai email hoặc mật khẩu | 403: tài khoản bị Admin khóa.
+ */
     @Operation(
-            summary = "Đăng nhập hệ thống (HD01, UC-01)",
+            summary = "Đăng nhập hệ thống",
             description = "Xác thực bằng email và mật khẩu, trả về JWT Access Token hạn 15 phút."
     )
     @SecurityRequirements // Bỏ biểu tượng ổ khóa trên Swagger: API này không cần token
@@ -49,23 +49,23 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Đăng nhập thành công", response));
     }
 
-    /**
-     * GET /api/v1/auth/me (cần token).
-     * Frontend gọi khi tải lại trang để biết token còn dùng được và lấy lại thông tin người dùng.
-     * 200: UserResponse | 401: thiếu token, token hết hạn hoặc đã logout.
-     */
+ /**
+ * GET /api/v1/auth/me (cần token).
+ * Frontend gọi khi tải lại trang để biết token còn dùng được và lấy lại thông tin người dùng.
+ * 200: UserResponse | 401: thiếu token, token hết hạn hoặc đã logout.
+ */
     @Operation(summary = "Thông tin tài khoản hiện tại từ JWT")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> me() {
         return ResponseEntity.ok(ApiResponse.success(authService.getCurrentUser()));
     }
 
-    /**
-     * POST /api/v1/auth/logout (cần token).
-     * Đưa token đang dùng vào danh sách đen; gọi API khác bằng token này sẽ bị 401.
-     * Header Authorization chắc chắn có, vì SecurityConfig đã chặn request không có token hợp lệ.
-     */
-    @Operation(summary = "Đăng xuất và thu hồi Access Token (ADR-02)")
+ /**
+ * POST /api/v1/auth/logout (cần token).
+ * Đưa token đang dùng vào danh sách đen; gọi API khác bằng token này sẽ bị 401.
+ * Header Authorization chắc chắn có, vì SecurityConfig đã chặn request không có token hợp lệ.
+ */
+    @Operation(summary = "Đăng xuất và thu hồi Access Token")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
         authService.logout(authorization.substring("Bearer ".length()));

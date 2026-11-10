@@ -3,7 +3,7 @@ package com.ojt.p01.dto.response;
 import java.time.OffsetDateTime;
 
 /**
- * DTO phản hồi lịch sử xử lý ticket (HD09, UC-02 bước 7, UC-06 bước 6).
+ * DTO phản hồi lịch sử xử lý ticket.
  */
 public record TicketHistoryResponse(
         Long id,

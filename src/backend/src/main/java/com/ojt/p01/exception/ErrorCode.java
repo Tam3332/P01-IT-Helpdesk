@@ -4,8 +4,8 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 /**
- * Mã lỗi nghiệp vụ của P01 (khớp evidence T3-06 và SRS UC-01/UC-02/UC-10).
- * error.code trả về đúng tên chuỗi chuẩn: CATEGORY_NOT_FOUND, INVALID_CREDENTIALS,...
+ * Mã lỗi nghiệp vụ của P01 (chuẩn hóa mã lỗi nghiệp vụ).
+ * error.code trả về đúng tên chuỗi chuẩn: CATEGORY_NOT_FOUND, INVALID_CREDENTIALS...
  */
 @Getter
 public enum ErrorCode {
@@ -35,20 +35,20 @@ public enum ErrorCode {
     // -------------------------------------------------------------------------
     // Ticket state machine
     // -------------------------------------------------------------------------
-    TICKET_NOT_ASSIGNABLE      ("TICKET_NOT_ASSIGNABLE", "Ticket không ở trạng thái cho phép phân công", HttpStatus.UNPROCESSABLE_ENTITY), // 422: UC-06 tiền điều kiện; SecRS §5 (Closed → 422)
-    ASSIGNEE_UNCHANGED         ("ASSIGNEE_UNCHANGED", "IT Staff này đang phụ trách ticket", HttpStatus.UNPROCESSABLE_ENTITY), // 422: UC-06 3b (Trí chốt 04/11)
-    INVALID_ASSIGNEE           ("INVALID_ASSIGNEE", "Người được giao phải là IT Staff đang hoạt động", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-06 3a, BR-HD-05
-    INVALID_STATUS_TRANSITION  ("INVALID_STATUS_TRANSITION", "Chuyển trạng thái vé không hợp lệ", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-07 2a, SDD §6.5 bước 5
-    REOPEN_WINDOW_EXPIRED      ("REOPEN_WINDOW_EXPIRED", "Đã quá thời hạn 07 ngày kể từ khi giải quyết sự cố, vui lòng tạo phiếu yêu cầu mới", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS BR-HD-04, SDD §4 /reopen "quá 7 ngày"
-    REOPEN_ALREADY_PENDING     ("REOPEN_ALREADY_PENDING", "Ticket đã có yêu cầu mở lại đang chờ phê duyệt", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SDD §4 /reopen "đang có yêu cầu chờ duyệt" (nhóm không dùng 409)
+    TICKET_NOT_ASSIGNABLE      ("TICKET_NOT_ASSIGNABLE", "Ticket không ở trạng thái cho phép phân công", HttpStatus.UNPROCESSABLE_ENTITY), // 422: tiền điều kiện; (Closed → 422)
+    ASSIGNEE_UNCHANGED         ("ASSIGNEE_UNCHANGED", "IT Staff này đang phụ trách ticket", HttpStatus.UNPROCESSABLE_ENTITY), // 422:
+    INVALID_ASSIGNEE           ("INVALID_ASSIGNEE", "Người được giao phải là IT Staff đang hoạt động", HttpStatus.UNPROCESSABLE_ENTITY), // 422:
+    INVALID_STATUS_TRANSITION  ("INVALID_STATUS_TRANSITION", "Chuyển trạng thái vé không hợp lệ", HttpStatus.UNPROCESSABLE_ENTITY), // 422: , bước 5
+    REOPEN_WINDOW_EXPIRED      ("REOPEN_WINDOW_EXPIRED", "Đã quá thời hạn 07 ngày kể từ khi giải quyết sự cố, vui lòng tạo phiếu yêu cầu mới", HttpStatus.UNPROCESSABLE_ENTITY), // 422: , /reopen "quá 7 ngày"
+    REOPEN_ALREADY_PENDING     ("REOPEN_ALREADY_PENDING", "Ticket đã có yêu cầu mở lại đang chờ phê duyệt", HttpStatus.UNPROCESSABLE_ENTITY), // 422: /reopen "đang có yêu cầu chờ duyệt" (nhóm không dùng 409)
 
     // -------------------------------------------------------------------------
     // Admin — Category & SLAConfig
     // -------------------------------------------------------------------------
-    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: SRS UC-10 3a (nhóm không dùng 409)
-    CATEGORY_NAME_DUPLICATE    ("CATEGORY_NAME_DUPLICATE", "Tên danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: SRS UC-10 3a "trùng mã/tên", HD02 "tên duy nhất"
-    CATEGORY_ID_NOT_FOUND      ("CATEGORY_ID_NOT_FOUND", "Không tìm thấy danh mục", HttpStatus.NOT_FOUND), // 404: Admin gọi /admin/categories/{id} sai id (SDD §4.2c)
-    CATEGORY_HAS_TICKETS       ("CATEGORY_HAS_TICKETS", "Danh mục đang có phiếu yêu cầu tham chiếu, không thể xóa", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS UC-10 3c
+    CATEGORY_CODE_DUPLICATE    ("CATEGORY_CODE_DUPLICATE", "Mã danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: (nhóm không dùng 409)
+    CATEGORY_NAME_DUPLICATE    ("CATEGORY_NAME_DUPLICATE", "Tên danh mục đã tồn tại", HttpStatus.BAD_REQUEST), // 400: "trùng mã/tên", "tên duy nhất"
+    CATEGORY_ID_NOT_FOUND      ("CATEGORY_ID_NOT_FOUND", "Không tìm thấy danh mục", HttpStatus.NOT_FOUND), // 404: Admin gọi /admin/categories/{id} sai id
+    CATEGORY_HAS_TICKETS       ("CATEGORY_HAS_TICKETS", "Danh mục đang có phiếu yêu cầu tham chiếu, không thể xóa", HttpStatus.UNPROCESSABLE_ENTITY), // 422:
     SLA_INVALID_HOURS          ("SLA_INVALID_HOURS", "Thời gian SLA phải lớn hơn 0", HttpStatus.BAD_REQUEST),
 
     // -------------------------------------------------------------------------

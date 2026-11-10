@@ -10,10 +10,10 @@ import java.util.List;
 @Repository
 public interface TicketAttachmentRepository extends JpaRepository<TicketAttachment, Long> {
 
-    /** Toàn bộ tệp đính kèm của ticket. */
+ /** Toàn bộ tệp đính kèm của ticket. */
     @EntityGraph(attributePaths = {"uploader"})
     List<TicketAttachment> findByTicket_IdOrderByCreatedAtAsc(Long ticketId);
 
-    /** Đếm số tệp đính kèm hiện tại của ticket để kiểm tra giới hạn <= 5 tệp (IA-HD03). */
+ /** Đếm số tệp đính kèm hiện tại của ticket để kiểm tra giới hạn <= 5 tệp. */
     long countByTicket_Id(Long ticketId);
 }

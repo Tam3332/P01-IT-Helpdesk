@@ -22,12 +22,12 @@ import java.util.Map;
 /**
  * Xử lý tập trung tất cả exception của P01 backend.
  *
- * Quy tắc (theo SDD §4.2 + SRS UC-01/UC-02/UC-10):
- *  - AccessDenied     → 403 FORBIDDEN   (không 401)
- *  - BadCredentials   → 401 INVALID_CREDENTIALS
- *  - AppException     → httpStatus của ErrorCode tương ứng
- *  - Validation (400) → có thêm error.details là map field→message
- *  - Exception chung  → 500, KHÔNG lộ message nội bộ ra ngoài
+ * Quy tắc (theo + //):
+ * AccessDenied → 403 FORBIDDEN (không 401)
+ * BadCredentials → 401 INVALID_CREDENTIALS
+ * AppException → httpStatus của ErrorCode tương ứng
+ * Validation (400) → có thêm error.details là map field→message
+ * Exception chung → 500, KHÔNG lộ message nội bộ ra ngoài
  */
 @Slf4j
 @RestControllerAdvice
@@ -70,10 +70,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
     }
 
-    /**
-     * AccessDeniedException: user đã xác thực nhưng không có quyền → 403 FORBIDDEN.
-     * Trước đây trả 401 — sửa theo yêu cầu Cường (SRS UC-10).
-     */
+ /**
+ * AccessDeniedException: user đã xác thực nhưng không có quyền → 403 FORBIDDEN.
+ * Trước đây trả 401 — sửa theo yêu cầu Cường.
+ */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Object>> handleAccessDenied(AccessDeniedException ex) {
         ErrorCode ec = ErrorCode.FORBIDDEN;
@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
 
     // -------------------------------------------------------------------------
     // Request sai định dạng — 400 (JSON hỏng, sai kiểu tham số, thiếu tham số/header)
-    // Trước đây rơi xuống 500; SRS chỉ dùng 400 cho dữ liệu đầu vào không hợp lệ.
+    // Trước đây rơi xuống 500; chỉ dùng 400 cho dữ liệu đầu vào không hợp lệ.
     // -------------------------------------------------------------------------
 
     @ExceptionHandler({
@@ -104,7 +104,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneral(Exception ex) {
-        // Lỗi web chuẩn của Spring (URL không tồn tại → 404, sai method → 405, ...) đã mang sẵn mã HTTP:
+        // Lỗi web chuẩn của Spring (URL không tồn tại → 404, sai method → 405...) đã mang sẵn mã HTTP:
         // giữ nguyên mã đó thay vì biến thành 500 (ví dụ API chưa làm phải ra 404, không phải "lỗi hệ thống").
         if (ex instanceof org.springframework.web.ErrorResponse er) {
             HttpStatusCode status = er.getStatusCode();

@@ -12,9 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Service xử lý nghiệp vụ SLA Config (UC-09, BR-HD-03).
+ * Service xử lý nghiệp vụ SLA Config.
  *
- * BR-HD-03: Giờ SLA là giờ liên tục (không phải giờ làm việc).
+ * Giờ SLA là giờ liên tục (không phải giờ làm việc).
  * Quyền sửa: ADMIN only. IT_MANAGER chỉ xem.
  */
 @Service
@@ -30,7 +30,7 @@ public class SLAConfigService {
     // Read — IT_MANAGER + ADMIN
     // -------------------------------------------------------------------------
 
-    /** Trả về toàn bộ 4 cấu hình SLA (theo thứ tự CRITICAL → HIGH → MEDIUM → LOW). */
+ /** Trả về toàn bộ 4 cấu hình SLA (theo thứ tự CRITICAL → HIGH → MEDIUM → LOW). */
     @Transactional(readOnly = true)
     public List<SLAConfigResponse> getAllSLAConfigs() {
         return slaConfigRepository.findAllOrderByPriority()
@@ -39,7 +39,7 @@ public class SLAConfigService {
                 .toList();
     }
 
-    /** Xem cấu hình SLA theo priority level. */
+ /** Xem cấu hình SLA theo priority level. */
     @Transactional(readOnly = true)
     public SLAConfigResponse getSLAConfigByPriority(String priority) {
         SLAConfig config = slaConfigRepository.findByPriorityLevel(priority.toUpperCase())
@@ -51,11 +51,11 @@ public class SLAConfigService {
     // Write — ADMIN only
     // -------------------------------------------------------------------------
 
-    /**
-     * UC-10 / BR-HD-03: Cập nhật giờ SLA theo priority.
-     * Validation: responseTimeHours và resolutionTimeHours phải > 0.
-     * Giờ SLA là giờ liên tục (24/7).
-     */
+ /**
+ * / : Cập nhật giờ SLA theo priority.
+ * Validation: responseTimeHours và resolutionTimeHours phải > 0.
+ * Giờ SLA là giờ liên tục (24/7).
+ */
     @Transactional
     public SLAConfigResponse updateSLAConfig(String priority, UpdateSLAConfigRequest request) {
         SLAConfig config = slaConfigRepository.findByPriorityLevel(priority.toUpperCase())

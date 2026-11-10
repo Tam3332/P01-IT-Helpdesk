@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 /**
  * DTO cập nhật danh mục (PUT /api/v1/admin/categories/{id}).
  * Tất cả field nullable — chỉ field nào không null mới được cập nhật (partial update).
- * Quyền: ADMIN only (UC-10).
+ * Quyền: ADMIN only.
  */
 public record UpdateCategoryRequest(
 

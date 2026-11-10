@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.time.OffsetDateTime;
 
 /**
- * Yêu cầu mở lại ticket (bảng reopen_requests, HD10, UC-08 Nhánh B, BR-HD-04).
+ * Yêu cầu mở lại ticket (bảng reopen_requests, Nhánh B).
  * Mỗi ticket tối đa 1 yêu cầu PENDING (partial unique uq_ticket_pending_reopen trong schema.sql).
  * reviewedBy / reviewNote / reviewedAt do bước IT Manager duyệt hoặc từ chối điền (chưa triển khai).
  */
@@ -38,7 +38,7 @@ public class ReopenRequest {
     @Column(name = "reopen_reason", nullable = false, columnDefinition = "TEXT")
     private String reopenReason;
 
-    /** PENDING | APPROVED | REJECTED (CHECK constraint trong schema.sql) */
+ /** PENDING | APPROVED | REJECTED (CHECK constraint trong schema.sql) */
     @Column(name = "status", nullable = false, length = 20)
     private String status;
 
