@@ -219,11 +219,24 @@ public class ReopenService {
                 throw new AppException(ErrorCode.INVALID_ASSIGNEE, "Người được giao phải là IT Staff đang hoạt động");
             }
 
-            // Kết thúc assignment cũ
+            // Kết thúc assignment cũ TRƯỚC (flush ngay), rồi mới thêm dòng mới
+            // để không vi phạm unique index "mỗi ticket 1 dòng is_current = true"
             assignmentRepository.findByTicket_IdAndIsCurrentTrue(ticket.getId()).ifPresent(old -> {
                 old.end(now);
-                assignmentRepository.save(old);
+                assignmentRepository.saveAndFlush(old);
             });
+
+            // Cắt ngắn ghi chú an toàn tối đa 255 ký tự để không làm vỡ cột assignment_note (VARCHAR 255)
+            String assignmentNote;
+            if (reviewNote != null && !reviewNote.isBlank()) {
+                String prefix = "Điều phối sau duyệt mở lại: ";
+                assignmentNote = prefix + reviewNote;
+                if (assignmentNote.length() > 255) {
+                    assignmentNote = assignmentNote.substring(0, 252) + "...";
+                }
+            } else {
+                assignmentNote = "Điều phối kỹ thuật viên mới sau khi duyệt mở lại vé";
+            }
 
             // Tạo assignment mới
             TicketAssignment newAssignment = new TicketAssignment(
@@ -231,7 +244,7 @@ public class ReopenService {
                     newAssignee,
                     currentUser,
                     now,
-                    "Điều phối kỹ thuật viên mới sau khi duyệt mở lại vé: " + (reviewNote != null ? reviewNote : "")
+                    assignmentNote
             );
             assignmentRepository.save(newAssignment);
             ticket.setCurrentAssignee(newAssignee);
