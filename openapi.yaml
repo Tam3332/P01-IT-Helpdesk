@@ -525,7 +525,7 @@ paths:
   /reopen-requests/{requestId}/approve:
     post:
       tags: [Tickets]
-      summary: "[Chưa triển khai – tuần 4] IT Manager duyệt yêu cầu mở lại (HD10, UC-08, BR-HD-03, BR-HD-04)"
+      summary: "IT Manager duyệt yêu cầu mở lại ticket (HD10, UC-08, BR-HD-03, BR-HD-04, BPMN P3)"
       description: >
         Chỉ dành cho IT_MANAGER. Ticket chuyển REOPEN_PENDING -> REOPENED; hạn xử lý mới tính từ lúc duyệt,
         không tính lại hạn phản hồi, giữ nguyên cờ vi phạm SLA cũ (UC-08 nhánh B, bước 6).
@@ -556,7 +556,7 @@ paths:
   /reopen-requests/{requestId}/reject:
     post:
       tags: [Tickets]
-      summary: "[Chưa triển khai – tuần 4] IT Manager từ chối yêu cầu mở lại (HD10, UC-08, BR-HD-04)"
+      summary: "IT Manager từ chối yêu cầu mở lại ticket (HD10, UC-08, BR-HD-04, BPMN P3)"
       description: >
         Chỉ dành cho IT_MANAGER. Ticket chuyển REOPEN_PENDING -> RESOLVED, bản ghi reopen_requests chuyển REJECTED.
         Hạn xử lý và cờ vi phạm SLA giữ nguyên (UC-08 nhánh B, bước 6).

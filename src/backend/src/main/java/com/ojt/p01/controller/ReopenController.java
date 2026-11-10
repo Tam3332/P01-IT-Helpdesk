@@ -1,6 +1,8 @@
 package com.ojt.p01.controller;
 
 import com.ojt.p01.common.ApiResponse;
+import com.ojt.p01.dto.request.ApproveReopenRequest;
+import com.ojt.p01.dto.request.RejectReopenRequest;
 import com.ojt.p01.dto.request.ReopenTicketRequest;
 import com.ojt.p01.dto.response.ReopenRequestResponse;
 import com.ojt.p01.service.ReopenService;
@@ -17,10 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * Mở lại ticket (HD10, UC-08 Nhánh B, BR-HD-04).
- * Quyền theo SecurityConfig: POST /tickets/{id}/reopen chỉ EMPLOYEE; /reopen-requests/** chỉ IT_MANAGER (SDD §6.2).
+ * Mở lại ticket (HD10, UC-08 Nhánh B, BR-HD-04, BPMN P3).
+ * Quyền theo SecurityConfig:
+ * - POST /tickets/{id}/reopen chỉ EMPLOYEE (chủ vé)
+ * - /reopen-requests/** chỉ IT_MANAGER (SDD §6.2)
  */
-@Tag(name = "Reopen", description = "Yêu cầu mở lại ticket và danh sách chờ IT Manager duyệt")
+@Tag(name = "Reopen", description = "Yêu cầu mở lại ticket và quy trình IT Manager duyệt/từ chối (BPMN P3)")
 @RestController
 @RequestMapping("/api/v1")
 @SecurityRequirement(name = "BearerAuth")
@@ -56,5 +60,37 @@ public class ReopenController {
             @Parameter(description = "PENDING | APPROVED | REJECTED") @RequestParam(required = false) String status
     ) {
         return ResponseEntity.ok(ApiResponse.success(reopenService.getReopenRequests(status)));
+    }
+
+    @Operation(
+            summary = "Phê duyệt yêu cầu mở lại ticket (IT Manager, BPMN P3)",
+            description = "Chuyển ticket sang REOPENED, kích hoạt SLA xử lý mới, tăng reopen_count, có thể chọn phân công lại IT Staff mới."
+    )
+    @PostMapping({"/reopen-requests/{id}/approve", "/reopen-requests/{requestId}/approve"})
+    public ResponseEntity<ApiResponse<ReopenRequestResponse>> approveReopen(
+            @Parameter(description = "ID của yêu cầu ReopenRequest") @PathVariable(value = "id", required = false) Long id,
+            @PathVariable(value = "requestId", required = false) Long requestId,
+            @Valid @RequestBody(required = false) ApproveReopenRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long targetId = id != null ? id : requestId;
+        ReopenRequestResponse response = reopenService.approveReopenRequest(targetId, request, httpRequest.getRemoteAddr());
+        return ResponseEntity.ok(ApiResponse.success("Đã phê duyệt mở lại ticket thành công", response));
+    }
+
+    @Operation(
+            summary = "Từ chối yêu cầu mở lại ticket (IT Manager, BPMN P3)",
+            description = "Bắt buộc có reviewNote (lý do từ chối), chuyển ticket quay lại trạng thái RESOLVED."
+    )
+    @PostMapping({"/reopen-requests/{id}/reject", "/reopen-requests/{requestId}/reject"})
+    public ResponseEntity<ApiResponse<ReopenRequestResponse>> rejectReopen(
+            @Parameter(description = "ID của yêu cầu ReopenRequest") @PathVariable(value = "id", required = false) Long id,
+            @PathVariable(value = "requestId", required = false) Long requestId,
+            @Valid @RequestBody RejectReopenRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long targetId = id != null ? id : requestId;
+        ReopenRequestResponse response = reopenService.rejectReopenRequest(targetId, request, httpRequest.getRemoteAddr());
+        return ResponseEntity.ok(ApiResponse.success("Đã từ chối yêu cầu mở lại ticket", response));
     }
 }
