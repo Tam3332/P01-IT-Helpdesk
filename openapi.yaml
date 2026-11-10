@@ -810,7 +810,7 @@ paths:
     post:
       tags: [Feedback]
       summary: Đánh giá chất lượng dịch vụ CSAT (HD15)
-      description: Employee chủ ticket hoặc ADMIN (nhóm BE chốt 09/11) gửi đánh giá khi ticket CLOSED, mỗi ticket 1 lần. Người khác nhận 404 + audit AUTHZ_DENIED (Anti-IDOR).
+      description: Chỉ Employee chủ ticket được gửi đánh giá khi ticket CLOSED, mỗi ticket 1 lần. Admin bị từ chối 403 (chỉ xem readonly). Người khác nhận 404 + audit AUTHZ_DENIED (Anti-IDOR).
       security:
         - BearerAuth: []
       parameters:

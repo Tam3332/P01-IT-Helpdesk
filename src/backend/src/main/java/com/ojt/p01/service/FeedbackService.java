@@ -57,8 +57,9 @@ public class FeedbackService {
 
     /**
      * Gửi đánh giá mức độ hài lòng (POST /api/v1/tickets/{id}/feedback).
-     * - Người tạo vé (Employee) hoặc ADMIN được đánh giá (nhóm BE chốt 09/11 cho Admin gửi feedback).
-     *   Người khác → 404 + AUTHZ_DENIED (Anti-IDOR).
+     * - Chỉ người tạo vé (Employee) mới được đánh giá.
+     * - Admin chỉ được xem (readonly), không có quyền gửi feedback (SecRS §5, SRS §2 Separation of Duties) → 403 Forbidden.
+     * - Employee khác không phải chủ ticket → 404 + AUTHZ_DENIED (Anti-IDOR).
      * - Chỉ được đánh giá khi vé ở trạng thái CLOSED.
      * - Mỗi ticket chỉ được đánh giá 1 lần duy nhất.
      */
@@ -67,9 +68,15 @@ public class FeedbackService {
         Ticket ticket = findTicket(idOrNumber);
         User currentUser = getCurrentUser();
 
-        // 1. Kiểm tra quyền: chủ vé hoặc ADMIN (nhóm BE chốt 09/11); người khác trả 404 để không lộ tồn tại (Anti-IDOR)
-        boolean isAdmin = currentUser.getRole() != null && "ADMIN".equalsIgnoreCase(currentUser.getRole().getRoleName());
-        if (!isAdmin && !ticket.getRequester().getId().equals(currentUser.getId())) {
+        // 1. Kiểm tra quyền: Chỉ Employee chủ vé mới được gửi đánh giá
+        String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
+        if ("ADMIN".equalsIgnoreCase(roleName)) {
+            // Admin chỉ được xem (readonly), không được gửi feedback (SecRS §5, SRS §2 Separation of Duties)
+            auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CREATE_FEEDBACK", 403);
+            throw new AppException(ErrorCode.FORBIDDEN, "Quản trị viên chỉ có quyền xem, không có quyền gửi đánh giá");
+        }
+        if (!ticket.getRequester().getId().equals(currentUser.getId())) {
+            // Anti-IDOR: Employee khác không phải chủ vé trả 404 để không lộ sự tồn tại của ticket
             auditLogger.ticketDenied(currentUser, ticket.getTicketNumber(), "CREATE_FEEDBACK", 404);
             throw new AppException(ErrorCode.TICKET_NOT_FOUND);
         }
