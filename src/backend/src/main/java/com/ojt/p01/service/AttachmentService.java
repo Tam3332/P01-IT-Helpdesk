@@ -4,11 +4,13 @@ import com.ojt.p01.dto.response.AttachmentResponse;
 import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.entity.Ticket;
 import com.ojt.p01.entity.TicketAttachment;
+import com.ojt.p01.entity.TicketComment;
 import com.ojt.p01.entity.TicketHistory;
 import com.ojt.p01.entity.User;
 import com.ojt.p01.exception.AppException;
 import com.ojt.p01.exception.ErrorCode;
 import com.ojt.p01.repository.TicketAttachmentRepository;
+import com.ojt.p01.repository.TicketCommentRepository;
 import com.ojt.p01.repository.TicketHistoryRepository;
 import com.ojt.p01.repository.TicketRepository;
 import com.ojt.p01.repository.UserRepository;
@@ -67,17 +69,20 @@ public class AttachmentService {
     private final TicketHistoryRepository historyRepository;
     private final UserRepository userRepository;
     private final AuditLogger auditLogger;
+    private final TicketCommentRepository commentRepository;
 
     public AttachmentService(TicketAttachmentRepository attachmentRepository,
                              TicketRepository ticketRepository,
                              TicketHistoryRepository historyRepository,
                              UserRepository userRepository,
-                             AuditLogger auditLogger) {
+                             AuditLogger auditLogger,
+                             TicketCommentRepository commentRepository) {
         this.attachmentRepository = attachmentRepository;
         this.ticketRepository = ticketRepository;
         this.historyRepository = historyRepository;
         this.userRepository = userRepository;
         this.auditLogger = auditLogger;
+        this.commentRepository = commentRepository;
 
         try {
             Files.createDirectories(this.uploadRoot);
@@ -105,7 +110,7 @@ public class AttachmentService {
  * Kiểm tra dung lượng <= 10MB, tối đa 5 file/ticket, định dạng whitelist, hash SHA-256.
  */
     @Transactional
-    public AttachmentResponse uploadAttachment(String idOrNumber, MultipartFile file, String ipAddress) {
+    public AttachmentResponse uploadAttachment(String idOrNumber, MultipartFile file, Long commentId, String ipAddress) {
         Ticket ticket = findTicket(idOrNumber);
         validateAccess(ticket);
 
@@ -113,29 +118,31 @@ public class AttachmentService {
             throw new AppException(ErrorCode.TICKET_CLOSED);
         }
 
+        // Đính kèm vào bình luận (tùy chọn): bình luận phải thuộc cùng ticket, sai thì 404
+        TicketComment comment = resolveComment(ticket, commentId);
+
+        // Các ca từ chối tệp bên dưới đều ghi audit FILE_UPLOAD_REJECTED trước khi trả lỗi
         if (file == null || file.isEmpty()) {
-            throw new AppException(ErrorCode.VALIDATION_FAILED, "Tệp tải lên không được để trống");
+            throw rejectUpload(ticket, ErrorCode.VALIDATION_FAILED, "Tệp tải lên không được để trống");
         }
 
         // 1. Kiểm tra dung lượng <= 10MB
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new AppException(ErrorCode.FILE_TOO_LARGE);
+            throw rejectUpload(ticket, ErrorCode.FILE_TOO_LARGE, null);
         }
 
         // 2. Kiểm tra số lượng tệp tối đa 5 tệp / ticket
         long currentCount = attachmentRepository.countByTicket_Id(ticket.getId());
         if (currentCount >= MAX_FILES_PER_TICKET) {
-            throw new AppException(ErrorCode.ATTACHMENT_LIMIT_EXCEEDED);
+            throw rejectUpload(ticket, ErrorCode.ATTACHMENT_LIMIT_EXCEEDED, null);
         }
 
         // 3. Kiểm tra phần mở rộng file (Extension Whitelist)
-        String originalFilename = file.getOriginalFilename();
-        if (originalFilename == null || originalFilename.isBlank()) {
-            originalFilename = "file_" + System.currentTimeMillis();
-        }
+        // Tên gốc đã làm sạch: dùng để hiển thị và lưu DB, không dùng làm tên tệp trên đĩa
+        String originalFilename = cleanOriginalName(file.getOriginalFilename());
         String ext = getFileExtension(originalFilename);
         if (!ALLOWED_EXTENSIONS.contains(ext.toLowerCase())) {
-            throw new AppException(ErrorCode.FILE_TYPE_NOT_ALLOWED);
+            throw rejectUpload(ticket, ErrorCode.FILE_TYPE_NOT_ALLOWED, null);
         }
         String extLower = ext.toLowerCase(java.util.Locale.ROOT);
         String expectedMime = EXPECTED_MIME.get(extLower);
@@ -150,18 +157,19 @@ public class AttachmentService {
                     ? declaredLower.startsWith("text/")
                     : declaredLower.startsWith(expectedMime);
             if (!mimeOk) {
-                throw new AppException(ErrorCode.FILE_TYPE_NOT_ALLOWED);
+                throw rejectUpload(ticket, ErrorCode.FILE_TYPE_NOT_ALLOWED, null);
             }
         }
 
         // 3c. Chữ ký nội dung (magic bytes) phải đúng loại tệp, chống đổi đuôi file
         if (!hasValidSignature(file, extLower)) {
-            throw new AppException(ErrorCode.FILE_TYPE_NOT_ALLOWED);
+            throw rejectUpload(ticket, ErrorCode.FILE_TYPE_NOT_ALLOWED, null);
         }
 
         // 4. Lưu trữ tệp ra đĩa và tính mã băm SHA-256
         User currentUser = getCurrentUser();
-        String storedFileName = UUID.randomUUID() + "_" + sanitizeFileName(originalFilename);
+        // Tên lưu trên đĩa hoàn toàn ngẫu nhiên, chỉ giữ đuôi đã kiểm tra
+        String storedFileName = UUID.randomUUID() + "." + extLower;
         Path targetDir = uploadRoot.resolve(String.valueOf(ticket.getId()));
         Path targetPath = targetDir.resolve(storedFileName);
 
@@ -189,7 +197,7 @@ public class AttachmentService {
         String mimeType = expectedMime;
         TicketAttachment attachment = new TicketAttachment(
                 ticket,
-                null,
+                comment,
                 currentUser,
                 originalFilename,
                 targetPath.toString(),
@@ -354,8 +362,59 @@ public class AttachmentService {
         return dot > 0 ? filename.substring(dot + 1) : "";
     }
 
-    private String sanitizeFileName(String filename) {
-        return filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+    /**
+     * Làm sạch tên gốc client gửi: bỏ phần đường dẫn (../, C:\...), bỏ ký tự điều khiển và các ký tự " \\ < > ;
+     * tên rỗng thì đặt tên mặc định; dài quá 255 (cột file_name) thì cắt phần tên, giữ đuôi.
+     */
+    private String cleanOriginalName(String filename) {
+        String name = filename == null ? "" : filename;
+        int slash = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+        if (slash >= 0) {
+            name = name.substring(slash + 1);
+        }
+        name = name.replaceAll("[\\p{Cntrl}\"<>;]", "_").trim();
+        while (name.startsWith(".")) {
+            name = name.substring(1);
+        }
+        if (name.isBlank()) {
+            name = "file_" + System.currentTimeMillis();
+        }
+        if (name.length() > 255) {
+            String ext = getFileExtension(name);
+            int keep = ext.isEmpty() ? 255 : 255 - ext.length() - 1;
+            name = name.substring(0, keep) + (ext.isEmpty() ? "" : "." + ext);
+        }
+        return name;
+    }
+
+    /** commentId (tùy chọn) phải thuộc đúng ticket; Employee không được gắn vào ghi chú nội bộ. Sai thì 404. */
+    private TicketComment resolveComment(Ticket ticket, Long commentId) {
+        if (commentId == null) {
+            return null;
+        }
+        TicketComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy bình luận"));
+        if (!comment.getTicket().getId().equals(ticket.getId())) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy bình luận");
+        }
+        User user = getCurrentUser();
+        String role = user.getRole() != null ? user.getRole().getRoleName() : "";
+        if ("EMPLOYEE".equalsIgnoreCase(role) && Boolean.TRUE.equals(comment.getIsInternal())) {
+            throw new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy bình luận");
+        }
+        return comment;
+    }
+
+    /**
+     * Ghi audit FILE_UPLOAD_REJECTED rồi trả exception để throw.
+     * Không ghi tên tệp hay nội dung tệp vào log; lý do từ chối nằm ở http_status và mã lỗi trả về.
+     */
+    private AppException rejectUpload(Ticket ticket, ErrorCode code, String message) {
+        User user = getCurrentUser();
+        String role = user.getRole() != null ? user.getRole().getRoleName() : null;
+        auditLogger.log("FILE_UPLOAD_REJECTED", user.getId(), role, "TICKET", ticket.getTicketNumber(),
+                "UPLOAD_ATTACHMENT", "FAILURE", code.getHttpStatus().value());
+        return message != null ? new AppException(code, message) : new AppException(code);
     }
 
     private String bytesToHex(byte[] bytes) {

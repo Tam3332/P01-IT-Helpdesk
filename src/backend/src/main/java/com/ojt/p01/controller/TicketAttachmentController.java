@@ -55,9 +55,11 @@ public class TicketAttachmentController {
     public ResponseEntity<ApiResponse<AttachmentResponse>> uploadAttachment(
             @Parameter(description = "ID số hoặc mã ticket (HD-YYYY-XXXX)") @PathVariable String ticketId,
             @RequestParam("file") MultipartFile file,
+            @Parameter(description = "ID bình luận để gắn tệp (tùy chọn, phải thuộc cùng ticket)")
+            @RequestParam(value = "commentId", required = false) Long commentId,
             HttpServletRequest httpRequest
     ) {
-        AttachmentResponse response = attachmentService.uploadAttachment(ticketId, file, httpRequest.getRemoteAddr());
+        AttachmentResponse response = attachmentService.uploadAttachment(ticketId, file, commentId, httpRequest.getRemoteAddr());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Tải tệp lên thành công", response));
     }
@@ -74,12 +76,14 @@ public class TicketAttachmentController {
         TicketAttachment attachment = attachmentService.getAttachmentEntity(ticketId, attachmentId);
         Resource resource = attachmentService.loadAttachmentFile(ticketId, attachmentId);
 
-        String encodedFilename = URLEncoder.encode(attachment.getFileName(), StandardCharsets.UTF_8)
+        // Bỏ dấu ngoặc kép, \\, xuống dòng để tên tệp không phá cấu trúc header (dữ liệu cũ có thể chưa làm sạch)
+        String safeName = attachment.getFileName().replaceAll("[\"\\\\\\r\\n]", "_");
+        String encodedFilename = URLEncoder.encode(safeName, StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(attachment.getMimeType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getFileName() + "\"; filename*=UTF-8''" + encodedFilename)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + safeName + "\"; filename*=UTF-8''" + encodedFilename)
                 .header("X-Content-Type-Options", "nosniff") // Bảo mật MIME confusion
                 .body(resource);
     }

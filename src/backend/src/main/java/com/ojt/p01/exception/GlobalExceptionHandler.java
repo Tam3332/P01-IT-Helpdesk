@@ -1,6 +1,8 @@
 package com.ojt.p01.exception;
 
+import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.common.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,6 +35,12 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final AuditLogger auditLogger;
+
+    public GlobalExceptionHandler(AuditLogger auditLogger) {
+        this.auditLogger = auditLogger;
+    }
 
     // -------------------------------------------------------------------------
     // AppException — lỗi nghiệp vụ có định nghĩa sẵn
@@ -85,6 +94,22 @@ public class GlobalExceptionHandler {
     // Request sai định dạng — 400 (JSON hỏng, sai kiểu tham số, thiếu tham số/header)
     // Trước đây rơi xuống 500; chỉ dùng 400 cho dữ liệu đầu vào không hợp lệ.
     // -------------------------------------------------------------------------
+
+    /**
+     * Tệp vượt giới hạn multipart (10 MB/tệp, 11 MB/request) → 400 FILE_TOO_LARGE, không lưu.
+     * SecRS IA-HD03: "Sai loại/MIME, >10 MB hoặc file thứ 6 → 400, không lưu".
+     * Bắt riêng để trả đúng 400 + mã lỗi của nhóm, không để rơi vào handler chung bên dưới (413/500).
+     */
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMaxUploadSize(MaxUploadSizeExceededException ex,
+                                                                   HttpServletRequest request) {
+        ErrorCode ec = ErrorCode.FILE_TOO_LARGE;
+        // Bị chặn khi đọc multipart, chưa vào service nên chưa biết ticket → ghi theo endpoint (SDD §7)
+        auditLogger.logForCurrentUser("FILE_UPLOAD_REJECTED", "ENDPOINT",
+                request.getMethod() + " " + request.getRequestURI(), "UPLOAD_ATTACHMENT", "FAILURE",
+                ec.getHttpStatus().value());
+        return ResponseEntity.status(ec.getHttpStatus()).body(ApiResponse.error(ec.getCode(), ec.getMessage()));
+    }
 
     @ExceptionHandler({
             HttpMessageNotReadableException.class,
