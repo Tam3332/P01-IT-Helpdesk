@@ -1,4 +1,4 @@
-# Environment variables - never commit real secrets
+ï»¿# Environment variables - never commit real secrets
 .env
 .env.*
 !.env.example
@@ -19,6 +19,8 @@ build/
 
 # Logs
 *.log
+# Audit log JSONL sinh khi chay backend (SDD 7)
+logs/
 npm-debug.log*
 
 # IDE and operating system
@@ -31,6 +33,12 @@ target/
 
 .agents/
 
-
-# Seed file sinh t? d?ng ch?a BCrypt hash — KHÔNG commit
+# Seed file sinh tu dong chua BCrypt hash - KHONG commit
 database/init_demo_users.sql
+
+# AI agent config - local only
+src/backend/AGENTS.md
+ 
+uploads/
+src/backend/uploads/
+p01_db_backup.sql

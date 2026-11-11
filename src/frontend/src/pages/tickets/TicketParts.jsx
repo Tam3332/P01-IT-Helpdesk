@@ -4,7 +4,7 @@ import { Async } from '@/components/StateViews'
 import { validateFiles } from '@/components/FilePicker'
 import { useToast } from '@/context/ToastContext'
 import useAsync from '@/hooks/useAsync'
-import { LIMITS, ALLOWED_EXT } from '@/config/domain'
+import { LIMITS, ALLOWED_EXT, STATUS, PRIORITY } from '@/config/domain'
 import { apiError } from '@/services/apiClient'
 import { addComment, downloadAttachment, getFeedback, listAttachments, listComments, listHistory, sendFeedback, uploadAttachment } from '@/services/ticketService'
 import { initials, fmtDateTime } from '@/utils/format'
@@ -157,11 +157,72 @@ export function AttachmentsCard({ ticketRef, canUpload, onChanged }) {
   )
 }
 
-const FIELD_LABEL = { status: 'Trạng thái', priority: 'Ưu tiên', assignee: 'Người xử lý', currentAssigneeId: 'Người xử lý' }
-function historyText(h) {
-  const base = h.action || 'Cập nhật'
-  const ch = h.fieldChanged ? ` · ${FIELD_LABEL[h.fieldChanged] || h.fieldChanged}: ${h.oldValue ?? '—'} → ${h.newValue ?? '—'}` : ''
-  return base + ch
+const ACTION_LABEL = {
+  CREATE: 'Tạo mới ticket',
+  ASSIGN: 'Phân công xử lý',
+  REASSIGN: 'Phân công lại',
+  STATUS_CHANGE: 'Đổi trạng thái',
+  COMMENT: 'Bình luận trao đổi',
+  ATTACH_FILE: 'Đính kèm tệp tin',
+  CLOSE: 'Xác nhận đóng ticket',
+  REOPEN: 'Mở lại ticket',
+}
+
+const FIELD_LABEL = {
+  status: 'Trạng thái',
+  priority: 'Mức ưu tiên',
+  assignee: 'Người xử lý',
+  current_assignee_id: 'Người xử lý',
+  currentAssigneeId: 'Người xử lý',
+}
+
+function historyText(h, nameOf) {
+  const actionName = ACTION_LABEL[h.action] || h.action || 'Cập nhật'
+
+  // Trường hợp bình luận hoặc đính kèm: không in ID kỹ thuật
+  if (h.action === 'COMMENT' || h.fieldChanged === 'comment_id') {
+    return 'Bình luận trao đổi'
+  }
+  if (h.action === 'ATTACH_FILE' || h.fieldChanged === 'attachment_id') {
+    return 'Đính kèm tệp tin'
+  }
+  if (h.action === 'CREATE') {
+    return 'Tạo mới ticket'
+  }
+  if (h.action === 'CLOSE') {
+    return 'Xác nhận đóng ticket'
+  }
+  if (h.action === 'FEEDBACK' || h.fieldChanged === 'feedback') {
+    return `Đánh giá chất lượng hỗ trợ (${h.newValue || 'Hoàn tất'})`
+  }
+  if (h.action === 'REOPEN') {
+    return 'Yêu cầu mở lại ticket'
+  }
+
+  // Trường hợp phân công người xử lý: map ID thành tên người dùng
+  if (h.fieldChanged === 'current_assignee_id' || h.fieldChanged === 'currentAssigneeId') {
+    const oldName = h.oldValue && nameOf ? nameOf(Number(h.oldValue)) : (h.oldValue ? `Người dùng #${h.oldValue}` : 'Chưa phân công')
+    const newName = h.newValue && nameOf ? nameOf(Number(h.newValue)) : (h.newValue ? `Người dùng #${h.newValue}` : 'Chưa phân công')
+    return `${actionName} · Người xử lý: ${oldName} → ${newName}`
+  }
+
+  // Trường hợp đổi trạng thái: hiển thị label tiếng Việt
+  if (h.fieldChanged === 'status') {
+    const oldSt = STATUS[h.oldValue]?.label || h.oldValue || '—'
+    const newSt = STATUS[h.newValue]?.label || h.newValue || '—'
+    return `Đổi trạng thái: ${oldSt} → ${newSt}`
+  }
+
+  // Trường hợp đổi mức ưu tiên: hiển thị label tiếng Việt
+  if (h.fieldChanged === 'priority') {
+    const oldPr = PRIORITY[h.oldValue]?.label || h.oldValue || '—'
+    const newPr = PRIORITY[h.newValue]?.label || h.newValue || '—'
+    return `Đổi mức ưu tiên: ${oldPr} → ${newPr}`
+  }
+
+  const field = FIELD_LABEL[h.fieldChanged] || h.fieldChanged
+  const ch = field ? ` · ${field}: ${h.oldValue ?? '—'} → ${h.newValue ?? '—'}` : ''
+  return actionName + ch
 }
 
 export function HistoryCard({ ticketRef, nameOf, refreshKey }) {
@@ -178,7 +239,7 @@ export function HistoryCard({ ticketRef, nameOf, refreshKey }) {
                 <li key={h.id}>
                   <i />
                   <div>
-                    <div>{historyText(h)}</div>
+                    <div style={{ fontWeight: 600 }}>{historyText(h, nameOf)}</div>
                     {h.reasonOrNote && <div className="sm muted" style={{ overflowWrap: 'anywhere' }}>{h.reasonOrNote}</div>}
                     <div className="sm muted">{nameOf(h.actorId, h.actorName)} · {fmtDateTime(h.timestamp)}</div>
                   </div>
@@ -201,13 +262,16 @@ export function FeedbackCard({ ticketRef }) {
   const [comment, setComment] = useState('')
   const [busy, setBusy] = useState(false)
 
+  // Kiểm tra dữ liệu feedback thực tế: phải có ratingStars mới là đã đánh giá
+  const feedback = fb.data && typeof fb.data === 'object' && fb.data.ratingStars != null ? fb.data : null
+
   const submit = async (e) => {
     e.preventDefault()
-    if (stars < 1) return toast('Vui lòng chọn số sao.', 'err')
+    if (stars < 1) return toast('Vui lòng chọn số sao đánh giá.', 'err')
     setBusy(true)
     try {
       await sendFeedback(ticketRef, { ratingStars: stars, feedbackComment: comment.trim() || undefined })
-      toast('Cảm ơn bạn đã đánh giá.')
+      toast('Cảm ơn bạn đã gửi đánh giá chất lượng hỗ trợ!')
       await fb.reload()
     } catch (err) {
       toast(apiError(err, 'Không gửi được đánh giá.'), 'err')
@@ -215,27 +279,74 @@ export function FeedbackCard({ ticketRef }) {
       setBusy(false)
     }
   }
+
   return (
     <section className="card">
       <div className="ch"><h2>Đánh giá chất lượng hỗ trợ</h2></div>
       <div className="cb">
-        <Async state={fb} notReadyText={PENDING_API}>
-          {fb.data ? (
-            <div>
-              <div aria-label={`${fb.data.ratingStars} trên 5 sao`} style={{ fontSize: 20, color: 'var(--warn)' }}>{'★'.repeat(fb.data.ratingStars)}{'☆'.repeat(5 - fb.data.ratingStars)}</div>
-              {fb.data.feedbackComment && <p style={{ marginTop: 8, overflowWrap: 'anywhere' }}>{fb.data.feedbackComment}</p>}
+        <Async state={fb} notReadyText="Đang tải đánh giá...">
+          {feedback ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div aria-label={`${feedback.ratingStars} trên 5 sao`} style={{ fontSize: 24, color: '#f59e0b', letterSpacing: 4 }}>
+                {'★'.repeat(feedback.ratingStars)}{'☆'.repeat(5 - feedback.ratingStars)}
+              </div>
+              {feedback.feedbackComment ? (
+                <p style={{ marginTop: 6, overflowWrap: 'anywhere', color: '#cbd5e1', fontStyle: 'italic' }}>
+                  "{feedback.feedbackComment}"
+                </p>
+              ) : (
+                <p className="sm muted" style={{ marginTop: 4 }}>Bạn đã đánh giá {feedback.ratingStars}/5 sao.</p>
+              )}
             </div>
           ) : (
-            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div role="radiogroup" aria-label="Số sao" style={{ display: 'flex', gap: 4 }}>
+            <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p className="sm muted" style={{ margin: 0 }}>
+                Vui lòng đánh giá mức độ hài lòng về chất lượng hỗ trợ của kỹ thuật viên:
+              </p>
+              <div role="radiogroup" aria-label="Số sao" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <button key={n} type="button" role="radio" aria-checked={stars === n} aria-label={`${n} sao`} onClick={() => setStars(n)} style={{ border: 0, background: 'none', fontSize: 26, color: n <= stars ? 'var(--warn)' : 'var(--faint)', padding: 2 }}>
+                  <button
+                    key={n}
+                    type="button"
+                    role="radio"
+                    aria-checked={stars === n}
+                    aria-label={`${n} sao`}
+                    onClick={() => setStars(n)}
+                    style={{
+                      border: 0,
+                      background: 'none',
+                      fontSize: 32,
+                      color: n <= stars ? '#f59e0b' : '#475569',
+                      cursor: 'pointer',
+                      padding: 2,
+                      lineHeight: 1,
+                      transition: 'transform 0.1s, color 0.15s',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.2)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
+                  >
                     {n <= stars ? '★' : '☆'}
                   </button>
                 ))}
+                {stars > 0 && (
+                  <span style={{ fontSize: 13, color: '#94a3b8', marginLeft: 8 }}>
+                    ({stars}/5 sao)
+                  </span>
+                )}
               </div>
-              <textarea className="ta" maxLength={LIMITS.feedbackComment} value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Nhận xét thêm (không bắt buộc)" />
-              <div><button className="btn pri sm" type="submit" disabled={busy}>{busy ? 'Đang gửi...' : 'Gửi đánh giá'}</button></div>
+              <textarea
+                className="ta"
+                maxLength={LIMITS.feedbackComment}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Nhận xét thêm về mức độ hài lòng (không bắt buộc)..."
+                rows={3}
+              />
+              <div>
+                <button className="btn pri sm" type="submit" disabled={busy || stars === 0}>
+                  {busy ? 'Đang gửi...' : 'Gửi đánh giá'}
+                </button>
+              </div>
             </form>
           )}
         </Async>

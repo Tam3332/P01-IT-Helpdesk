@@ -16,7 +16,7 @@ public record UserResponse(
         Boolean isActive
 ) {
 
-    /** Chuyển Entity User sang DTO, chỉ lấy các trường được phép lộ ra ngoài. */
+ /** Chuyển Entity User sang DTO, chỉ lấy các trường được phép lộ ra ngoài. */
     public static UserResponse from(User user) {
         return new UserResponse(
                 user.getId(),

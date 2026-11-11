@@ -11,6 +11,9 @@ export function slaOf(t, nowMs = Date.now()) {
       const ok = new Date(finishedAt).getTime() <= due
       return { key: ok ? 'DONE' : 'LATE', pct: 100, left: 0, done: true }
     }
+    if (t.isSlaBreached) {
+      return { key: 'LATE', pct: 100, left: 0, done: true }
+    }
     return { key: 'DONE', pct: 100, left: 0, done: true }
   }
   let pct = 0

@@ -43,7 +43,8 @@ export const LIMITS = {
   resolutionNoteMin: 20, // BR-HD-01
   reopenReasonMin: 20, // BR-HD-04
   reopenWindowHours: 168, // 7 ngày kể từ lúc Resolved
-  rejectNoteMin: 5,
+  rejectNoteMin: 10,
+  reviewNoteMax: 1000,
   maxFiles: 5,
   maxFileBytes: 10 * 1024 * 1024,
   pageSize: 20, // HD13

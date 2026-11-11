@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * DTO tạo danh mục mới (POST /api/v1/admin/categories).
- * Quyền: ADMIN only (UC-10).
+ * Quyền: ADMIN only.
  */
 public record CreateCategoryRequest(
 

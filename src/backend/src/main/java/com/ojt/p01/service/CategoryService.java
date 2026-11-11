@@ -15,12 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Service xử lý nghiệp vụ Ticket Category (UC-02, UC-10).
+ * Service xử lý nghiệp vụ Ticket Category.
  *
- * GET Active    — mọi role đã xác thực (dropdown tạo vé).
- * GET All       — Admin (UC-10 quản trị danh mục).
- * POST          — Admin only.
- * PUT           — Admin only.
+ * GET Active — mọi role đã xác thực (dropdown tạo vé).
+ * GET All — Admin.
+ * POST — Admin only.
+ * PUT — Admin only.
  * PATCH /status — Admin only.
  */
 @Service
@@ -38,7 +38,7 @@ public class CategoryService {
     // Read — Public (tất cả user đã login)
     // -------------------------------------------------------------------------
 
-    /** Trả về danh sách danh mục Active, dùng cho dropdown tạo vé. */
+ /** Trả về danh sách danh mục Active, dùng cho dropdown tạo vé. */
     @Transactional(readOnly = true)
     public List<CategoryResponse> getActiveCategories() {
         return categoryRepository.findByIsActiveTrueOrderByCategoryNameAsc()
@@ -51,7 +51,7 @@ public class CategoryService {
     // Read — Admin (quản trị)
     // -------------------------------------------------------------------------
 
-    /** Trả về toàn bộ danh mục (kể cả Inactive) — Admin xem để quản trị. */
+ /** Trả về toàn bộ danh mục (kể cả Inactive) — Admin xem để quản trị. */
     @Transactional(readOnly = true)
     public List<CategoryDetailResponse> getAllCategories() {
         return categoryRepository.findAllByOrderByCategoryNameAsc()
@@ -60,11 +60,11 @@ public class CategoryService {
                 .toList();
     }
 
-    /** Xem chi tiết 1 danh mục theo id. */
+ /** Xem chi tiết 1 danh mục theo id. */
     @Transactional(readOnly = true)
     public CategoryDetailResponse getCategoryById(Integer id) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
         return toDetailResponse(cat);
     }
 
@@ -72,11 +72,15 @@ public class CategoryService {
     // Write — Admin only
     // -------------------------------------------------------------------------
 
-    /** UC-10: Tạo danh mục mới. Mã category_code phải duy nhất. */
+ /** Tạo danh mục mới. Mã category_code phải duy nhất. */
     @Transactional
     public CategoryDetailResponse createCategory(CreateCategoryRequest request) {
         if (categoryRepository.existsByCategoryCode(request.categoryCode())) {
             throw new AppException(ErrorCode.CATEGORY_CODE_DUPLICATE);
+        }
+        // kiểm tra trùng cả tên (không phân biệt hoa thường)
+        if (categoryRepository.existsByCategoryNameIgnoreCase(request.categoryName().trim())) {
+            throw new AppException(ErrorCode.CATEGORY_NAME_DUPLICATE);
         }
 
         TicketCategory cat = new TicketCategory();
@@ -89,13 +93,17 @@ public class CategoryService {
         return toDetailResponse(categoryRepository.save(cat));
     }
 
-    /** UC-10: Cập nhật thông tin danh mục (partial update — chỉ field != null). */
+ /** Cập nhật thông tin danh mục (partial update — chỉ field != null). */
     @Transactional
     public CategoryDetailResponse updateCategory(Integer id, UpdateCategoryRequest request) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
 
         if (request.categoryName() != null && !request.categoryName().isBlank()) {
+            // Giữ tên duy nhất khi đổi tên; bỏ qua chính danh mục đang sửa
+            if (categoryRepository.existsByCategoryNameIgnoreCaseAndIdNot(request.categoryName().trim(), id)) {
+                throw new AppException(ErrorCode.CATEGORY_NAME_DUPLICATE);
+            }
             cat.setCategoryName(request.categoryName());
         }
         if (request.description() != null) {
@@ -108,20 +116,20 @@ public class CategoryService {
         return toDetailResponse(categoryRepository.save(cat));
     }
 
-    /** UC-10: Bật / Tắt trạng thái hoạt động của danh mục. */
+ /** Bật / Tắt trạng thái hoạt động của danh mục. */
     @Transactional
     public CategoryDetailResponse toggleCategoryStatus(Integer id, boolean active) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
         cat.setIsActive(active);
         return toDetailResponse(categoryRepository.save(cat));
     }
 
-    /** UC-10 3c: Xóa danh mục vĩnh viễn (Hard Delete). Chỉ xóa được khi chưa có ticket tham chiếu. */
+ /** : Xóa danh mục vĩnh viễn (Hard Delete). Chỉ xóa được khi chưa có ticket tham chiếu. */
     @Transactional
     public void deleteCategory(Integer id) {
         TicketCategory cat = categoryRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_ID_NOT_FOUND));
 
         if (ticketRepository.existsByCategory_Id(id)) {
             throw new AppException(ErrorCode.CATEGORY_HAS_TICKETS);

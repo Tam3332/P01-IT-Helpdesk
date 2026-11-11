@@ -1,5 +1,9 @@
 server:
   port: ${SERVER_PORT:8080}
+  # Chạy sau Nginx (lab): lấy IP thật của người dùng từ X-Forwarded-For do Nginx gửi.
+  # Tomcat chỉ tin header này khi request đến từ địa chỉ nội bộ (mạng Docker), nên client ngoài không giả được.
+  # Ảnh hưởng mọi chỗ gọi getRemoteAddr(): audit log src_ip (SDD §7), ticket_history.ip_address.
+  forward-headers-strategy: native
 
 spring:
   application:
@@ -9,6 +13,13 @@ spring:
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  # Giới hạn upload (SRS §7 Attachment: mỗi tệp ≤ 10 MB). Mặc định Spring chỉ nhận 1 MB/tệp.
+  # max-request-size 11MB khớp client_max_body_size 11m của Nginx (chừa phần header multipart).
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
 
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/p01_db}
@@ -29,6 +40,20 @@ spring:
 jwt:
   secret: ${JWT_SECRET:21727172a7109d0ac9be8f1d0218a074fbca17c87ae295ce237947e5562c9691}
   expiration-ms: ${JWT_EXPIRATION_MS:900000}
+
+# Security Audit Log JSON Lines (SDD §7). Khi chạy Docker: đặt AUDIT_LOG_FILE trỏ vào log volume
+audit:
+  log-file: ${AUDIT_LOG_FILE:logs/audit_events.jsonl}
+
+# Actuator: chỉ mở endpoint health, không hiện chi tiết DB/disk (tránh lộ thông tin hạ tầng, IA-HD07)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
 
 # OpenAPI / Swagger UI
 springdoc:

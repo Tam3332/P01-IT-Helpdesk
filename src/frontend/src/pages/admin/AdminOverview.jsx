@@ -34,7 +34,7 @@ export default function AdminOverview() {
         <Kpi label="Trạng thái" value={STATUS_KEYS.length} tone="vio" icon="layers" />
         <Kpi label="Bản ghi nhật ký" value={d.loading ? '…' : v.logs} tone="neu" icon="file" />
       </div>
-      <div className="banner info"><Icon name="shield" /><div className="grow">Quản trị viên không xử lý ticket (phân tách nhiệm vụ). Menu bên trái chỉ có quản lý người dùng, cấu hình hệ thống và nhật ký chỉ đọc.</div></div>
+      <div className="banner info"><Icon name="shield" /><div className="grow">Quản trị viên không xử lý ticket (phân tách nhiệm vụ): chỉ xem toàn bộ ticket ở chế độ chỉ đọc, quản lý người dùng, cấu hình hệ thống và xem nhật ký.</div></div>
       <section className="card">
         <div className="ch"><h2>Truy cập nhanh</h2></div>
         <div className="cb">

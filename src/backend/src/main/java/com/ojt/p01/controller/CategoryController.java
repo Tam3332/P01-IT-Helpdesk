@@ -5,6 +5,8 @@ import com.ojt.p01.dto.request.CreateCategoryRequest;
 import com.ojt.p01.dto.request.UpdateCategoryRequest;
 import com.ojt.p01.dto.response.CategoryDetailResponse;
 import com.ojt.p01.dto.response.CategoryResponse;
+import com.ojt.p01.exception.AppException;
+import com.ojt.p01.exception.ErrorCode;
 import com.ojt.p01.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,14 +21,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Controller quản trị danh mục (UC-10, Access Matrix §5).
+ * Controller quản trị danh mục.
  *
- * Public read:   GET /api/v1/categories         — tất cả user đã login
- * Admin read:    GET /api/v1/admin/categories    — ADMIN
- * Admin write:   POST/PUT/PATCH /admin/categories — ADMIN only
+ * Public read: GET /api/v1/categories — tất cả user đã login
+ * Admin read: GET /api/v1/admin/categories — ADMIN
+ * Admin write: POST/PUT/PATCH /admin/categories — ADMIN only
  *
  * Phân quyền thực hiện trong SecurityConfig (hasRole):
- *   Employee / IT_STAFF gọi /admin/** → 403 FORBIDDEN (Spring Security chặn trước khi vào controller)
+ * Employee / IT_STAFF gọi /admin/** → 403 FORBIDDEN (Spring Security chặn trước khi vào controller)
  */
 @Tag(name = "Categories & SLA", description = "Quản trị danh mục và cấu hình SLA (Admin)")
 @RestController
@@ -54,7 +56,7 @@ public class CategoryController {
     // ADMIN — Read toàn bộ (kể cả Inactive)
     // =========================================================================
 
-    @Operation(summary = "[Admin] Xem toàn bộ danh mục kể cả Inactive (UC-10)")
+    @Operation(summary = "[Admin] Xem toàn bộ danh mục kể cả Inactive")
     @GetMapping("/api/v1/admin/categories")
     public ResponseEntity<ApiResponse<List<CategoryDetailResponse>>> getAllCategories() {
         return ResponseEntity.ok(ApiResponse.success(categoryService.getAllCategories()));
@@ -71,7 +73,7 @@ public class CategoryController {
     // ADMIN — Write (Create / Update / Toggle)
     // =========================================================================
 
-    @Operation(summary = "[Admin] Tạo danh mục mới (UC-10)",
+    @Operation(summary = "[Admin] Tạo danh mục mới",
                description = "Mã category_code phải duy nhất, chỉ gồm chữ hoa, số và dấu gạch dưới.")
     @PostMapping("/api/v1/admin/categories")
     public ResponseEntity<ApiResponse<CategoryDetailResponse>> createCategory(
@@ -80,7 +82,7 @@ public class CategoryController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Tạo danh mục thành công", created));
     }
 
-    @Operation(summary = "[Admin] Cập nhật thông tin danh mục (UC-10)",
+    @Operation(summary = "[Admin] Cập nhật thông tin danh mục",
                description = "Partial update — chỉ field không null trong body mới được cập nhật.")
     @PutMapping("/api/v1/admin/categories/{id}")
     public ResponseEntity<ApiResponse<CategoryDetailResponse>> updateCategory(
@@ -89,7 +91,7 @@ public class CategoryController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật danh mục thành công", categoryService.updateCategory(id, request)));
     }
 
-    @Operation(summary = "[Admin] Bật / Tắt trạng thái hoạt động danh mục (UC-10)",
+    @Operation(summary = "[Admin] Bật / Tắt trạng thái hoạt động danh mục",
                description = "PATCH với body {active: true/false}. Danh mục Inactive sẽ không hiện ở dropdown tạo vé.")
     @PatchMapping("/api/v1/admin/categories/{id}/status")
     public ResponseEntity<ApiResponse<CategoryDetailResponse>> toggleCategoryStatus(
@@ -97,13 +99,14 @@ public class CategoryController {
             @RequestBody Map<String, Boolean> body) {
         Boolean active = body.get("active");
         if (active == null) {
-            throw new IllegalArgumentException("Body phải có trường 'active' (true/false)");
+            // Thiếu trường active → 400 (trước đây IllegalArgumentException rơi xuống 500)
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Body phải có trường 'active' (true/false)");
         }
         return ResponseEntity.ok(ApiResponse.success(
                 active ? "Danh mục đã được kích hoạt" : "Danh mục đã bị vô hiệu hóa",
                 categoryService.toggleCategoryStatus(id, active)));
     }
-    @Operation(summary = "[Admin] Xóa vĩnh viễn danh mục (UC-10 3c)",
+    @Operation(summary = "[Admin] Xóa vĩnh viễn danh mục",
                description = "Chỉ xóa được khi danh mục chưa có ticket tham chiếu. Nếu đang có ticket tham chiếu → 422 Unprocessable Entity.")
     @DeleteMapping("/api/v1/admin/categories/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(

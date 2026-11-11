@@ -57,6 +57,8 @@ export default function AppRoutes() {
 
           <Route path="admin" element={<RequireRole role={ROLES.ADMIN} />}>
             <Route index element={<AdminOverview />} />
+            <Route path="tickets" element={<TicketsPage />} />
+            <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="categories" element={<CategoriesPage />} />
