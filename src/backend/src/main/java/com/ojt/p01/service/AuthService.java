@@ -1,6 +1,7 @@
 package com.ojt.p01.service;
 
 import com.ojt.p01.audit.AuditLogger;
+import com.ojt.p01.dto.request.ChangePasswordRequest;
 import com.ojt.p01.dto.request.LoginRequest;
 import com.ojt.p01.dto.response.LoginResponse;
 import com.ojt.p01.dto.response.UserResponse;
@@ -128,5 +129,45 @@ public class AuthService {
         Long userId = Long.valueOf(claims.getSubject());
         OffsetDateTime expiresAt = claims.getExpiration().toInstant().atOffset(ZoneOffset.UTC);
         tokenBlacklistRepository.save(new TokenBlacklist(jti, userId, expiresAt));
+    }
+
+    /**
+     * POST /api/v1/auth/change-password: Đổi mật khẩu cho người dùng đang đăng nhập.
+     * Quy tắc:
+     * 1. Xác thực người dùng hiện tại từ SecurityContext (nếu chưa đăng nhập -> 401 UNAUTHENTICATED)
+     * 2. Kiểm tra mật khẩu hiện tại (so khớp BCrypt) -> nếu sai: 400 INVALID_CURRENT_PASSWORD (không trả 401 tránh văng FE)
+     * 3. Kiểm tra mật khẩu mới không được trùng mật khẩu cũ -> nếu trùng: 400 PASSWORD_SAME_AS_CURRENT
+     * 4. Băm mật khẩu mới bằng BCrypt (cost 12) và lưu CSDL
+     * 5. Ghi Audit Log PASSWORD_CHANGED (không ghi mật khẩu)
+     */
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        String roleName = user.getRole() != null ? user.getRole().getRoleName() : null;
+
+        // 1. So khớp mật khẩu hiện tại
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            auditLogger.log("PASSWORD_CHANGE_FAILED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "FAILURE", 400);
+            throw new AppException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        // 2. Mật khẩu mới không được trùng mật khẩu cũ
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            auditLogger.log("PASSWORD_CHANGE_FAILED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "FAILURE", 400);
+            throw new AppException(ErrorCode.PASSWORD_SAME_AS_CURRENT);
+        }
+
+        // 3. Cập nhật mật khẩu mới băm BCrypt
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        // 4. Ghi Audit Log an toàn
+        auditLogger.log("PASSWORD_CHANGED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "SUCCESS", 200);
     }
 }
