@@ -31,6 +31,10 @@ const PATHS = {
   info: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 8h.01",
   inbox: "M3 13l3-8h12l3 8v6H3zM3 13h5l1 3h6l1-3h5",
   lock: "M6 11h12v10H6zM8 11V7a4 4 0 0 1 8 0v4",
+  chevL: "M15 6l-6 6 6 6",
+  chevR: "M9 6l6 6-6 6",
+  mail: "M4 6h16v12H4zM4 7l8 6 8-6",
+  building: "M5 21V4h9v17M14 9h5v12M8 8h3M8 12h3M8 16h3M3 21h18",
   users: "M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2 20a7 7 0 0 1 14 0M17 4.5a3.5 3.5 0 0 1 0 6.5M18 14a6 6 0 0 1 4 6",
 }
 

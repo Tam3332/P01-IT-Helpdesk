@@ -51,3 +51,9 @@ export function findNavItem(role, pathname) {
 export function ticketListItem(role) {
   return (NAV[role] || []).find((i) => /\/tickets$/.test(i.path)) || null
 }
+
+// Trang hồ sơ nằm ngoài menu (mở từ khối tên ở chân sidebar); mỗi vai trò dùng đường dẫn riêng
+export const profilePath = (role) => `${ROLE_HOME[role]}/profile`
+export const passwordPath = (role) => `${ROLE_HOME[role]}/profile/password`
+export const PROFILE_LABEL = 'Hồ sơ của tôi'
+export const PASSWORD_LABEL = 'Đổi mật khẩu'
