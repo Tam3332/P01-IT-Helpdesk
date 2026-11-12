@@ -17,8 +17,8 @@ Repo và board được công khai để chia sẻ link xem. Quyền xem công k
 
 | Thành viên | MSSV | Ngành | Mảng dự án | Vai trò |
 | --- | --- | --- | --- | --- |
-| Nguyễn Trọng Khiêm | SE192700 | IA | IA | Trưởng nhóm và IA Lead |
-| Nguyễn Tăng Minh Khánh | SE193903 | IA | IA | Access Control và AuthZ Testing |
+| Nguyễn Trọng Khiêm | SE192700 | IA | IA | IA Lead; quản lý repo và tổng hợp hồ sơ |
+| Nguyễn Tăng Minh Khánh | SE193903 | IA | IA | Trưởng nhóm; Access Control và AuthZ Testing |
 | Huỳnh Minh Hoà | SE193707 | IA | IA | Logging và Security Monitoring |
 | Vũ Hồng Nhi | SE182824 | IA | IA | Hardening Upload và Deployment Security |
 | Phạm Nguyễn Minh Trí | SE192434 | SE | SE | SE Lead BA và Backend nghiệp vụ |
@@ -140,4 +140,5 @@ Header khởi tạo của 10 biểu mẫu ngày 22/10/2026: P01, Group2, thành 
 Giữ mã T1-01…T1-07 và HD/IA-HD/TH/TC/EV nhất quán. Board dùng Todo, In Progress, Review và Done. Chuyển Review khi có bản nháp và link; chỉ Done khi đầu ra được kiểm tra và có bằng chứng thực tế. Phần setup không tự đánh hoàn thành nội dung threat model hoặc phần việc của các thành viên.
 
 Không đưa mật khẩu, token thật hoặc dữ liệu cá nhân nhạy cảm vào repo/evidence. Chỉ kiểm thử trong môi trường được phép, theo scope và quy trình phê duyệt của dự án. Hướng dẫn triển khai hiện có tại [DEPLOY_NOTES.md](DEPLOY_NOTES.md); frontend có [README riêng](src/frontend/README.md). Việc có Compose hoặc ảnh giao diện chưa chứng minh toàn bộ hệ thống đã chạy tích hợp hay đạt kiểm thử bảo mật.
+
 

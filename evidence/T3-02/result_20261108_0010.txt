@@ -1,0 +1,21 @@
+Ticket của B: id=1
+--- SEC-TC-HD-01: IDOR (object-level -> 404 + AUTHZ_DENIED) ---
+01.1       GET    /api/v1/tickets/1                                expected=200 actual=200 PASS
+01.2       GET    /api/v1/tickets/1                                expected=404 actual=404 PASS
+01.3       GET    /api/v1/tickets/1/history                        expected=404 actual=404 PASS
+01.4       GET    /api/v1/tickets/1/comments                       expected=404 actual=404 PASS
+01.5       POST   /api/v1/tickets/1/comments                       expected=404 actual=404 PASS
+01.6       GET    /api/v1/tickets/1/attachments                    expected=404 actual=404 PASS
+01.7       POST   /api/v1/tickets/1/close                          expected=404 actual=404 PASS
+01.8       GET    /api/v1/tickets/1                                expected=404 actual=404 PASS
+01.9       GET    /api/v1/tickets/999999                           expected=404 actual=404 PASS
+--- SEC-TC-HD-05: leo thang quyền dọc (role-level -> 403) ---
+05.1       PUT    /api/v1/tickets/1/assign                         expected=403 actual=403 PASS
+05.2       PUT    /api/v1/tickets/1/assign                         expected=403 actual=403 PASS
+05.3       GET    /api/v1/users/it-staff                           expected=403 actual=403 PASS
+05.4       GET    /api/v1/admin/sla-configs                        expected=403 actual=403 PASS
+05.5       PUT    /api/v1/admin/sla-configs/HIGH                   expected=403 actual=403 PASS
+05.6       GET    /api/v1/admin/categories                         expected=403 actual=403 PASS
+05.7       POST   /api/v1/admin/categories                         expected=403 actual=403 PASS
+05.8       PATCH  /api/v1/tickets/1/status                         expected=403 actual=403 PASS
+05.9       GET    /api/v1/tickets                                  expected=401 actual=401 PASS

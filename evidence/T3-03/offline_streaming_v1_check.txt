@@ -1,0 +1,2 @@
+offline follow v1: 12 synthetic Backend-schema events appended -> 2 alerts; process terminated after check
+No real Backend / VM traffic was involved.

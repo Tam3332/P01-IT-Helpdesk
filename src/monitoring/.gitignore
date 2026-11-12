@@ -1,0 +1,5 @@
+# Monitoring: generated files must not be committed
+__pycache__/
+*.py[cod]
+examples/*.actual.jsonl
+examples/alerts.jsonl
