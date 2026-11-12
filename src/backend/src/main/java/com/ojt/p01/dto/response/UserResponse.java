@@ -13,7 +13,8 @@ public record UserResponse(
         String fullName,
         String role,
         String department,
-        Boolean isActive
+        Boolean isActive,
+        Boolean mustChangePassword
 ) {
 
  /** Chuyển Entity User sang DTO, chỉ lấy các trường được phép lộ ra ngoài. */
@@ -25,7 +26,8 @@ public record UserResponse(
                 user.getFullName(),
                 user.getRole() != null ? user.getRole().getRoleName() : null,
                 user.getDepartment(),
-                user.getIsActive()
+                user.getIsActive(),
+                Boolean.TRUE.equals(user.getMustChangePassword())
         );
     }
 }

@@ -33,6 +33,12 @@ public enum ErrorCode {
     ACCOUNT_DISABLED           ("ACCOUNT_DISABLED", "Tài khoản đã bị khóa, vui lòng liên hệ Admin", HttpStatus.FORBIDDEN),
     INVALID_CURRENT_PASSWORD   ("INVALID_CURRENT_PASSWORD", "Mật khẩu hiện tại không đúng", HttpStatus.BAD_REQUEST),
     PASSWORD_SAME_AS_CURRENT   ("PASSWORD_SAME_AS_CURRENT", "Mật khẩu mới không được trùng với mật khẩu hiện tại", HttpStatus.BAD_REQUEST),
+    USER_NOT_FOUND             ("USER_NOT_FOUND", "Không tìm thấy người dùng", HttpStatus.NOT_FOUND),
+    DUPLICATE_USERNAME         ("DUPLICATE_USERNAME", "Tên đăng nhập đã tồn tại", HttpStatus.BAD_REQUEST),
+    DUPLICATE_EMAIL            ("DUPLICATE_EMAIL", "Email đã tồn tại", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_FOUND             ("ROLE_NOT_FOUND", "Vai trò không hợp lệ", HttpStatus.BAD_REQUEST),
+    CANNOT_CHANGE_OWN_ROLE     ("CANNOT_CHANGE_OWN_ROLE", "Không thể thay đổi vai trò của chính bạn", HttpStatus.BAD_REQUEST),
+    CANNOT_LOCK_OWN_ACCOUNT    ("CANNOT_LOCK_OWN_ACCOUNT", "Không thể khóa tài khoản của chính bạn", HttpStatus.BAD_REQUEST),
 
     // -------------------------------------------------------------------------
     // Ticket state machine

@@ -163,8 +163,9 @@ public class AuthService {
             throw new AppException(ErrorCode.PASSWORD_SAME_AS_CURRENT);
         }
 
-        // 3. Cập nhật mật khẩu mới băm BCrypt
+        // 3. Cập nhật mật khẩu mới băm BCrypt và tắt cờ yêu cầu đổi mật khẩu
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        user.setMustChangePassword(false);
         userRepository.save(user);
 
         // 4. Ghi Audit Log an toàn
