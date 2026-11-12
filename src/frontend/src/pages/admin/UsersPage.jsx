@@ -12,7 +12,7 @@ import { LIMITS } from '@/config/domain'
 import { NAV } from '@/config/nav'
 import { ROLES, ROLE_LABEL } from '@/config/constants'
 import { apiError } from '@/services/apiClient'
-import { adminCreateUser, adminListUsers, adminSetRole, adminSetStatus } from '@/services/referenceService'
+import { adminCreateUser, adminListUsers, adminResetPassword, adminSetRole, adminSetStatus } from '@/services/referenceService'
 import { initials } from '@/utils/format'
 
 const ROLE_KEYS = Object.values(ROLES)
@@ -78,6 +78,7 @@ export default function UsersPage() {
                         <td>{u.isActive ? <span className="badge s-done">Đang hoạt động</span> : <span className="badge s-breach">Đã khóa</span>}</td>
                         <td className="nw">
                           <button type="button" className="btn sm" onClick={() => setDialog({ type: 'role', user: u })} {...dis}>Gán role</button>{' '}
+                          <button type="button" className="btn sm" onClick={() => setDialog({ type: 'resetPassword', user: u })} {...dis}>Đặt lại mật khẩu</button>{' '}
                           <button type="button" className="btn sm" onClick={() => setDialog({ type: 'lock', user: u })} {...dis}>{u.isActive ? 'Khóa' : 'Kích hoạt'}</button>
                         </td>
                       </tr>
@@ -95,6 +96,7 @@ export default function UsersPage() {
 
       {dialog?.type === 'add' && <CreateUserDialog onClose={() => setDialog(null)} onDone={done} />}
       {dialog?.type === 'role' && <RoleDialog user={dialog.user} onClose={() => setDialog(null)} onDone={done} />}
+      {dialog?.type === 'resetPassword' && <ResetPasswordDialog user={dialog.user} onClose={() => setDialog(null)} onDone={done} />}
       {dialog?.type === 'lock' && (
         <Modal
           title={dialog.user.isActive ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'} okText={dialog.user.isActive ? 'Khóa tài khoản' : 'Kích hoạt'} okClass={dialog.user.isActive ? 'danger' : 'pri'}
@@ -154,6 +156,63 @@ function RoleDialog({ user, onClose, onDone }) {
           {ROLE_KEYS.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
         </select>
       </Field>
+    </Modal>
+  )
+}
+
+function ResetPasswordDialog({ user, onClose, onDone }) {
+  const [pass, setPass] = useState('Demo@12345')
+  const [useDefault, setUseDefault] = useState(true)
+
+  return (
+    <Modal
+      title="Đặt lại mật khẩu"
+      okText="Đặt lại mật khẩu"
+      okClass="warn"
+      onClose={onClose}
+      onOk={async () => {
+        const targetPass = useDefault ? 'Demo@12345' : pass.trim()
+        if (!targetPass) throw new Error('Vui lòng nhập mật khẩu.')
+        if (targetPass.length < 6) throw new Error('Mật khẩu phải có ít nhất 6 ký tự.')
+        await wrap(() => adminResetPassword(user.id, targetPass), 'Không đặt lại được mật khẩu.')
+        onDone(`Đã đặt lại mật khẩu cho ${user.fullName}. Người dùng phải đổi mật khẩu khi đăng nhập.`)
+      }}
+    >
+      <p className="muted">
+        Cấp lại mật khẩu cho tài khoản <b>{user.fullName}</b> (<code>{user.email}</code>).
+      </p>
+      <div style={{ marginBottom: 12 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={useDefault}
+            onChange={(e) => {
+              setUseDefault(e.target.checked)
+              if (e.target.checked) setPass('Demo@12345')
+            }}
+          />
+          <span>Dùng mật khẩu mặc định (<code>Demo@12345</code>)</span>
+        </label>
+      </div>
+      {!useDefault && (
+        <Field label="Mật khẩu tạm thời mới" required htmlFor="rp-pass" hint="Tối thiểu 6 ký tự">
+          <input
+            className="in"
+            id="rp-pass"
+            type="text"
+            autoComplete="off"
+            value={pass}
+            onChange={(e) => setPass(e.target.value)}
+            placeholder="Nhập mật khẩu tạm thời"
+          />
+        </Field>
+      )}
+      <div className="banner info" style={{ marginTop: 12 }}>
+        <Icon name="shield" />
+        <div className="sm">
+          Sau khi đặt lại, hệ thống sẽ bật cờ <b>bắt buộc đổi mật khẩu</b>. Người dùng sẽ phải tự tạo mật khẩu mới ngay trong lần đăng nhập tiếp theo.
+        </div>
+      </div>
     </Modal>
   )
 }

@@ -1,6 +1,8 @@
 package com.ojt.p01.repository;
 
 import com.ojt.p01.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -23,4 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
  /** Tài khoản đang hoạt động theo role, xếp theo tên (dùng cho GET /users/it-staff). */
     List<User> findByRole_RoleNameAndIsActiveTrueOrderByFullNameAsc(String roleName);
+
+    @Override
+    @EntityGraph(attributePaths = {"role"})
+    Page<User> findAll(Pageable pageable);
 }
