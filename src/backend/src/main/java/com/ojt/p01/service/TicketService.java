@@ -597,7 +597,23 @@ public class TicketService {
             }
         }
 
-        return historyRepository.findByTicket_IdOrderByTimestampAsc(ticket.getId())
+        List<TicketHistory> histories = historyRepository.findByTicket_IdOrderByTimestampAsc(ticket.getId());
+
+        // Dòng phân công lưu id người xử lý (current_assignee_id). Tra tên 1 lần cho mọi id để giao diện
+        // hiện đúng tên cả người xử lý cũ, không chỉ người đang phụ trách
+        java.util.Set<Long> userIds = new java.util.HashSet<>();
+        for (TicketHistory h : histories) {
+            if ("current_assignee_id".equals(h.getFieldChanged())) {
+                addUserId(userIds, h.getOldValue());
+                addUserId(userIds, h.getNewValue());
+            }
+        }
+        java.util.Map<Long, String> userNames = new java.util.HashMap<>();
+        if (!userIds.isEmpty()) {
+            userRepository.findAllById(userIds).forEach(u -> userNames.put(u.getId(), u.getFullName()));
+        }
+
+        return histories
                 .stream()
                 .map(h -> new TicketHistoryResponse(
                         h.getId(),
@@ -609,9 +625,34 @@ public class TicketService {
                         h.getOldValue(),
                         h.getNewValue(),
                         h.getReasonOrNote(),
-                        h.getTimestamp()
+                        h.getTimestamp(),
+                        userLabel(h, h.getOldValue(), userNames),
+                        userLabel(h, h.getNewValue(), userNames)
                 ))
                 .toList();
+    }
+
+    private static void addUserId(java.util.Set<Long> ids, String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        try {
+            ids.add(Long.parseLong(value.trim()));
+        } catch (NumberFormatException ignored) {
+            // Giá trị không phải id thì bỏ qua
+        }
+    }
+
+    /** Tên người dùng cho old/newValue của dòng phân công; field khác trả null. */
+    private static String userLabel(TicketHistory h, String value, java.util.Map<Long, String> names) {
+        if (!"current_assignee_id".equals(h.getFieldChanged()) || value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return names.get(Long.parseLong(value.trim()));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     // -------------------------------------------------------------------------

@@ -15,5 +15,8 @@ public record TicketHistoryResponse(
         String oldValue,
         String newValue,
         String reasonOrNote,
-        OffsetDateTime timestamp
+        OffsetDateTime timestamp,
+        // Tên hiển thị cho old/newValue khi giá trị là id người dùng (field current_assignee_id); null với field khác
+        String oldValueLabel,
+        String newValueLabel
 ) {}
