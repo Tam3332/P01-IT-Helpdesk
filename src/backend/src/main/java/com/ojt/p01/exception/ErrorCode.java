@@ -31,6 +31,8 @@ public enum ErrorCode {
     // -------------------------------------------------------------------------
     INVALID_CREDENTIALS        ("INVALID_CREDENTIALS", "Email hoặc mật khẩu không đúng", HttpStatus.UNAUTHORIZED),
     ACCOUNT_DISABLED           ("ACCOUNT_DISABLED", "Tài khoản đã bị khóa, vui lòng liên hệ Admin", HttpStatus.FORBIDDEN),
+    INVALID_CURRENT_PASSWORD   ("INVALID_CURRENT_PASSWORD", "Mật khẩu hiện tại không đúng", HttpStatus.BAD_REQUEST),
+    PASSWORD_SAME_AS_CURRENT   ("PASSWORD_SAME_AS_CURRENT", "Mật khẩu mới không được trùng với mật khẩu hiện tại", HttpStatus.BAD_REQUEST),
 
     // -------------------------------------------------------------------------
     // Ticket state machine

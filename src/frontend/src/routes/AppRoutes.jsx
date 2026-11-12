@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from '@/layouts/MainLayout'
 import LoginPage from '@/pages/auth/LoginPage'
 import NotFoundPage from '@/pages/common/NotFoundPage'
+import ProfilePage from '@/pages/common/ProfilePage'
+import ChangePasswordPage from '@/pages/common/ChangePasswordPage'
 import TicketsPage from '@/pages/common/TicketsPage'
 import SlaMonitorPage from '@/pages/common/SlaMonitorPage'
 import TicketDetailPage from '@/pages/tickets/TicketDetailPage'
@@ -34,6 +36,8 @@ export default function AppRoutes() {
             <Route path="tickets" element={<TicketsPage />} />
             <Route path="tickets/new" element={<CreateTicketPage />} />
             <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/password" element={<ChangePasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
@@ -42,6 +46,8 @@ export default function AppRoutes() {
             <Route path="tickets" element={<TicketsPage />} />
             <Route path="tickets/:ticketId" element={<TicketDetailPage />} />
             <Route path="sla" element={<SlaMonitorPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/password" element={<ChangePasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
@@ -52,6 +58,8 @@ export default function AppRoutes() {
             <Route path="sla" element={<SlaMonitorPage />} />
             <Route path="reopen-requests" element={<ReopenRequestsPage />} />
             <Route path="reopen-requests/:requestId" element={<ReopenReviewPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/password" element={<ChangePasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
@@ -66,6 +74,8 @@ export default function AppRoutes() {
             <Route path="statuses" element={<ReadonlyConfigPage kind="statuses" />} />
             <Route path="sla-config" element={<SlaConfigPage />} />
             <Route path="audit-logs" element={<AuditLogsPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/password" element={<ChangePasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 

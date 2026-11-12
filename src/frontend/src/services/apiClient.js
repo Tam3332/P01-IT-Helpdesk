@@ -15,7 +15,7 @@ api.interceptors.response.use(
   (err) => {
     const status = err.response?.status
     const url = err.config?.url || ''
-    if (status === 401 && !url.includes('/auth/login')) emitUnauthorized()
+    if (status === 401 && !url.includes('/auth/login') && !url.includes('/auth/change-password')) emitUnauthorized()
     if (status === 403) emitForbidden()
     return Promise.reject(err)
   },

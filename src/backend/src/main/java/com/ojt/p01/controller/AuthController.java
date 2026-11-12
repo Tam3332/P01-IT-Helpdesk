@@ -1,6 +1,7 @@
 package com.ojt.p01.controller;
 
 import com.ojt.p01.common.ApiResponse;
+import com.ojt.p01.dto.request.ChangePasswordRequest;
 import com.ojt.p01.dto.request.LoginRequest;
 import com.ojt.p01.dto.response.LoginResponse;
 import com.ojt.p01.dto.response.UserResponse;
@@ -70,5 +71,17 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorization) {
         authService.logout(authorization.substring("Bearer ".length()));
         return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công", null));
+    }
+
+    /**
+     * POST /api/v1/auth/change-password (cần token).
+     * Đổi mật khẩu cho tài khoản hiện tại.
+     * 200: thành công | 400: sai mật khẩu hiện tại, trùng mật khẩu cũ, hoặc validation lỗi | 401: chưa đăng nhập.
+     */
+    @Operation(summary = "Đổi mật khẩu cho tài khoản hiện tại")
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công", null));
     }
 }

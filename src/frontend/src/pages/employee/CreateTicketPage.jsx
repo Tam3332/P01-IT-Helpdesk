@@ -64,10 +64,10 @@ export default function CreateTicketPage() {
   }
 
   return (
-    <>
+    <div className="narrow">
       <PageHeader title={item.label} subtitle={item.subtitle} />
       <Async state={cats}>
-        <form className="card" onSubmit={submit} noValidate style={{ maxWidth: 820 }}>
+        <form className="card" onSubmit={submit} noValidate>
           <div className="cb" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <Field label="Tiêu đề" required htmlFor="f-title" error={errors.title} hint={`${f.title.length}/${LIMITS.title} ký tự`}>
               <input className="in" id="f-title" maxLength={LIMITS.title} value={f.title} onChange={set('title')} placeholder="Ví dụ: Không thể kết nối Wi-Fi văn phòng" />
@@ -98,6 +98,6 @@ export default function CreateTicketPage() {
           </div>
         </form>
       </Async>
-    </>
+    </div>
   )
 }
