@@ -14,8 +14,10 @@ Nguồn đối chiếu: SDD §5.1 (màn hình), §5.4 (nút theo vai trò), SRS 
 | IT Staff | `staff@helpdesk.local` | Trần Thị Bình (IT) | id = 2, người được phân công |
 | IT Manager | `manager@helpdesk.local` | Lê Minh Cường | Phân công, xem toàn bộ |
 | Admin | `admin@helpdesk.local` | Phạm Quốc Dũng | Danh mục, SLA |
+| IT Staff 2 | `staff2@helpdesk.local` | Hoàng Văn Nam (IT) | id = 7, dùng cho D5 (phân công lại) |
+| Employee 2 | `employee2@helpdesk.local` | Lê Thị Cúc (Kế toán) | id = 10, Trí seed 12/11 (`database/init_demo_users.sql`), dùng cho ca Employee B |
 
-Chỉ có 1 Employee và 1 IT Staff, nên chưa test được ca cần 2 người cùng role (Employee A xem ticket của B, phân công sang Staff khác).
+Từ 12/11 đã có Staff 2 và Employee 2, nên các ca cần 2 người cùng role (D5, Employee A xem ticket của B) đã test được.
 
 ## Minh chứng (evidence)
 
@@ -54,6 +56,7 @@ Tìm ảnh của một ca: mở `README.md`, mục "Kiểm thử giao diện the
 |---|---|---|---|
 | 2026-11-04 | trước 840789b (chưa có cột Người xử lý), rồi 840789b | A, B, C1–C4, D1–D4, D7, E | Phạm vi Staff cũ: thấy ticket được giao **và** ticket Mới (SRS §4 HD05 bản cũ) |
 | 2026-11-05 | 4067036 (merge tri/be 27792af) + sửa phạm vi Staff | C1–C4, D6 | SRS §4 HD05 sửa: *"IT Staff chỉ xem ticket được giao cho mình."*; đã có API đổi trạng thái, đóng ticket, bình luận, đính kèm |
+| 2026-11-12 | b810ee6 (merge tri/be 39f464b) | A2, A5, B3, D5, E2 | Test nốt các ca tồn tuần 3; có thêm staff2, employee2 |
 
 Cột "Kết quả" ghi ngày trong ngoặc khi ca được test lại, ví dụ `✅ (05/11)`; ảnh nằm ở thư mục ngày tương ứng.
 
@@ -62,10 +65,10 @@ Cột "Kết quả" ghi ngày trong ngoặc khi ca được test lại, ví dụ
 | # | Làm | Mong đợi | Nguồn | Đã phát hiện | Kết quả 04/11 |
 |---|---|---|---|---|---|
 | A1 | Đăng nhập sai mật khẩu, rồi sai email | Cùng 1 thông báo chung, ở lại trang login | UC-01 2a | Chưa phát hiện lỗi | ✅ |
-| A2 | Bỏ trống email/mật khẩu, bấm Đăng nhập | Báo lỗi ngay tại ô, không gửi request | SCR-01 | Chưa phát hiện lỗi | ⏸ |
+| A2 | Bỏ trống email/mật khẩu, bấm Đăng nhập | Báo lỗi ngay tại ô, không gửi request | SCR-01 | 12/11: báo "Vui lòng nhập email/mật khẩu" tại 2 ô; F12 → Network (Fetch/XHR) không có request `auth/login` | ✅ (12/11) |
 | A3 | Đăng nhập đúng từng role | Vào đúng trang tổng quan, menu đúng role | SCR-01 | Chưa phát hiện lỗi | ✅ (4 role, 03–04/11) |
 | A4 | Đang ở trang bất kỳ, bấm F5 | Vẫn đăng nhập, ở nguyên trang | `/auth/me` | Đã sửa 04/11 (trước bị về login vì BE thiếu `/auth/me`) – BE | ✅ |
-| A5 | Bấm Đăng xuất, rồi bấm nút Back trình duyệt | Về login, không xem lại được trang cũ | UC-01 6a | Đã sửa 04/11: logout thu hồi token thật – BE | ⏸ |
+| A5 | Bấm Đăng xuất, rồi bấm nút Back trình duyệt | Về login, không xem lại được trang cũ | UC-01 6a | Đã sửa 04/11: logout thu hồi token thật – BE. 12/11: bấm Back và gõ lại `/employee/tickets` đều về trang login | ✅ (12/11) |
 | A6 | Đăng nhập **Employee**, gõ thẳng vào thanh địa chỉ: `localhost:5173/admin/users`, Enter. Lặp lại với `localhost:5173/manager/tickets` | Hiện trang **403** (không có quyền), không thấy danh sách user / ticket của Manager | SDD §5 (route guard), §6.2 | Nhỏ (FE): breadcrumb trang 403 ghi "Không tìm thấy" – Chính | ✅ |
 | A7 | Đăng nhập **Employee**, gõ `localhost:5173/employee/abc`, rồi `localhost:5173/employee/tickets/HD-2026-9999` (ticket không có) | Ảnh 1: trang **404**. Ảnh 2: báo không tìm thấy ticket, không lỗi trắng trang | SDD §5; HD05 (404) | Nhỏ (FE): trang 404 breadcrumb ghi "Tổng quan", menu sáng 2 mục; ticket không có vẫn hiện nút "Thử lại" – Chính | ✅ |
 | A8 | Để quá 15 phút rồi bấm thao tác | Tự về login, báo hết phiên | UC-01 3a | Chưa phát hiện lỗi | ✅ |
@@ -76,7 +79,7 @@ Cột "Kết quả" ghi ngày trong ngoặc khi ca được test lại, ví dụ
 |---|---|---|---|---|---|
 | B1 | Tạo ticket hợp lệ | Báo thành công, chuyển sang trang chi tiết, trạng thái Mới | SCR-04 | Chưa phát hiện lỗi | ✅ |
 | B2 | Tạo ticket bỏ trống tiêu đề / mô tả / danh mục | Báo lỗi tại ô, không tạo | UC-02 | Nhỏ (FE): bộ đếm tính cả dấu xuống dòng (mô tả toàn Enter vẫn ghi 4/2000) – Chính | ✅ |
-| B3 | Tiêu đề > 200 ký tự, mô tả > 2000 ký tự | Bộ đếm báo vượt, không cho gửi | DTO | Chưa phát hiện lỗi | ✅ |
+| B3 | Tiêu đề > 200 ký tự, mô tả > 2000 ký tự | Bộ đếm báo vượt, không cho gửi | DTO | 12/11: FE không cho nhập quá (dán 201 ký tự còn 200; bộ đếm 200/200, 2000/2000). Nhỏ (FE): đã chọn danh mục vẫn hiện "Vui lòng chọn danh mục" – Chính | ✅ (12/11) |
 | B4 | Danh sách: chỉ thấy ticket của mình | Đúng ticket, đủ cột (mã, tiêu đề, người yêu cầu, danh mục, ưu tiên, trạng thái, **người xử lý**, ngày tạo) | HD05 | Đã sửa 04/11 (cột Người xử lý trước luôn hiện "Chưa phân công") – BE; Nhỏ (FE): bảng có thanh cuộn ngang, cột Ngày tạo bị cắt khi tên danh mục dài – Chính | ✅ |
 | B5 | Ô **tìm kiếm** theo tiêu đề | Chỉ hiện ticket khớp | SCR-02 – BE đã bổ sung | Đã sửa 04/11 (BE trước bỏ qua `search`) – test lại đạt – BE | ✅ |
 | B6 | Lọc trạng thái / ưu tiên / **danh mục** | Lọc đúng | SCR-02 – danh mục BE đã bổ sung | Đã sửa 04/11 (BE trước bỏ qua `categoryId`) – test lại đạt – BE | ✅ |
@@ -100,7 +103,7 @@ Cột "Kết quả" ghi ngày trong ngoặc khi ca được test lại, ví dụ
 | D2 | Mở hộp thoại Phân công | Dropdown chỉ có IT Staff đang hoạt động | SCR-05, `/users/it-staff` | Chưa phát hiện lỗi | ✅ |
 | D3 | Phân công ticket Mới, đổi ưu tiên | Toast thành công; trạng thái **Đã phân công**; ưu tiên + hạn SLA đổi; danh sách hiện người xử lý | UC-06 | API + giao diện đạt: Đã phân công, ưu tiên Cao, hạn = tạo + 8 giờ, toast "Đã phân công ticket", nút đổi thành "Phân công lại" | ✅ |
 | D4 | Phân công lại đúng người cũ, không đổi ưu tiên | Báo "IT Staff này đang phụ trách ticket" | UC-06 3b | FE tự chặn trước khi gọi API ("Ticket đang giao cho người này…"); BE cũng chặn 422 (EV-HD-06 api) | ✅ |
-| D5 | Phân công lại cho người khác | Người xử lý đổi, trạng thái giữ nguyên | UC-06 – cần thêm 1 IT Staff | Chưa test được: cần thêm 1 tài khoản IT Staff – Trí seed | ⏸ |
+| D5 | Phân công lại cho người khác | Người xử lý đổi, trạng thái giữ nguyên | UC-06 | 12/11: HD-2026-0004 đổi Trần Thị Bình → Hoàng Văn Nam, vẫn Đã phân công. Lỗi FE – Chính: (1) lịch sử hiện "Người dùng #2" thay vì tên (BE đã trả `oldValueLabel`/`newValueLabel` từ 583d67b); (2) tiêu đề dài tràn ngang ở trang chi tiết và hộp Phân công; (3) mức ảnh hưởng hiện "LOW" chưa dịch "Thấp" | ✅ (12/11) |
 | D6 | Nút Phân công không hiện ở ticket Đã đóng | Không thấy | SDD §5.4 | 05/11: Employee bấm "Yêu cầu đóng ticket" ở HD-0002 (đã giải quyết) → Đã đóng, lịch sử có "Xác nhận đóng ticket"; Manager mở lại không còn nút Phân công | ✅ (05/11) |
 | D7 | Đăng nhập staff sau khi phân công | Ticket hiện trong danh sách được giao | HD05 | Chưa phát hiện lỗi | ✅ |
 
@@ -109,7 +112,7 @@ Cột "Kết quả" ghi ngày trong ngoặc khi ca được test lại, ví dụ
 | # | Làm | Mong đợi | Nguồn | Đã phát hiện | Kết quả 04/11 |
 |---|---|---|---|---|---|
 | E1 | Đăng nhập Admin → Cài đặt hệ thống → Danh mục → **Thêm danh mục**: Mã `TESTUI`, Tên `Danh mục test giao diện`, ưu tiên Trung bình → Thêm. Sau đó đăng nhập Employee (tab ẩn danh), mở dropdown Danh mục | Toast "Đã thêm danh mục", danh sách thêm 1 dòng; Employee thấy danh mục mới | UC-10 A | Chưa phát hiện lỗi | ✅ |
-| E2 | Thêm danh mục lần nữa với Mã `TESTUI` (trùng mã); rồi Mã `TESTUI2` + Tên `Danh mục test giao diện` (trùng tên). Mở F12 → Network xem request `categories` | Báo trùng, không tạo thêm. BE trả 400 `CATEGORY_CODE_DUPLICATE` / `CATEGORY_NAME_DUPLICATE` | UC-10 3a | Trùng mã: FE hiện đúng "Mã danh mục đã tồn tại" (lỗi "FE chờ 409" ghi trước đây có thể đã được sửa – chờ xem Network). Trùng tên: chưa test | ✅ trùng mã / ⏸ trùng tên |
+| E2 | Thêm danh mục lần nữa với Mã `TESTUI` (trùng mã); rồi Mã `TESTUI2` + Tên `Danh mục test giao diện` (trùng tên). Mở F12 → Network xem request `categories` | Báo trùng, không tạo thêm. BE trả 400 `CATEGORY_CODE_DUPLICATE` / `CATEGORY_NAME_DUPLICATE` | UC-10 3a | 12/11: Network: trùng mã → 400 `CATEGORY_CODE_DUPLICATE`, FE "Mã danh mục đã tồn tại"; trùng tên → 400 `CATEGORY_NAME_DUPLICATE`, FE "Tên danh mục đã tồn tại"; không tạo thêm dòng | ✅ (12/11) |
 | E3 | Admin bấm **Tắt** ở dòng TESTUI; Employee F5 rồi mở dropdown Danh mục | Trạng thái "Tạm ẩn", nút đổi thành Bật; Employee không còn thấy danh mục | UC-10 C | Chưa phát hiện lỗi. Ảnh Employee chụp ở ô lọc Tổng quan; dropdown form Tạo ticket nên kiểm thêm | ✅ |
 | E4 | Xóa danh mục đang có ticket | Báo không xóa được | UC-10 3c | Không test được trên UI: FE ghi "Danh mục không xóa được", không có nút Xóa; BE đã có `DELETE /admin/categories/{id}` → nhóm cần thống nhất (FE thêm nút hoặc bỏ API) – Trí, Chính | ⏸ |
 | E5 | Admin → Cấu hình SLA → **Sửa** 1 dòng: nhập Hạn xử lý `0` → Lưu; làm lại với `-1`. Hủy rồi F5 kiểm giá trị cũ còn nguyên | Báo lỗi, không lưu | UC-10 3b | FE chặn đúng "Hạn xử lý phải lớn hơn 0." (BE chưa kiểm qua API) | ✅ |
