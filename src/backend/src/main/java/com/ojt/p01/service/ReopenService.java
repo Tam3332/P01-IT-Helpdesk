@@ -168,7 +168,8 @@ public class ReopenService {
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy yêu cầu mở lại ticket"));
 
         if (!ReopenRequest.STATUS_PENDING.equalsIgnoreCase(reopenRequest.getStatus())) {
-            throw new AppException(ErrorCode.VALIDATION_FAILED,
+            // Yêu cầu không còn PENDING là vi phạm trạng thái → 422 (SDD §4, openapi: "422 (yêu cầu không còn PENDING)")
+            throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION,
                     "Yêu cầu mở lại này đã được xử lý trước đó (trạng thái: " + reopenRequest.getStatus() + ")");
         }
 
@@ -299,7 +300,8 @@ public class ReopenService {
                 .orElseThrow(() -> new AppException(ErrorCode.RESOURCE_NOT_FOUND, "Không tìm thấy yêu cầu mở lại ticket"));
 
         if (!ReopenRequest.STATUS_PENDING.equalsIgnoreCase(reopenRequest.getStatus())) {
-            throw new AppException(ErrorCode.VALIDATION_FAILED,
+            // Yêu cầu không còn PENDING là vi phạm trạng thái → 422 (SDD §4, openapi: "422 (yêu cầu không còn PENDING)")
+            throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION,
                     "Yêu cầu mở lại này đã được xử lý trước đó (trạng thái: " + reopenRequest.getStatus() + ")");
         }
 
