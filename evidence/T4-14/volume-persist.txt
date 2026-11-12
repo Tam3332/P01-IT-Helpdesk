@@ -1,0 +1,32 @@
+Kiểm tra volume giữ dữ liệu sau restart và down/up (không dùng -v)
+VM Ubuntu lab, ~/P01-lab-v04, tag v0.4-week4 (a378fdb). 12/11/2026 khoảng 14:55 (UTC+7)
+
+--- Trước khi restart ---
+$ sudo docker compose exec -T backend sh -c 'echo "persist-$(date +%s)" > /app/uploads/.persist_check; cat /app/uploads/.persist_check; wc -l /app/logs/audit_events.jsonl'
+persist-1794470025
+8 /app/logs/audit_events.jsonl
+
+$ sudo docker volume ls | grep -E 'uploads_data|audit_logs'
+local     p01-lab-v04_audit_logs
+local     p01-lab-v04_uploads_data
+
+--- Thao tác ---
+$ sudo docker compose restart backend       -> p01-backend Started
+$ sudo docker compose down                  -> gỡ 4 container và 4 network (không có -v, volume giữ nguyên)
+$ sudo docker compose up -d                 -> db Healthy, frontend/backend/gateway Started
+
+--- Sau khi dựng lại (backend healthy) ---
+$ sudo docker compose exec -T backend sh -c 'cat /app/uploads/.persist_check; wc -l /app/logs/audit_events.jsonl'
+persist-1794470025
+8 /app/logs/audit_events.jsonl
+
+--- Dữ liệu PostgreSQL (volume pgdata) ---
+$ SELECT id, email FROM users WHERE email LIKE 'employee%';
+ id |          email
+----+--------------------------
+  1 | employee@helpdesk.local
+  6 | employee2@helpdesk.local
+(2 rows)
+
+Kết luận: nội dung .persist_check giữ nguyên (persist-1794470025), audit_events.jsonl vẫn 8 dòng, tài khoản trong DB còn nguyên => uploads_data, audit_logs, pgdata giữ dữ liệu qua restart và down/up.
+Đã xóa tệp dấu vết sau khi kiểm: docker compose exec -T backend rm /app/uploads/.persist_check

@@ -1,0 +1,29 @@
+Upload qua Nginx gateway (client_max_body_size 11m)
+VM Ubuntu lab, https://localhost:8443. 12/11/2026 khoảng 14:56 (UTC+7). Tài khoản: employee@helpdesk.local. Token không được in ra.
+
+Ticket thử: id 1, ticketNumber HD-2026-0001 (tạo bằng POST /api/v1/tickets, categoryId 1, impactLevel LOW)
+
+--- Tệp 10 MB (10485760 byte) ---
+$ head -c 10485760 /dev/zero | tr '\0' 'a' > /tmp/test_10mb.txt
+$ curl -ks -w '\nHTTP %{http_code}\n' -X POST $BASE/api/v1/tickets/1/attachments -H "Authorization: Bearer <token>" -F "file=@/tmp/test_10mb.txt"
+{"success":true,"message":"Tải tệp lên thành công","data":{"id":1,"ticketId":1,"fileName":"test_10mb.txt","fileSize":10485760,"mimeType":"text/plain","uploaderId":1,"uploaderName":"Nguyễn Văn An","createdAt":"2026-11-12T07:56:53.87272374Z"},"timestamp":"2026-11-12T07:56:53.896431468"}
+HTTP 201
+
+--- Tệp 11 MB (11534336 byte) ---
+$ head -c 11534336 /dev/zero | tr '\0' 'a' > /tmp/test_11mb.txt
+$ curl -ks -w '\nHTTP %{http_code}\n' -X POST $BASE/api/v1/tickets/1/attachments -H "Authorization: Bearer <token>" -F "file=@/tmp/test_11mb.txt"
+<html>
+<head><title>413 Request Entity Too Large</title></head>
+<body>
+<center><h1>413 Request Entity Too Large</h1></center>
+<hr><center>nginx</center>
+</body>
+</html>
+
+HTTP 413
+
+Kết luận: tệp 10 MB qua được (HTTP 201); tệp 11 MB bị Nginx chặn (HTTP 413) trước khi tới backend.
+
+Ghi chú trung thực: lần chạy đầu trong phiên do gõ nhầm biến TID (để trống) nên gọi vào đường dẫn sai
+(tickets//attachments) và trả HTTP 400 cho tệp 10 MB; kết quả đó không có giá trị và không dùng làm evidence.
+Kết quả trên là lần chạy lại với TID=1. Đã xóa các tệp thử trong /tmp sau khi kiểm.
