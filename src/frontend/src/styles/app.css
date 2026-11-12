@@ -268,3 +268,6 @@ td.tt{min-width:210px;font-weight:500;color:var(--text)}td.nw{white-space:nowrap
 .sesswarn{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;width:min(560px,calc(100vw - 32px));display:flex;gap:12px;align-items:center;background:var(--warn-bg);color:var(--warn);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow-lg);font-size:13px}
 .sesswarn .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.sesswarn b{font-size:14px}
 .sesswarn time{font-weight:700;font-variant-numeric:tabular-nums}
+
+/* Tiêu đề dài không có khoảng trắng phải xuống dòng, không làm tràn ngang trang hoặc hộp thoại */
+.phead>div{min-width:0}.phead h1,.card>.ch h2,.modal .mb,td.tt{overflow-wrap:anywhere}

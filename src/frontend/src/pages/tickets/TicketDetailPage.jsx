@@ -6,7 +6,7 @@ import { ErrorState, Spinner } from '@/components/StateViews'
 import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/context/ToastContext'
 import useAsync from '@/hooks/useAsync'
-import { LIFECYCLE, LIMITS, OPEN_STATUSES, statusLabel } from '@/config/domain'
+import { LIFECYCLE, LIMITS, OPEN_STATUSES, PRIORITY, statusLabel } from '@/config/domain'
 import { ROLES, ROLE_HOME } from '@/config/constants'
 import { getTicket } from '@/services/ticketService'
 import { listReopenRequests } from '@/services/referenceService'
@@ -166,7 +166,7 @@ export default function TicketDetailPage() {
                 <dt>Người yêu cầu</dt><dd>{t.requesterName || nameOf(t.requesterId)}{t.requesterDepartment ? ` · ${t.requesterDepartment}` : ''}</dd>
                 <dt>Người xử lý</dt><dd>{assigneeLabel}</dd>
                 <dt>Danh mục</dt><dd>{t.categoryName || (t.categoryId != null ? `#${t.categoryId}` : '—')}</dd>
-                <dt>Mức ảnh hưởng</dt><dd>{t.impactLevel || '—'}</dd>
+                <dt>Mức ảnh hưởng</dt><dd>{PRIORITY[t.impactLevel]?.label || t.impactLevel || '—'}</dd>
                 <dt>Ngày tạo</dt><dd className="num">{fmtDateTime(t.createdAt)}</dd>
                 <dt>Hạn xử lý</dt>
                 <dd className="num">

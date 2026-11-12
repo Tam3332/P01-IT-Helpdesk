@@ -201,8 +201,8 @@ function historyText(h, nameOf) {
 
   // Trường hợp phân công người xử lý: map ID thành tên người dùng
   if (h.fieldChanged === 'current_assignee_id' || h.fieldChanged === 'currentAssigneeId') {
-    const oldName = h.oldValue && nameOf ? nameOf(Number(h.oldValue)) : (h.oldValue ? `Người dùng #${h.oldValue}` : 'Chưa phân công')
-    const newName = h.newValue && nameOf ? nameOf(Number(h.newValue)) : (h.newValue ? `Người dùng #${h.newValue}` : 'Chưa phân công')
+    const oldName = h.oldValue && nameOf ? nameOf(Number(h.oldValue), h.oldValueLabel) : (h.oldValue ? `Người dùng #${h.oldValue}` : 'Chưa phân công')
+    const newName = h.newValue && nameOf ? nameOf(Number(h.newValue), h.newValueLabel) : (h.newValue ? `Người dùng #${h.newValue}` : 'Chưa phân công')
     return `${actionName} · Người xử lý: ${oldName} → ${newName}`
   }
 
