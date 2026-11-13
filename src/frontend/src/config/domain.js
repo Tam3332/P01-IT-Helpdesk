@@ -37,7 +37,7 @@ export const SLA = {
 
 export const LIMITS = {
   passwordMin: 8, // TẠM, chờ quy tắc mật khẩu của backend
-  passwordMax: 128,
+  passwordMax: 100, // khớp backend (@Size max=100)
   title: 200,
   description: 2000,
   comment: 2000,
