@@ -39,7 +39,9 @@ import java.time.OffsetDateTime;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service xử lý nghiệp vụ Ticket.
@@ -165,12 +167,7 @@ public class TicketService {
         Long actorId = requester.getId();
         String actorRole = requester.getRole() != null ? requester.getRole().getRoleName() : null;
         String createdNumber = saved.getTicketNumber();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                auditLogger.log("TICKET_CREATED", actorId, actorRole, "TICKET", createdNumber, "CREATE", "SUCCESS", 201);
-            }
-        });
+        auditLogger.logAfterCommit("TICKET_CREATED", actorId, actorRole, "TICKET", createdNumber, "CREATE", "SUCCESS", 201, null, null);
 
         return toResponse(saved);
     }
@@ -396,7 +393,21 @@ public class TicketService {
                     oldPriority, newPriority, null, ipAddress, now));
         }
 
-        // Chưa làm: audit TICKET_ASSIGNED; gửi thông báo IT Staff
+        // Audit log: TICKET_ASSIGNED kèm before/after của assignee_id
+        Long managerId = manager.getId();
+        String ticketNumber = ticket.getTicketNumber();
+        Long oldAssigneeId = oldAssignee != null ? oldAssignee.getId() : null;
+        Long newAssigneeId = assignee.getId();
+
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("assignee_id", oldAssigneeId);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("assignee_id", newAssigneeId);
+
+        auditLogger.logAfterCommit("TICKET_ASSIGNED", managerId, roleName, "TICKET", ticketNumber,
+                action, "SUCCESS", 200, before, after);
+
         return toDetailResponse(ticket);
     }
 
@@ -504,6 +515,15 @@ public class TicketService {
             ));
         }
 
+        // Audit log: TICKET_STATUS_CHANGED kèm before/after của status
+        Long actorId = currentUser.getId();
+        String ticketNumber = ticket.getTicketNumber();
+        Map<String, Object> before = Map.of("status", currentStatus.name());
+        Map<String, Object> after = Map.of("status", targetStatus.name());
+
+        auditLogger.logAfterCommit("TICKET_STATUS_CHANGED", actorId, roleName, "TICKET", ticketNumber,
+                "STATUS_CHANGE", "SUCCESS", 200, before, after);
+
         return toDetailResponse(ticket);
     }
 
@@ -564,6 +584,15 @@ public class TicketService {
                 clientIp,
                 now
         ));
+
+        // Audit log: TICKET_CLOSED kèm trạng thái trước khi đóng và CLOSED
+        Long actorId = currentUser.getId();
+        String ticketNumber = ticket.getTicketNumber();
+        Map<String, Object> before = Map.of("status", currentStatus.name());
+        Map<String, Object> after = Map.of("status", "CLOSED");
+
+        auditLogger.logAfterCommit("TICKET_CLOSED", actorId, roleName, "TICKET", ticketNumber,
+                "CLOSE", "SUCCESS", 200, before, after);
 
         return toDetailResponse(ticket);
     }

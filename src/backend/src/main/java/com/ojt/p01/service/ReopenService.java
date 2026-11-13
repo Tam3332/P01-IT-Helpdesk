@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -128,13 +129,10 @@ public class ReopenService {
 
         Long actorId = currentUser.getId();
         String ticketNumber = ticket.getTicketNumber();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                auditLogger.log("REOPEN_REQUESTED", actorId, roleName, "TICKET", ticketNumber,
-                        "REOPEN_REQUEST", "SUCCESS", 201);
-            }
-        });
+        Map<String, Object> before = Map.of("status", "RESOLVED");
+        Map<String, Object> after = Map.of("status", "REOPEN_PENDING");
+        auditLogger.logAfterCommit("REOPEN_REQUESTED", actorId, roleName, "TICKET", ticketNumber,
+                "REOPEN_REQUEST", "SUCCESS", 201, before, after);
 
         return toResponse(saved);
     }
@@ -276,13 +274,10 @@ public class ReopenService {
         // 7. Security Audit Log
         Long actorId = currentUser.getId();
         String ticketNumber = ticket.getTicketNumber();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                auditLogger.log("REOPEN_APPROVED", actorId, roleName, "TICKET", ticketNumber,
-                        "REOPEN_APPROVE", "SUCCESS", 200);
-            }
-        });
+        Map<String, Object> before = Map.of("status", "REOPEN_PENDING");
+        Map<String, Object> after = Map.of("status", "REOPENED");
+        auditLogger.logAfterCommit("REOPEN_APPROVED", actorId, roleName, "TICKET", ticketNumber,
+                "REOPEN_APPROVE", "SUCCESS", 200, before, after);
 
         return toResponse(reopenRequest);
     }
@@ -354,13 +349,10 @@ public class ReopenService {
         // 4. Security Audit Log
         Long actorId = currentUser.getId();
         String ticketNumber = ticket.getTicketNumber();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                auditLogger.log("REOPEN_REJECTED", actorId, roleName, "TICKET", ticketNumber,
-                        "REOPEN_REJECT", "SUCCESS", 200);
-            }
-        });
+        Map<String, Object> before = Map.of("status", "REOPEN_PENDING");
+        Map<String, Object> after = Map.of("status", "RESOLVED");
+        auditLogger.logAfterCommit("REOPEN_REJECTED", actorId, roleName, "TICKET", ticketNumber,
+                "REOPEN_REJECT", "SUCCESS", 200, before, after);
 
         return toResponse(reopenRequest);
     }

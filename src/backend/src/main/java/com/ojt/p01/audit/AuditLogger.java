@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -69,8 +71,47 @@ public class AuditLogger {
  */
     public void log(String eventType, Long actorId, String role, String targetType, String targetId,
                     String action, String outcome, Integer httpStatus) {
-        HttpServletRequest request = currentRequest();
+        log(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, null, null);
+    }
 
+ /**
+ * Ghi 1 sự kiện có kèm thông tin before và after cho các event thay đổi dữ liệu.
+ */
+    public void log(String eventType, Long actorId, String role, String targetType, String targetId,
+                    String action, String outcome, Integer httpStatus,
+                    Object before, Object after) {
+        HttpServletRequest request = currentRequest();
+        String srcIp = request != null ? request.getRemoteAddr() : null;
+        String corrId = correlationId(request);
+        logInternal(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, before, after, srcIp, corrId);
+    }
+
+ /**
+ * Ghi 1 sự kiện sau khi transaction hiện tại commit thành công (an toàn cho môi trường test không có transaction).
+ * Thu thập sẵn IP nguồn và correlation_id trước khi transaction commit.
+ */
+    public void logAfterCommit(String eventType, Long actorId, String role, String targetType, String targetId,
+                               String action, String outcome, Integer httpStatus,
+                               Object before, Object after) {
+        HttpServletRequest request = currentRequest();
+        String srcIp = request != null ? request.getRemoteAddr() : null;
+        String corrId = correlationId(request);
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    logInternal(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, before, after, srcIp, corrId);
+                }
+            });
+        } else {
+            logInternal(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, before, after, srcIp, corrId);
+        }
+    }
+
+    private void logInternal(String eventType, Long actorId, String role, String targetType, String targetId,
+                             String action, String outcome, Integer httpStatus,
+                             Object before, Object after, String srcIp, String correlationId) {
         // LinkedHashMap để các trường luôn ra đúng thứ tự trong file, dễ đọc khi đối chiếu
         Map<String, Object> event = new LinkedHashMap<>();
         event.put("timestamp", Instant.now().toString());   // ISO-8601 UTC, vd 2026-11-05T05:30:00.123Z
@@ -81,8 +122,14 @@ public class AuditLogger {
         event.put("target_id", targetId);
         event.put("action", action);
         event.put("outcome", outcome);
-        event.put("src_ip", request != null ? request.getRemoteAddr() : null);
-        event.put("correlation_id", correlationId(request));
+        if (before != null) {
+            event.put("before", before);
+        }
+        if (after != null) {
+            event.put("after", after);
+        }
+        event.put("src_ip", srcIp);
+        event.put("correlation_id", correlationId);
         event.put("http_status", httpStatus);
 
         String line;

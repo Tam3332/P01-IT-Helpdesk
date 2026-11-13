@@ -126,6 +126,8 @@ public class AuditLogService {
                 String srcIp = (String) map.get("src_ip");
                 String correlationId = (String) map.get("correlation_id");
                 Integer httpStatus = map.get("http_status") != null ? Integer.valueOf(map.get("http_status").toString()) : null;
+                Object before = map.get("before");
+                Object after = map.get("after");
 
                 allLogs.add(new AuditLogResponse(
                         virtualId--,
@@ -143,7 +145,9 @@ public class AuditLogService {
                         outcome,
                         srcIp,
                         correlationId,
-                        httpStatus
+                        httpStatus,
+                        before,
+                        after
                 ));
             } catch (Exception e) {
                 // Bỏ qua dòng bị lỗi định dạng

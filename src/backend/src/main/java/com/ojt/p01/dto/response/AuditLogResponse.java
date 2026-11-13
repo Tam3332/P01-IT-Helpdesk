@@ -19,5 +19,7 @@ public record AuditLogResponse(
         String outcome,
         String srcIp,
         String correlationId,
-        Integer httpStatus
+        Integer httpStatus,
+        Object before,
+        Object after
 ) {}
