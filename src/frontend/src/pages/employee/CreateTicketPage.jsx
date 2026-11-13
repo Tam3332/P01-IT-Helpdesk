@@ -23,7 +23,11 @@ export default function CreateTicketPage() {
   const [files, setFiles] = useState([])
   const [errors, setErrors] = useState({})
   const [busy, setBusy] = useState(false)
-  const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
+  // Sửa trường nào thì xóa lỗi của trường đó, tránh báo lỗi cũ sau khi đã nhập đúng
+  const set = (k) => (e) => {
+    setF((s) => ({ ...s, [k]: e.target.value }))
+    setErrors((s) => (s[k] ? { ...s, [k]: undefined } : s))
+  }
 
   const submit = async (e) => {
     e.preventDefault()
