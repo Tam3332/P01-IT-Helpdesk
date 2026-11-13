@@ -1,0 +1,72 @@
+Build: v0.4-week4  BASE=https://100.124.80.30:8443
+Ticket của Employee A: id=3 priority=LOW staff=2 staff2=3
+--- (1) Nhảy trạng thái bỏ bước -> 422 ---
+06.1.1   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.1.2   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.1.3   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.1.4   POST  /tickets/3/close                         expected=422 actual=422 PASS
+06.1.5   trạng thái vẫn NEW sau 4 ca trên         expected=NEW actual=NEW PASS
+--- (5) Phân công trái quyền / sai người (BR-HD-05) ---
+06.5.1   PUT   /tickets/3/assign                        expected=403 actual=403 PASS
+06.5.2   PUT   /tickets/3/assign                        expected=403 actual=403 PASS
+06.5.3   PUT   /tickets/3/assign                        expected=422 actual=422 PASS
+06.5.4   PUT   /tickets/3/assign                        expected=422 actual=422 PASS
+06.5.5   PUT   /tickets/3/assign                        expected=200 actual=200 PASS
+06.5.6   PUT   /tickets/3/assign                        expected=200 actual=200 PASS
+06.5.7   GET   /tickets/3                               expected=404 actual=404 PASS
+06.5.8   assigneeId hiện tại = staff                expected=2 actual=2 PASS
+--- (7) IT Staff đổi trạng thái ticket không được giao -> 404 ---
+06.7.1   PATCH /tickets/3/status                        expected=404 actual=404 PASS
+06.7.2   PATCH /tickets/3/status                        expected=403 actual=403 PASS
+--- (1) tiếp + (2) BR-HD-01 ---
+06.1.6   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.1.7   PATCH /tickets/3/status                        expected=200 actual=200 PASS
+06.1.8   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.1.9   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.2.1   PATCH /tickets/3/status                        expected=400 actual=400 PASS
+06.2.2   PATCH /tickets/3/status                        expected=400 actual=400 PASS
+06.2.3   PATCH /tickets/3/status                        expected=400 actual=400 PASS
+06.2.4   trạng thái vẫn IN_PROGRESS                expected=IN_PROGRESS actual=IN_PROGRESS PASS
+--- (6) Mass assignment: trường thừa phải bị bỏ qua ---
+06.6.1   PATCH /tickets/3/status                        expected=200 actual=200 PASS
+06.6.2   priority không đổi                         expected=LOW actual=LOW PASS
+06.6.3   assigneeId không đổi                       expected=2 actual=2 PASS
+06.6.4   requesterId không đổi                      expected=1 actual=1 PASS
+06.6.5   ticket mới: status = NEW                     expected=NEW actual=NEW PASS
+06.6.6   ticket mới: priority như ticket thường   expected=LOW actual=LOW PASS
+06.6.7   ticket mới: chưa có assignee               expected=null actual=null PASS
+06.6.8   ticket mới: requester = Employee A           expected=1 actual=1 PASS
+06.6.9   Employee gửi isInternal=true bị ép false  expected=false actual=false PASS
+--- (3) Đóng / mở lại trái BR-HD-02 (ticket đang RESOLVED) ---
+06.3.1   POST  /tickets/3/close                         expected=403 actual=403 PASS
+06.3.2   POST  /tickets/3/close                         expected=403 actual=403 PASS
+06.3.3   POST  /tickets/3/close                         expected=404 actual=404 PASS
+06.3.4   POST  /tickets/3/reopen                        expected=403 actual=403 PASS
+06.3.5   POST  /tickets/3/reopen                        expected=403 actual=403 PASS
+06.3.6   POST  /tickets/3/reopen                        expected=404 actual=404 PASS
+06.3.7   POST  /tickets/3/reopen                        expected=400 actual=400 PASS
+06.3.8   trạng thái vẫn RESOLVED                   expected=RESOLVED actual=RESOLVED PASS
+--- (8) Reopen: Employee tự duyệt / sai role ---
+06.8.1   POST  /tickets/3/reopen                        expected=201 actual=201 PASS
+reopen-request id=1
+06.8.2   GET   /reopen-requests                         expected=403 actual=403 PASS
+06.8.3   POST  /reopen-requests/1/approve               expected=403 actual=403 PASS
+06.8.4   POST  /reopen-requests/1/reject                expected=403 actual=403 PASS
+06.8.5   POST  /reopen-requests/1/approve               expected=403 actual=403 PASS
+06.8.6   POST  /reopen-requests/1/approve               expected=403 actual=403 PASS
+06.8.7   POST  /tickets/3/reopen                        expected=422 actual=422 PASS
+06.8.8   POST  /tickets/3/close                         expected=422 actual=422 PASS
+06.8.9   POST  /reopen-requests/1/reject                expected=400 actual=400 PASS
+06.8.10  trạng thái vẫn REOPEN_PENDING             expected=REOPEN_PENDING actual=REOPEN_PENDING PASS
+06.8.11  POST  /reopen-requests/1/reject                expected=200 actual=200 PASS
+--- (4) Thao tác trên ticket CLOSED (BR-HD-04) -> 422 ---
+06.4.1   POST  /tickets/3/close                         expected=200 actual=200 PASS
+06.4.2   POST  /tickets/3/comments                      expected=422 actual=422 PASS
+06.4.3   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.4.4   PATCH /tickets/3/status                        expected=422 actual=422 PASS
+06.4.5   PUT   /tickets/3/assign                        expected=422 actual=422 PASS
+06.4.6   POST  /tickets/3/reopen                        expected=422 actual=422 PASS
+06.4.7   POST  /tickets/3/close                         expected=422 actual=422 PASS
+06.4.8   upload vào ticket CLOSED (HTTP)               expected=422 actual=422 PASS
+06.4.9   trạng thái vẫn CLOSED                     expected=CLOSED actual=CLOSED PASS
+Tổng: PASS=60 FAIL=0  -> evidence/T4-02/result_20261112_2109.txt (không chứa token)
