@@ -1,0 +1,15 @@
+﻿Task: T4-10 / SEC-TC-HD-02
+Phase: OFFLINE PRECHECK
+Date: 2026-11-14 05:29:16
+Repository commit: a868b63
+Monitoring unit tests: 18/18 PASS
+Sample audit events: 12
+Skipped events: 0
+Total alerts: 2
+R1: 5 login failures / 300 seconds - HIGH
+R2: 3 ticket denials / 300 seconds - MEDIUM
+VM connectivity: TCP 8443 FAILED
+Real VM authentication test: NOT RUN
+Account lockout and HTTP 429: NOT VERIFIED
+EV-HD-22: PENDING LIVE LAB EVIDENCE
+Status: OFFLINE PASS / LIVE TEST BLOCKED

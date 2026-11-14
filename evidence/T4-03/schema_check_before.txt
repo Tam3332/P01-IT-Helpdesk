@@ -1,0 +1,12 @@
+
+
+Task                  : T4-03 BEFORE
+AuditEvents           : 33
+MissingRequiredFields : 0
+InvalidUtcFormat      : 0
+EventsWithBeforeAfter : 0
+EmptySrcIp            : 0
+EmptyCorrelationId    : 0
+R2Alerts              : 3
+DistinctAlertActors   : 3
+TestMode              : OFFLINE REPLAY
