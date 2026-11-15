@@ -11,7 +11,7 @@ function messageFor(err) {
   const status = err?.response?.status
   if (!err?.response) return 'Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.'
   if (status === 401) return 'Email hoặc mật khẩu không đúng.'
-  if (status === 429) return 'Bạn đã thử quá nhiều lần hoặc tài khoản đang bị khoá tạm thời. Vui lòng thử lại sau 15 phút.'
+  if (status === 429) return apiError(err)
   if (status === 403) return apiError(err, 'Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ quản trị viên.')
   return apiError(err, 'Đăng nhập không thành công. Vui lòng thử lại.')
 }

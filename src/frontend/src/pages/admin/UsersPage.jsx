@@ -17,7 +17,8 @@ import { initials } from '@/utils/format'
 
 const ROLE_KEYS = Object.values(ROLES)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const wrap = async (fn, fallback) => { try { return await fn() } catch (e) { throw new Error(apiError(e, fallback)) } }
+const NOT_SUPPORTED = 'Backend chưa hỗ trợ chức năng này (API quản lý người dùng chưa được triển khai).'
+const wrap = async (fn, fallback) => { try { return await fn() } catch (e) { throw new Error([404, 405].includes(e?.response?.status) ? NOT_SUPPORTED : apiError(e, fallback)) } }
 
 export default function UsersPage() {
   const item = NAV[ROLES.ADMIN].find((i) => i.path === '/admin/users')

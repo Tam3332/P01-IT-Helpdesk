@@ -1,0 +1,13 @@
+Build: v0.4-week4  BASE=https://100.124.80.30:8443  ticket=5 attachment=2
+PC03.2a  Employee chủ tải tệp của mình (đối chứng) expected=200 actual=200 PASS
+PC03.2b  Admin tải tệp (Separation of Duties)             expected=403 actual=403 PASS
+PC03.2c  Admin xem danh sách tệp (metadata, Read-only)     expected=200 actual=200 PASS
+PC03.0   ticket đã CLOSED                                   expected=CLOSED actual=CLOSED PASS
+PC03.4a  Employee B (không phải chủ) gửi feedback      expected=404 actual=404 PASS
+PC03.4b  Admin gửi feedback                                 expected=403 actual=403 PASS
+PC03.4c  Employee A (chủ) gửi feedback (đối chứng)   expected=201 actual=201 PASS
+PC03.3a  IT Staff được giao xem feedback                  expected=200 actual=200 PASS
+PC03.3b  IT Manager xem feedback                              expected=200 actual=200 PASS
+PC03.3c  Admin xem feedback (Read-only)                       expected=200 actual=200 PASS
+PC03.3d  Employee B xem feedback ticket của A               expected=404 actual=404 PASS
+Tổng: PASS=11 FAIL=0 -> evidence/T4-09/pc03_bosung_20261112_2229.txt
