@@ -50,6 +50,9 @@ import java.util.Map;
 @Service
 public class TicketService {
 
+    // Số ticket tối đa mỗi trang; FE listAllTickets gọi size=100 (ticketService.js dòng 12)
+    private static final int MAX_PAGE_SIZE = 100;
+
     private final TicketRepository ticketRepository;
     private final TicketCategoryRepository categoryRepository;
     private final SLAConfigRepository slaConfigRepository;
@@ -196,7 +199,8 @@ public class TicketService {
 
         // tham số trang không hợp lệ thì dùng giá trị mặc định (trang 0, 20 dòng –)
         int safePage = page < 0 ? 0 : page;
-        int safeSize = size < 1 ? 20 : size;
+        // size < 1 → mặc định 20 (UC-04 3b); size > 100 → giảm về 100 (chống kéo toàn bộ bảng, T5-06; quyết định 17/11)
+        int safeSize = size < 1 ? 20 : Math.min(size, MAX_PAGE_SIZE);
         PageRequest pageRequest = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Specification<Ticket> spec = (root, query, cb) -> {

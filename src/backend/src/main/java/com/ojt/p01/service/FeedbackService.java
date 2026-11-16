@@ -83,12 +83,12 @@ public class FeedbackService {
 
         // 2. Kiểm tra trạng thái: Ticket phải ở trạng thái CLOSED
         if (!"CLOSED".equalsIgnoreCase(ticket.getStatus())) {
-            throw new AppException(ErrorCode.VALIDATION_FAILED, "Chỉ có thể đánh giá sau khi ticket đã hoàn tất đóng");
+            throw new AppException(ErrorCode.TICKET_NOT_CLOSED);
         }
 
         // 3. Kiểm tra trùng lặp: Đã đánh giá chưa
         if (feedbackRepository.existsByTicket_Id(ticket.getId())) {
-            throw new AppException(ErrorCode.VALIDATION_FAILED, "Ticket này đã được gửi đánh giá trước đó");
+            throw new AppException(ErrorCode.FEEDBACK_ALREADY_SUBMITTED);
         }
 
         // 4. Lưu đánh giá
