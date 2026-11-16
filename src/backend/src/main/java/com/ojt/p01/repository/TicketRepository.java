@@ -45,12 +45,25 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
     @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})
     Page<Ticket> findByCurrentAssignee_IdOrderByCreatedAtDesc(Long assigneeId, Pageable pageable);
 
- /** Lấy danh sách ticket mới (NEW) hoặc mở lại (REOPENED, REOPEN_PENDING) cho thông báo của Manager */
+ /** Lấy danh sách ticket cho Manager: mới tạo (NEW), mở lại (REOPEN_PENDING/REOPENED), vi phạm SLA (isSlaBreached), sự cố khẩn cấp (CRITICAL/HIGH) */
     @Query("SELECT t FROM Ticket t " +
            "JOIN FETCH t.requester " +
-           "WHERE t.status = 'NEW' OR t.status = 'REOPEN_PENDING' OR t.status = 'REOPENED' " +
-           "ORDER BY t.createdAt DESC")
+           "WHERE t.status = 'NEW' " +
+           "   OR t.status = 'REOPEN_PENDING' " +
+           "   OR t.status = 'REOPENED' " +
+           "   OR (t.isSlaBreached = true AND t.status NOT IN ('RESOLVED', 'CLOSED')) " +
+           "   OR (t.priority IN ('CRITICAL', 'HIGH') AND t.status NOT IN ('RESOLVED', 'CLOSED')) " +
+           "ORDER BY t.updatedAt DESC NULLS LAST, t.createdAt DESC")
     List<Ticket> findNotificationsForManager(Pageable pageable);
+
+ /** Thông báo giám sát toàn cục cho Admin: vé vi phạm SLA, vé sự cố khẩn cấp (CRITICAL / HIGH) */
+    @Query("SELECT t FROM Ticket t " +
+           "JOIN FETCH t.requester " +
+           "WHERE t.isSlaBreached = true " +
+           "   OR t.priority = 'CRITICAL' " +
+           "   OR t.priority = 'HIGH' " +
+           "ORDER BY t.updatedAt DESC NULLS LAST, t.createdAt DESC")
+    List<Ticket> findNotificationsForAdmin(Pageable pageable);
 
  /** Lấy danh sách ticket mở phục vụ SLA Background Worker quét định kỳ */
     @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})

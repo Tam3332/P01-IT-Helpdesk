@@ -57,6 +57,12 @@ export default function TicketDetailPage() {
   const closeDlg = () => setDialog(null)
 
   const nameOf = (id, given) => {
+    if (id != null) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(`hd_profile_${id}`) || '{}')
+        if (saved.fullName) return saved.fullName
+      } catch { /* ignore */ }
+    }
     if (given) return given
     if (id != null && id === t.requesterId) return t.requesterName || tr('Người dùng #{id}', { id })
     const aId = t.currentAssigneeId ?? t.assigneeId
@@ -129,7 +135,12 @@ export default function TicketDetailPage() {
       toast(tr('Không sao chép được.'), 'err')
     }
   }
-  const person = (name) => <span className="who"><span className="av xs" style={avatarStyle(name)}>{initials(name)}</span>{name}</span>
+  const person = (name, extra = '') => (
+    <span className="who">
+      <span className="av xs" style={avatarStyle(name)}>{initials(name)}</span>
+      <span>{name}{extra ? ` · ${extra}` : ''}</span>
+    </span>
+  )
   const dialogProps = { ticket: t, ref_, onClose: closeDlg, onDone: afterAction }
 
   return (
@@ -182,12 +193,12 @@ export default function TicketDetailPage() {
             <div className="ch"><h2>{tr('Thông tin')}</h2></div>
             <div className="cb">
               <dl className="dl">
-                <dt>{tr('Người yêu cầu')}</dt><dd>{person(t.requesterName || nameOf(t.requesterId))}{t.requesterDepartment ? ` · ${t.requesterDepartment}` : ''}</dd>
+                <dt>{tr('Người yêu cầu')}</dt><dd>{person(t.requesterName || nameOf(t.requesterId), t.requesterDepartment)}</dd>
                 <dt>{tr('Người xử lý')}</dt><dd>{t.assigneeName || (t.currentAssigneeId ?? t.assigneeId) ? person(assigneeLabel) : assigneeLabel}</dd>
                 <dt>{tr('Danh mục')}</dt><dd>{t.categoryName || (t.categoryId != null ? `#${t.categoryId}` : '—')}</dd>
                 <dt>{tr('Mức ảnh hưởng')}</dt><dd>{tr(PRIORITY[t.impactLevel]?.label || t.impactLevel || '—')}</dd>
                 <dt>{tr('Ngày tạo')}</dt><dd className="num">{fmtDateTime(t.createdAt)}</dd>
-                <dt>{tr('Hạn xử lý')}</dt>
+                <dt style={{ alignSelf: 'start', paddingTop: 2 }}>{tr('Hạn xử lý')}</dt>
                 <dd className="num">
                   {fmtDateTime(t.resolutionDeadline)}
                   <div className="sm muted" style={s.key === 'BREACHED' ? { color: 'var(--bad)', fontWeight: 600 } : undefined}>

@@ -25,14 +25,14 @@ export default function SettingsPage() {
       <PageHeader title={t(item.label)} subtitle={t(item.subtitle)} />
       <div className="kpis" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))' }}>
         {cards.map(([path, name, icon, c, desc]) => (
-          <section className="card" key={path}>
-            <div className="cb" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <section className="card" key={path} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="cb" style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
               <div className="kpi" style={{ padding: 0 }}>
                 <div className="ico t-primary"><Icon name={icon} /></div>
                 <div><span>{c}</span><b style={{ fontSize: 18 }}>{t(name)}</b></div>
               </div>
-              <p className="muted">{t(desc)}</p>
-              <button type="button" className="btn" onClick={() => navigate(path)}>{t('Quản lý {name}', { name: name === 'Cấu hình SLA' ? t(name) : t(name).toLowerCase() })}</button>
+              <p className="muted" style={{ margin: 0, flex: 1, minHeight: 38, lineHeight: 1.4 }}>{t(desc)}</p>
+              <button type="button" className="btn" style={{ marginTop: 'auto' }} onClick={() => navigate(path)}>{t('Quản lý {name}', { name: name === 'Cấu hình SLA' ? t(name) : t(name).toLowerCase() })}</button>
             </div>
           </section>
         ))}

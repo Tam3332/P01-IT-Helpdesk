@@ -232,10 +232,11 @@ public class TicketService {
                 predicates.add(cb.equal(root.get("currentAssignee").get("id"), assigneeId));
             }
             if (search != null && !search.isBlank()) {
-                // Tìm theo tiêu đề hoặc mô tả, không phân biệt hoa thường. Thoát %, _ để người dùng gõ ký tự này không thành wildcard.
+                // Tìm theo mã ticket (ticketNumber), tiêu đề (title) hoặc mô tả (description), không phân biệt hoa thường. Thoát %, _ để người dùng gõ ký tự này không thành wildcard.
                 String kw = "%" + search.trim().toLowerCase()
                         .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
                 predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("ticketNumber")), kw, '\\'),
                         cb.like(cb.lower(root.get("title")), kw, '\\'),
                         cb.like(cb.lower(root.get("description")), kw, '\\')));
             }

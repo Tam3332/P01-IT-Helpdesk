@@ -3,10 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '@/components/Icon'
 import PageHeader from '@/components/PageHeader'
 import Modal, { Field } from '@/components/Modal'
+import CustomSelect from '@/components/CustomSelect'
 import { Async } from '@/components/StateViews'
 import { useToast } from '@/context/ToastContext'
 import useAsync from '@/hooks/useAsync'
-import { LIMITS } from '@/config/domain'
+import { LIMITS, PRIORITY, STATUS } from '@/config/domain'
 import { apiError } from '@/services/apiClient'
 import { getTicket, listHistory } from '@/services/ticketService'
 import { approveReopen, listItStaff, listReopenRequests, rejectReopen } from '@/services/referenceService'
@@ -31,6 +32,68 @@ async function load(id) {
   return { req, ticket, history }
 }
 
+function formatHistoryEntry(h) {
+  let title = ''
+  let note = h.reasonOrNote || ''
+
+  if (h.action === 'CREATE') {
+    title = t('Tạo mới ticket')
+    note = ''
+  } else if (h.action === 'ASSIGN' || h.fieldChanged === 'current_assignee_id') {
+    title = t('Phân công xử lý')
+  } else if (h.action === 'REASSIGN') {
+    title = t('Phân công lại')
+  } else if (h.action === 'REOPEN_REQUEST' || h.action === 'REOPEN') {
+    title = t('Yêu cầu mở lại ticket')
+  } else if (h.action === 'REOPEN_APPROVE') {
+    title = t('Đồng ý mở lại ticket')
+  } else if (h.action === 'REOPEN_REJECT') {
+    title = t('Từ chối yêu cầu mở lại')
+    if (note.startsWith('Từ chối yêu cầu mở lại: ')) {
+      note = note.replace('Từ chối yêu cầu mở lại: ', '')
+    }
+  } else if (h.action === 'CLOSE') {
+    title = t('Xác nhận đóng ticket')
+  } else if (h.fieldChanged === 'status') {
+    if (h.oldValue === 'REOPEN_PENDING' && h.newValue === 'RESOLVED') {
+      title = t('Từ chối yêu cầu mở lại')
+      if (note.startsWith('Từ chối yêu cầu mở lại: ')) {
+        note = note.replace('Từ chối yêu cầu mở lại: ', '')
+      }
+    } else if (h.oldValue === 'REOPEN_PENDING' && h.newValue === 'REOPENED') {
+      title = t('Đồng ý mở lại ticket')
+    } else if (h.oldValue === 'RESOLVED' && h.newValue === 'REOPEN_PENDING') {
+      title = t('Yêu cầu mở lại ticket')
+    } else {
+      const oldSt = t(STATUS[h.oldValue]?.label || h.oldValue || '—')
+      const newSt = t(STATUS[h.newValue]?.label || h.newValue || '—')
+      title = `${t('Đổi trạng thái')}: ${oldSt} → ${newSt}`
+    }
+  } else if (h.fieldChanged === 'priority') {
+    const oldPr = t(PRIORITY[h.oldValue]?.label || h.oldValue || '—')
+    const newPr = t(PRIORITY[h.newValue]?.label || h.newValue || '—')
+    title = `${t('Đổi mức ưu tiên')}: ${oldPr} → ${newPr}`
+  } else {
+    title = t(h.action || 'Cập nhật')
+  }
+
+  // Dịch chuỗi note nếu là chuỗi hệ thống tự sinh
+  if (note === 'Bắt đầu tiếp nhận xử lý ticket') {
+    note = t('Bắt đầu tiếp nhận xử lý ticket')
+  }
+
+  return (
+    <div>
+      <div style={{ fontWeight: 600 }}>{title}</div>
+      {note && (
+        <div className="sm muted" style={{ marginTop: 2, overflowWrap: 'anywhere' }}>
+          {note}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Duyệt mở lại: ghi chú tùy chọn; có thể chọn IT Staff mới, để trống thì giữ người xử lý cũ.
 function ApproveDialog({ req, ticket, onClose, onDone }) {
   const staff = useAsync(listItStaff, [])
@@ -50,10 +113,17 @@ function ApproveDialog({ req, ticket, onClose, onDone }) {
     >
       <p className="muted">{t('Ticket {n} sẽ chuyển sang {s} và tính thời hạn xử lý SLA mới từ lúc duyệt.', { n: '\uE000', s: '\uE001' }).split(/[\uE000\uE001]/).flatMap((part, i) => (i === 1 ? [<b key="n">{req.ticketNumber}</b>, part] : i === 2 ? [<b key="s">{t('Mở lại')}</b>, part] : [part]))}</p>
       <Field label={t('IT Staff xử lý')} htmlFor="rsf" hint={staff.error || t('Để trống để giữ nguyên người xử lý trước đó.')}>
-        <select className="sel" id="rsf" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} disabled={staff.loading}>
-          <option value="">{staff.loading ? t('Đang tải...') : `${t('Giữ người xử lý cũ')}${current ? ` (${current})` : ''}`}</option>
-          {(staff.data || []).map((u) => <option key={u.id} value={u.id}>{u.fullName}{u.department ? ` · ${u.department}` : ''}</option>)}
-        </select>
+        <CustomSelect
+          value={assigneeId}
+          onChange={setAssigneeId}
+          placeholder={staff.loading ? t('Đang tải...') : `${t('Giữ người xử lý cũ')}${current ? ` (${current})` : ''}`}
+          options={[
+            { value: '', label: staff.loading ? t('Đang tải...') : `${t('Giữ người xử lý cũ')}${current ? ` (${current})` : ''}` },
+            ...(staff.data || []).map((u) => ({ value: u.id, label: `${u.fullName}${u.department ? ` · ${u.department}` : ''}` })),
+          ]}
+          disabled={staff.loading}
+          ariaLabel={t('IT Staff xử lý')}
+        />
       </Field>
       <Field label={t('Ghi chú duyệt')} htmlFor="rvn" hint={t('{n}/{max} ký tự (không bắt buộc)', { n: note.length, max: LIMITS.reviewNoteMax })}>
         <textarea className="ta" id="rvn" style={{ minHeight: 64 }} maxLength={LIMITS.reviewNoteMax} value={note} onChange={(e) => setNote(e.target.value)} />
@@ -110,7 +180,13 @@ export default function ReopenReviewPage() {
               <div className="lbl">{t('Lịch sử xử lý')}</div>
               <ul className="tl" style={{ marginTop: 12 }}>
                 {history.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).map((h) => (
-                  <li key={h.id}><i /><div><div>{h.action}{h.reasonOrNote ? `: ${h.reasonOrNote}` : ''}</div><div className="sm muted">{fmtDateTime(h.timestamp)}</div></div></li>
+                  <li key={h.id}>
+                    <i />
+                    <div>
+                      {formatHistoryEntry(h)}
+                      <div className="sm muted">{fmtDateTime(h.timestamp)}</div>
+                    </div>
+                  </li>
                 ))}
                 {!history.length && <li><i /><div className="muted">{t('Chưa có lịch sử.')}</div></li>}
               </ul>

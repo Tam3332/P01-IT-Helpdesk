@@ -56,7 +56,7 @@ export default function SlaMonitorPage() {
           {shown.length ? (
             <div className="tw" style={{ marginTop: 14 }}>
               <table>
-                <thead><tr><th>{tr('Mã')}</th><th>{tr('Tiêu đề')}</th><th>{tr('Ưu tiên')}</th><th>{tr('Người xử lý')}</th><th>{tr('Hạn xử lý')}</th><th>{tr('Tiến độ thời hạn')}</th><th>SLA</th></tr></thead>
+                <thead><tr><th>{tr('Mã')}</th><th>{tr('Tiêu đề')}</th><th>{tr('Ưu tiên')}</th><th>{tr('Người xử lý')}</th><th>{tr('Hạn xử lý')}</th><th>SLA</th></tr></thead>
                 <tbody>
                   {shown.map(({ t, s }) => (
                     <tr key={t.id ?? t.ticketNumber} tabIndex={0} onClick={() => go(t)} onKeyDown={(e) => e.key === 'Enter' && go(t)}>
@@ -65,10 +65,6 @@ export default function SlaMonitorPage() {
                       <td><PriorityBadge priority={t.priority} /></td>
                       <td className="nw">{t.assigneeName || ((t.currentAssigneeId ?? t.assigneeId) ? tr('Người dùng #{id}', { id: t.currentAssigneeId ?? t.assigneeId }) : t.status === 'NEW' ? tr('Chưa phân công') : '—')}</td>
                       <td className="nw num">{fmtDateTime(t.resolutionDeadline)}<div className="sm muted">{s.left > 0 ? tr('còn {d}', { d: dur(s.left) }) : tr('trễ {d}', { d: dur(s.left) })}</div></td>
-                      <td style={{ minWidth: 150 }}>
-                        <div className="prog" role="img" aria-label={tr('{p}% thời hạn đã dùng', { p: Math.round(s.pct) })}><s style={{ width: `${Math.min(100, s.pct)}%`, background: SLA[s.key]?.color }} /></div>
-                        <span className="sm muted num">{Math.round(s.pct)}%</span>
-                      </td>
                       <td><span className={`badge ${SLA[s.key]?.badge}`}>{SLA[s.key]?.label}</span></td>
                     </tr>
                   ))}

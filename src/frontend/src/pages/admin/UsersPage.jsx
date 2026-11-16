@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Icon from '@/components/Icon'
 import PageHeader from '@/components/PageHeader'
 import Pagination from '@/components/Pagination'
+import CustomSelect from '@/components/CustomSelect'
 import Modal, { Field } from '@/components/Modal'
 import { RoleBadge } from '@/components/Badges'
 import { Async, EmptyState } from '@/components/StateViews'
@@ -12,7 +13,7 @@ import { LIMITS } from '@/config/domain'
 import { NAV } from '@/config/nav'
 import { ROLES, ROLE_LABEL } from '@/config/constants'
 import { apiError } from '@/services/apiClient'
-import { adminCreateUser, adminListUsers, adminResetPassword, adminSetRole, adminSetStatus } from '@/services/referenceService'
+import { adminCreateUser, adminListUsers, adminResetPassword, adminSetRole, adminSetStatus, adminUpdateUser } from '@/services/referenceService'
 import { initials } from '@/utils/format'
 import { t } from '@/i18n'
 
@@ -36,7 +37,22 @@ export default function UsersPage() {
   const reload = () => data.reload()
   const done = (msg) => { toast(msg); reload() }
 
-  const all = data.data?.content || []
+  const all = (data.data?.content || []).map((u) => {
+    const savedAvatar = localStorage.getItem(`hd_avatar_${u.id}`)
+    const savedProfile = (() => {
+      try {
+        return JSON.parse(localStorage.getItem(`hd_profile_${u.id}`) || '{}')
+      } catch {
+        return {}
+      }
+    })()
+    return {
+      ...u,
+      fullName: savedProfile.fullName || u.fullName,
+      phone: savedProfile.phone || u.phone,
+      avatarUrl: savedAvatar || u.avatarUrl,
+    }
+  })
   const needle = q.trim().toLowerCase()
   // Bộ lọc áp dụng trên trang đang xem (API /admin/users hiện chỉ có page, size)
   const list = all.filter((u) => (!needle || `${u.fullName} ${u.email} ${u.username}`.toLowerCase().includes(needle)) && (!role || u.role === role) && (!st || (st === 'on') === !!u.isActive))
@@ -50,16 +66,30 @@ export default function UsersPage() {
           <button type="button" className="btn pri" onClick={() => setDialog({ type: 'add' })}><Icon name="plus" />{t('Tạo tài khoản')}</button>
         </div>
         <div className="filters users-f">
-          <div className="sw"><Icon name="search" /><input className="in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Tìm theo họ tên, email hoặc tên đăng nhập')} aria-label={t('Tìm tài khoản')} /></div>
-          <select className="sel" value={role} onChange={(e) => setRole(e.target.value)} aria-label={t('Lọc theo vai trò')}>
-            <option value="">{t('Mọi vai trò')}</option>
-            {ROLE_KEYS.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
-          </select>
-          <select className="sel" value={st} onChange={(e) => setSt(e.target.value)} aria-label={t('Lọc theo trạng thái')}>
-            <option value="">{t('Mọi trạng thái')}</option>
-            <option value="on">{t('Đang hoạt động')}</option>
-            <option value="off">{t('Đã khóa')}</option>
-          </select>
+          <div className={`sw${q ? ' has' : ''}`}>
+            <Icon name="search" />
+            <input className="in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Tìm theo họ tên, email hoặc tên đăng nhập')} aria-label={t('Tìm tài khoản')} />
+            <button type="button" className="clr" aria-label={t('Xóa từ khóa')} onClick={() => setQ('')}><Icon name="x" /></button>
+          </div>
+          <CustomSelect
+            value={role}
+            onChange={setRole}
+            options={[
+              { value: '', label: t('Mọi vai trò') },
+              ...ROLE_KEYS.map((r) => ({ value: r, label: ROLE_LABEL[r] })),
+            ]}
+            ariaLabel={t('Lọc theo vai trò')}
+          />
+          <CustomSelect
+            value={st}
+            onChange={setSt}
+            options={[
+              { value: '', label: t('Mọi trạng thái') },
+              { value: 'on', label: t('Đang hoạt động') },
+              { value: 'off', label: t('Đã khóa') },
+            ]}
+            ariaLabel={t('Lọc theo trạng thái')}
+          />
         </div>
         <Async state={data} notReadyText={t('Backend chưa có API quản lý người dùng (GET /api/v1/admin/users). Màn hình sẽ hiện dữ liệu khi API được triển khai.')}>
           {list.length ? (
@@ -71,14 +101,34 @@ export default function UsersPage() {
                     const self = u.id === me.id
                     const dis = self ? { disabled: true, title: t('Không thể thay đổi tài khoản của chính bạn') } : {}
                     return (
-                      <tr key={u.id}>
-                        <td><div style={{ display: 'flex', gap: 10, alignItems: 'center' }}><div className="av">{initials(u.fullName)}</div><b>{u.fullName}</b>{self && <span className="sm muted">{t('(bạn)')}</span>}</div></td>
+                      <tr
+                        key={u.id}
+                        onClick={() => setDialog({ type: 'edit', user: u })}
+                        style={{ cursor: 'pointer' }}
+                        title={t('Bấm để xem và chỉnh sửa thông tin')}
+                      >
+                        <td className="nw">
+                          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                            <div className="av" style={u.avatarUrl ? { padding: 0, overflow: 'hidden', flexShrink: 0 } : { flexShrink: 0 }}>
+                              {u.avatarUrl ? (
+                                <img src={u.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                              ) : (
+                                initials(u.fullName)
+                              )}
+                            </div>
+                            <div style={{ whiteSpace: 'nowrap' }}>
+                              <b>{u.fullName}</b>
+                              {u.phone && <span className="sm muted" style={{ display: 'block' }}>{u.phone}</span>}
+                            </div>
+                            {self && <span className="sm muted" style={{ whiteSpace: 'nowrap' }}>{t('(bạn)')}</span>}
+                          </div>
+                        </td>
                         <td>{u.email}</td>
                         <td><code>{u.username}</code></td>
                         <td><RoleBadge label={t(ROLE_LABEL[u.role] || u.role)} /></td>
                         <td>{u.department || '—'}</td>
                         <td>{u.isActive ? <span className="badge s-done">{t('Đang hoạt động')}</span> : <span className="badge s-breach">{t('Đã khóa')}</span>}</td>
-                        <td className="nw">
+                        <td className="nw" onClick={(e) => e.stopPropagation()}>
                           <button type="button" className="btn sm" onClick={() => setDialog({ type: 'role', user: u })} {...dis}>{t('Gán vai trò')}</button>{' '}
                           <button type="button" className="btn sm" onClick={() => setDialog({ type: 'resetPassword', user: u })} {...dis}>{t('Đặt lại mật khẩu')}</button>{' '}
                           <button type="button" className="btn sm" onClick={() => setDialog({ type: 'lock', user: u })} {...dis}>{u.isActive ? t('Khóa') : t('Kích hoạt')}</button>
@@ -97,6 +147,15 @@ export default function UsersPage() {
       </section>
 
       {dialog?.type === 'add' && <CreateUserDialog onClose={() => setDialog(null)} onDone={done} />}
+      {dialog?.type === 'edit' && (
+        <EditUserDialog
+          user={dialog.user}
+          currentUser={me}
+          onClose={() => setDialog(null)}
+          onDone={done}
+          onOpenResetPassword={(u) => setDialog({ type: 'resetPassword', user: u })}
+        />
+      )}
       {dialog?.type === 'role' && <RoleDialog user={dialog.user} onClose={() => setDialog(null)} onDone={done} />}
       {dialog?.type === 'resetPassword' && <ResetPasswordDialog user={dialog.user} onClose={() => setDialog(null)} onDone={done} />}
       {dialog?.type === 'lock' && (
@@ -134,10 +193,16 @@ function CreateUserDialog({ onClose, onDone }) {
       <div className="row2">
         <Field label={t('Phòng ban')} htmlFor="uf-dept"><input className="in" id="uf-dept" maxLength={60} value={f.department} onChange={set('department')} placeholder={t('ví dụ: Kế toán')} /></Field>
         <Field label={t('Vai trò')} required htmlFor="uf-role">
-          <select className="sel" id="uf-role" value={f.role} onChange={set('role')}>
-            <option value="">{t('Chọn vai trò')}</option>
-            {ROLE_KEYS.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
-          </select>
+          <CustomSelect
+            value={f.role}
+            onChange={(val) => setF((prev) => ({ ...prev, role: val }))}
+            placeholder={t('Chọn vai trò')}
+            options={[
+              { value: '', label: t('Chọn vai trò') },
+              ...ROLE_KEYS.map((r) => ({ value: r, label: ROLE_LABEL[r] })),
+            ]}
+            ariaLabel={t('Chọn vai trò')}
+          />
         </Field>
       </div>
     </Modal>
@@ -154,9 +219,12 @@ function RoleDialog({ user, onClose, onDone }) {
     }}>
       <p className="muted">{t('Đổi vai trò của')} <b>{user.fullName}</b> ({user.username}). {t('Hiện tại:')} <b>{t(ROLE_LABEL[user.role] || user.role)}</b>. {t('Thao tác được ghi vào nhật ký.')}</p>
       <Field label={t('Vai trò mới')} htmlFor="ur-role">
-        <select className="sel" id="ur-role" value={role} onChange={(e) => setRole(e.target.value)}>
-          {ROLE_KEYS.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
-        </select>
+        <CustomSelect
+          value={role}
+          onChange={setRole}
+          options={ROLE_KEYS.map((r) => ({ value: r, label: ROLE_LABEL[r] }))}
+          ariaLabel={t('Chọn vai trò mới')}
+        />
       </Field>
     </Modal>
   )
@@ -214,6 +282,136 @@ function ResetPasswordDialog({ user, onClose, onDone }) {
         <div className="sm">
           {t('Sau khi đặt lại, hệ thống sẽ bật cờ')} <b>{t('bắt buộc đổi mật khẩu')}</b>. {t('Người dùng sẽ phải tự tạo mật khẩu mới ngay trong lần đăng nhập tiếp theo.')}
         </div>
+      </div>
+    </Modal>
+  )
+}
+
+function EditUserDialog({ user, currentUser, onClose, onDone, onOpenResetPassword }) {
+  const isSelf = user.id === currentUser?.id
+  const [f, setF] = useState({
+    fullName: user.fullName || '',
+    phone: user.phone || '',
+    department: user.department || '',
+    role: user.role,
+    isActive: !!user.isActive,
+  })
+
+  const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }))
+
+  return (
+    <Modal
+      title={t('Thông tin người dùng')}
+      okText={t('Lưu thay đổi')}
+      onClose={onClose}
+      onOk={async () => {
+        if (!f.fullName.trim()) throw new Error(t('Vui lòng nhập họ tên.'))
+        if (!ROLE_KEYS.includes(f.role)) throw new Error(t('Vui lòng chọn vai trò.'))
+        await wrap(
+          () =>
+            adminUpdateUser(user.id, {
+              fullName: f.fullName.trim(),
+              phone: f.phone.trim() || undefined,
+              department: f.department.trim() || undefined,
+              role: f.role,
+              isActive: f.isActive,
+            }),
+          'Không cập nhật được thông tin người dùng.'
+        )
+        try {
+          localStorage.setItem(
+            `hd_profile_${user.id}`,
+            JSON.stringify({
+              fullName: f.fullName.trim(),
+              phone: f.phone.trim(),
+              department: f.department.trim(),
+            })
+          )
+        } catch {}
+        onDone(t('Đã cập nhật thông tin cho {name}.', { name: f.fullName.trim() }))
+      }}
+    >
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border-c, rgba(255,255,255,0.08))' }}>
+        <div className="av" style={{ width: 56, height: 56, fontSize: 20, flexShrink: 0, padding: 0, overflow: 'hidden' }}>
+          {user.avatarUrl ? (
+            <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+          ) : (
+            initials(f.fullName || user.fullName)
+          )}
+        </div>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <h3 style={{ margin: 0, fontSize: 17 }}>{f.fullName || user.fullName}</h3>
+            {isSelf && <span className="badge muted sm">{t('(Tài khoản của bạn)')}</span>}
+          </div>
+          <div className="sm muted" style={{ marginTop: 2, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <span><code>{user.username}</code></span>
+            <span>•</span>
+            <span>{user.email}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="row2">
+        <Field label={t('Họ và tên')} required htmlFor="eu-fullname">
+          <input className="in" id="eu-fullname" maxLength={100} value={f.fullName} onChange={set('fullName')} placeholder={t('Nhập họ và tên')} />
+        </Field>
+        <Field label={t('Số điện thoại')} htmlFor="eu-phone">
+          <input className="in" id="eu-phone" maxLength={20} value={f.phone} onChange={set('phone')} placeholder={t('ví dụ: 0912345678')} />
+        </Field>
+      </div>
+
+      <div className="row2">
+        <Field label={t('Phòng ban')} htmlFor="eu-dept">
+          <input className="in" id="eu-dept" maxLength={60} value={f.department} onChange={set('department')} placeholder={t('ví dụ: Kế toán, Nhân sự, IT...')} />
+        </Field>
+        <Field label={t('Vai trò')} required htmlFor="eu-role" hint={isSelf ? t('Không thể tự đổi vai trò của chính mình') : undefined}>
+          <CustomSelect
+            value={f.role}
+            disabled={isSelf}
+            onChange={(val) => setF((prev) => ({ ...prev, role: val }))}
+            options={ROLE_KEYS.map((r) => ({ value: r, label: ROLE_LABEL[r] }))}
+            ariaLabel={t('Chọn vai trò')}
+          />
+        </Field>
+      </div>
+
+      <div className="row2">
+        <Field label={t('Trạng thái hoạt động')} htmlFor="eu-status" hint={isSelf ? t('Không thể tự khóa tài khoản của chính mình') : undefined}>
+          <CustomSelect
+            value={f.isActive ? 'active' : 'locked'}
+            disabled={isSelf}
+            onChange={(val) => setF((prev) => ({ ...prev, isActive: val === 'active' }))}
+            options={[
+              { value: 'active', label: t('Đang hoạt động') },
+              { value: 'locked', label: t('Đã khóa') },
+            ]}
+            ariaLabel={t('Trạng thái hoạt động')}
+          />
+        </Field>
+        <Field label={t('Bảo mật & Mật khẩu')}>
+          <button
+            type="button"
+            className="btn"
+            style={{ width: '100%', justifyContent: 'center' }}
+            disabled={isSelf}
+            onClick={() => {
+              onClose()
+              onOpenResetPassword(user)
+            }}
+          >
+            <Icon name="lock" /> {t('Đặt lại mật khẩu')}
+          </button>
+        </Field>
+      </div>
+
+      <div className="row2" style={{ marginTop: 8 }}>
+        <Field label="Email" hint={t('Định danh đăng nhập (chỉ đọc)')}>
+          <input className="in" value={user.email} disabled readOnly style={{ opacity: 0.7 }} />
+        </Field>
+        <Field label={t('Tên đăng nhập')} hint={t('Tên tài khoản (chỉ đọc)')}>
+          <input className="in" value={user.username} disabled readOnly style={{ opacity: 0.7 }} />
+        </Field>
       </div>
     </Modal>
   )

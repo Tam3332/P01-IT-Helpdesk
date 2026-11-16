@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal, { Field } from '@/components/Modal'
+import CustomSelect from '@/components/CustomSelect'
 import useAsync from '@/hooks/useAsync'
 import { LIMITS, PRIORITY, PRIORITY_KEYS, statusLabel } from '@/config/domain'
 import { apiError } from '@/services/apiClient'
@@ -62,6 +63,9 @@ export function ReopenDialog({ ticket, ref_, onClose, onDone }) {
       onOk={async () => {
         if (n < LIMITS.reopenReasonMin) throw new Error(t('Lý do mở lại cần ít nhất {min} ký tự (hiện có {n}).', { min: LIMITS.reopenReasonMin, n }))
         await guard(() => reopenTicket(ref_, reason.trim()), t('Không gửi được yêu cầu.'))
+        try {
+          window.dispatchEvent(new Event('ticket_updated'))
+        } catch {}
         onDone(t('Đã gửi yêu cầu mở lại cho IT Manager.'))
       }}
     >
@@ -91,15 +95,25 @@ export function AssignDialog({ ticket, ref_, onClose, onDone }) {
     >
       <p className="muted"><b>{ticket.ticketNumber}</b> · {ticket.title}</p>
       <Field label={t('Người phụ trách chính (chỉ IT Staff)')} htmlFor="stf" hint={staff.error || t('Mỗi ticket chỉ có một người phụ trách chính tại một thời điểm.')}>
-        <select className="sel" id="stf" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} disabled={staff.loading}>
-          <option value="">{staff.loading ? t('Đang tải...') : t('Chọn IT Staff')}</option>
-          {(staff.data || []).map((u) => <option key={u.id} value={u.id}>{u.fullName}{u.department ? ` · ${u.department}` : ''}</option>)}
-        </select>
+        <CustomSelect
+          value={assigneeId}
+          onChange={setAssigneeId}
+          placeholder={staff.loading ? t('Đang tải...') : t('Chọn IT Staff')}
+          options={[
+            { value: '', label: staff.loading ? t('Đang tải...') : t('Chọn IT Staff') },
+            ...(staff.data || []).map((u) => ({ value: u.id, label: `${u.fullName}${u.department ? ` · ${u.department}` : ''}` })),
+          ]}
+          disabled={staff.loading}
+          ariaLabel={t('Chọn IT Staff')}
+        />
       </Field>
       <Field label={t('Mức ưu tiên chính thức')} htmlFor="pri">
-        <select className="sel" id="pri" value={priority} onChange={(e) => setPriority(e.target.value)}>
-          {PRIORITY_KEYS.map((p) => <option key={p} value={p}>{t(PRIORITY[p].label)}</option>)}
-        </select>
+        <CustomSelect
+          value={priority}
+          onChange={setPriority}
+          options={PRIORITY_KEYS.map((p) => ({ value: p, label: t(PRIORITY[p].label) }))}
+          ariaLabel={t('Mức ưu tiên chính thức')}
+        />
       </Field>
       <Field label={t('Ghi chú phân công')} htmlFor="asn">
         <textarea className="ta" id="asn" style={{ minHeight: 64 }} value={note} onChange={(e) => setNote(e.target.value)} />

@@ -16,7 +16,15 @@ export function Marked({ text, q }) {
   return parts.map((p, i) => (i % 2 ? <mark key={i}>{p}</mark> : p))
 }
 
-const who = (name, id) => name || (id != null ? t('Người dùng #{id}', { id }) : null)
+const who = (name, id) => {
+  if (id != null) {
+    try {
+      const saved = JSON.parse(localStorage.getItem(`hd_profile_${id}`) || '{}')
+      if (saved.fullName) return saved.fullName
+    } catch { /* ignore */ }
+  }
+  return name || (id != null ? t('Người dùng #{id}', { id }) : null)
+}
 
 // Bảng ticket dùng chung. categories: [{id, categoryName}] để đổi categoryId -> tên khi backend chỉ trả id.
 // hidden: các cột người dùng đã ẩn (Mã và Tiêu đề luôn hiện). highlight: từ khóa tìm kiếm để tô sáng trong tiêu đề.

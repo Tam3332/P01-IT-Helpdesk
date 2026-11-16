@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Icon from '@/components/Icon'
 import PageHeader from '@/components/PageHeader'
 import Modal, { Field } from '@/components/Modal'
+import CustomSelect from '@/components/CustomSelect'
 import { PriorityBadge } from '@/components/Badges'
 import { Async, EmptyState } from '@/components/StateViews'
 import { useToast } from '@/context/ToastContext'
@@ -92,7 +93,12 @@ export default function CategoriesPage() {
           <Field label={t('Mã danh mục')} required htmlFor="cf-code" hint={t('Chữ in hoa, số hoặc dấu gạch dưới. Không đổi sau khi tạo.')}><input className="in" id="cf-code" maxLength={30} value={f.categoryCode} onChange={set('categoryCode')} placeholder={t('ví dụ: NETWORK')} /></Field>
           <Field label={t('Tên danh mục')} required htmlFor="cf-name"><input className="in" id="cf-name" maxLength={100} value={f.categoryName} onChange={set('categoryName')} /></Field>
           <Field label={t('Mức ưu tiên mặc định')} htmlFor="cf-pri">
-            <select className="sel" id="cf-pri" value={f.defaultPriority} onChange={set('defaultPriority')}>{PRIORITY_KEYS.map((p) => <option key={p} value={p}>{t(PRIORITY[p].label)}</option>)}</select>
+            <CustomSelect
+              value={f.defaultPriority}
+              onChange={(val) => setF((prev) => ({ ...prev, defaultPriority: val }))}
+              options={PRIORITY_KEYS.map((p) => ({ value: p, label: t(PRIORITY[p].label) }))}
+              ariaLabel={t('Mức ưu tiên mặc định')}
+            />
           </Field>
         </Modal>
       )}
@@ -118,7 +124,12 @@ function EditCategory({ cat, onClose, onSaved }) {
       <Field label={t('Mã danh mục')}><input className="in" value={cat.categoryCode} disabled /></Field>
       <Field label={t('Tên danh mục')} required htmlFor="ce-name"><input className="in" id="ce-name" maxLength={100} value={name} onChange={(e) => setName(e.target.value)} /></Field>
       <Field label={t('Mức ưu tiên mặc định')} htmlFor="ce-pri">
-        <select className="sel" id="ce-pri" value={pri} onChange={(e) => setPri(e.target.value)}>{PRIORITY_KEYS.map((p) => <option key={p} value={p}>{t(PRIORITY[p].label)}</option>)}</select>
+        <CustomSelect
+          value={pri}
+          onChange={setPri}
+          options={PRIORITY_KEYS.map((p) => ({ value: p, label: t(PRIORITY[p].label) }))}
+          ariaLabel={t('Mức ưu tiên mặc định')}
+        />
       </Field>
     </Modal>
   )

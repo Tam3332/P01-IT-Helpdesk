@@ -5,6 +5,7 @@ import com.ojt.p01.dto.request.AdminChangeRoleRequest;
 import com.ojt.p01.dto.request.AdminChangeStatusRequest;
 import com.ojt.p01.dto.request.AdminCreateUserRequest;
 import com.ojt.p01.dto.request.AdminResetPasswordRequest;
+import com.ojt.p01.dto.request.AdminUpdateUserRequest;
 import com.ojt.p01.dto.response.PageResponse;
 import com.ojt.p01.dto.response.UserResponse;
 import com.ojt.p01.service.UserService;
@@ -104,5 +105,19 @@ public class AdminUserController {
         String newPass = request != null ? request.newPassword() : null;
         UserResponse response = userService.resetUserPassword(userId, newPass);
         return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu thành công. Người dùng sẽ phải đổi mật khẩu khi đăng nhập.", response));
+    }
+
+    /**
+     * PUT /api/v1/admin/users/{userId}
+     * Cập nhật thông tin tài khoản người dùng (Admin only).
+     */
+    @Operation(summary = "Cập nhật thông tin tài khoản (ADMIN)")
+    @PutMapping("/{userId}")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(
+            @PathVariable Long userId,
+            @RequestBody AdminUpdateUserRequest request
+    ) {
+        UserResponse response = userService.updateUser(userId, request);
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin thành công", response));
     }
 }

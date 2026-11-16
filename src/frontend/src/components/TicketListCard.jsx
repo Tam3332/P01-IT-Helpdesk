@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import Icon from './Icon'
 import Pagination from './Pagination'
 import TicketTable from './TicketTable'
+import CustomSelect from './CustomSelect'
 import { Async } from './StateViews'
 import useAsync from '@/hooks/useAsync'
 import useDebounced from '@/hooks/useDebounced'
@@ -58,7 +59,8 @@ export default function TicketListCard({ title, fixed = {}, statuses }) {
   const [hidden, setHidden] = useState(() => read(localStorage, `hd_cols_${user.role}_${pathname}`, []))
   const [colMenu, setColMenu] = useState(false)
   const colRef = useRef(null)
-  const search = useDebounced(q)
+  const search = useDebounced(q, 600)
+  const isDebouncing = q.trim() !== search.trim()
   const cats = useAsync(listCategories, [])
   const fixedKey = JSON.stringify(fixed)
 
@@ -87,6 +89,19 @@ export default function TicketListCard({ title, fixed = {}, statuses }) {
   const statusOptions = statuses || STATUS_KEYS
   const clear = () => { setQ(''); setStatus(''); setPriority(''); setCategoryId('') }
 
+  const statusSelectOptions = [
+    { value: '', label: t('Mọi trạng thái') },
+    ...statusOptions.map((s) => ({ value: s, label: t(STATUS[s].label) })),
+  ]
+  const prioritySelectOptions = [
+    { value: '', label: t('Mọi mức ưu tiên') },
+    ...PRIORITY_KEYS.map((p) => ({ value: p, label: t(PRIORITY[p].label) })),
+  ]
+  const categorySelectOptions = [
+    { value: '', label: t('Mọi danh mục') },
+    ...(cats.data || []).map((c) => ({ value: c.id, label: c.categoryName })),
+  ]
+
   return (
     <section className="card">
       <div className="ch">
@@ -105,22 +120,28 @@ export default function TicketListCard({ title, fixed = {}, statuses }) {
       </div>
       <div className="filters">
         <div className={`sw${q ? ' has' : ''}`}>
-          <Icon name="search" />
-          <input className="in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Tìm theo tiêu đề hoặc mô tả')} aria-label={t('Tìm kiếm ticket')} />
+          {isDebouncing || data.loading ? <span className="spin" style={{ margin: '0 4px', width: 14, height: 14 }} /> : <Icon name="search" />}
+          <input className="in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Tìm theo mã ticket, tiêu đề hoặc mô tả')} aria-label={t('Tìm kiếm ticket')} />
           <button type="button" className="clr" aria-label={t('Xóa từ khóa')} onClick={() => setQ('')}><Icon name="x" /></button>
         </div>
-        <select className="sel" value={status} onChange={(e) => setStatus(e.target.value)} aria-label={t('Lọc theo trạng thái')}>
-          <option value="">{t('Mọi trạng thái')}</option>
-          {statusOptions.map((s) => <option key={s} value={s}>{t(STATUS[s].label)}</option>)}
-        </select>
-        <select className="sel" value={priority} onChange={(e) => setPriority(e.target.value)} aria-label={t('Lọc theo mức ưu tiên')}>
-          <option value="">{t('Mọi mức ưu tiên')}</option>
-          {PRIORITY_KEYS.map((p) => <option key={p} value={p}>{t(PRIORITY[p].label)}</option>)}
-        </select>
-        <select className="sel" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} aria-label={t('Lọc theo danh mục')}>
-          <option value="">{t('Mọi danh mục')}</option>
-          {(cats.data || []).map((c) => <option key={c.id} value={c.id}>{c.categoryName}</option>)}
-        </select>
+        <CustomSelect
+          value={status}
+          onChange={setStatus}
+          options={statusSelectOptions}
+          ariaLabel={t('Lọc theo trạng thái')}
+        />
+        <CustomSelect
+          value={priority}
+          onChange={setPriority}
+          options={prioritySelectOptions}
+          ariaLabel={t('Lọc theo mức ưu tiên')}
+        />
+        <CustomSelect
+          value={categoryId}
+          onChange={setCategoryId}
+          options={categorySelectOptions}
+          ariaLabel={t('Lọc theo danh mục')}
+        />
       </div>
       <Async state={data}>
         {data.data && (

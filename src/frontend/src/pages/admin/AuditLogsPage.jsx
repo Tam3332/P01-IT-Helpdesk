@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Icon from '@/components/Icon'
 import PageHeader from '@/components/PageHeader'
 import Pagination from '@/components/Pagination'
+import CustomSelect from '@/components/CustomSelect'
 import { Async, EmptyState } from '@/components/StateViews'
 import useAsync from '@/hooks/useAsync'
 import { LIMITS } from '@/config/domain'
@@ -30,10 +31,21 @@ export default function AuditLogsPage() {
       <div className="banner info"><Icon name="lock" /><div className="grow">{t('Bản ghi chỉ đọc, không có thao tác sửa hoặc xóa. Nhật ký bất biến do backend lưu.')}</div></div>
       <section className="card">
         <div className="filters audit-f">
-          <div className="sw"><Icon name="search" /><input className="in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Tìm theo người thực hiện, hành động, đối tượng')} aria-label={t('Tìm trong nhật ký')} /></div>
-          <select className="sel" value={res} onChange={(e) => setRes(e.target.value)} aria-label={t('Lọc theo kết quả')}>
-            <option value="">{t('Mọi kết quả')}</option><option value="ok">{t('Thành công')}</option><option value="fail">{t('Thất bại')}</option>
-          </select>
+          <div className={`sw${q ? ' has' : ''}`}>
+            <Icon name="search" />
+            <input className="in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Tìm theo người thực hiện, hành động, đối tượng')} aria-label={t('Tìm trong nhật ký')} />
+            <button type="button" className="clr" aria-label={t('Xóa từ khóa')} onClick={() => setQ('')}><Icon name="x" /></button>
+          </div>
+          <CustomSelect
+            value={res}
+            onChange={setRes}
+            options={[
+              { value: '', label: t('Mọi kết quả') },
+              { value: 'ok', label: t('Thành công') },
+              { value: 'fail', label: t('Thất bại') },
+            ]}
+            ariaLabel={t('Lọc theo kết quả')}
+          />
         </div>
         <Async state={data} notReadyText={t('Backend chưa có API nhật ký hệ thống (đề xuất GET /api/v1/admin/audit-logs). Màn hình sẽ hiện dữ liệu khi API được triển khai.')}>
           {rows.length ? (

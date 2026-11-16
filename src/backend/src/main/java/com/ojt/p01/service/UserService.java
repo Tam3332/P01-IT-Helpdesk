@@ -2,6 +2,7 @@ package com.ojt.p01.service;
 
 import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.dto.request.AdminCreateUserRequest;
+import com.ojt.p01.dto.request.AdminUpdateUserRequest;
 import com.ojt.p01.dto.response.PageResponse;
 import com.ojt.p01.dto.response.UserResponse;
 import com.ojt.p01.entity.Role;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -32,15 +34,18 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final AuditLogger auditLogger;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     public UserService(UserRepository userRepository,
                        RoleRepository roleRepository,
                        AuditLogger auditLogger,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       AuthService authService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.auditLogger = auditLogger;
         this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
     }
 
     /**
@@ -183,8 +188,55 @@ public class UserService {
         user.setMustChangePassword(true);
         User updated = userRepository.save(user);
 
+        // Giải phóng giới hạn đổi mật khẩu trong ngày cho user
+        authService.resetPasswordChangeLimit(userId);
+
         auditLogger.log("ADMIN_RESET_PASSWORD", currentUser != null ? currentUser.getId() : null, "ADMIN", "USER",
                 String.valueOf(user.getId()), "RESET_PASSWORD", "SUCCESS", 200);
+
+        return UserResponse.from(updated);
+    }
+
+    /**
+     * Cập nhật thông tin chi tiết người dùng (Admin only).
+     */
+    @Transactional
+    public UserResponse updateUser(Long userId, AdminUpdateUserRequest request) {
+        User currentUser = getCurrentUser();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (request != null) {
+            if (request.fullName() != null && !request.fullName().trim().isBlank()) {
+                user.setFullName(request.fullName().trim());
+            }
+            if (request.phone() != null) {
+                user.setPhone(request.phone().trim());
+            }
+            if (request.department() != null) {
+                user.setDepartment(request.department().trim());
+            }
+            if (request.role() != null && !request.role().trim().isBlank()) {
+                if (currentUser != null && currentUser.getId().equals(userId) && !request.role().trim().equalsIgnoreCase(user.getRole().getRoleName())) {
+                    throw new AppException(ErrorCode.FORBIDDEN, "Không thể tự thay đổi vai trò của chính mình");
+                }
+                Role role = roleRepository.findByRoleName(request.role().trim().toUpperCase())
+                        .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+                user.setRole(role);
+            }
+            if (request.isActive() != null) {
+                if (currentUser != null && currentUser.getId().equals(userId) && Boolean.FALSE.equals(request.isActive())) {
+                    throw new AppException(ErrorCode.FORBIDDEN, "Không thể tự khóa tài khoản của chính mình");
+                }
+                user.setIsActive(request.isActive());
+            }
+        }
+
+        user.setUpdatedAt(OffsetDateTime.now());
+        User updated = userRepository.save(user);
+
+        auditLogger.log("USER_UPDATED", currentUser != null ? currentUser.getId() : null, "ADMIN", "USER",
+                String.valueOf(user.getId()), "UPDATE", "SUCCESS", 200);
 
         return UserResponse.from(updated);
     }

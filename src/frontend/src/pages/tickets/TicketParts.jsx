@@ -199,19 +199,37 @@ function historyText(h, nameOf) {
   if (h.action === 'FEEDBACK' || h.fieldChanged === 'feedback') {
     return t('Đánh giá chất lượng hỗ trợ ({v})', { v: h.newValue || t('Hoàn tất') })
   }
-  if (h.action === 'REOPEN') {
+  if (h.action === 'REOPEN' || h.action === 'REOPEN_REQUEST') {
     return t('Yêu cầu mở lại ticket')
   }
+  if (h.action === 'REOPEN_APPROVE') {
+    return t('Đồng ý mở lại ticket')
+  }
+  if (h.action === 'REOPEN_REJECT') {
+    return t('Từ chối yêu cầu mở lại')
+  }
 
-  // Trường hợp phân công người xử lý: map ID thành tên người dùng
+  // Trường hợp phân công người xử lý: map ID thành tên người dùng gọn gàng
   if (h.fieldChanged === 'current_assignee_id' || h.fieldChanged === 'currentAssigneeId') {
-    const oldName = h.oldValue && nameOf ? nameOf(Number(h.oldValue), h.oldValueLabel) : (h.oldValue ? t('Người dùng #{id}', { id: h.oldValue }) : t('Chưa phân công'))
+    const oldName = h.oldValue && nameOf ? nameOf(Number(h.oldValue), h.oldValueLabel) : (h.oldValue ? t('Người dùng #{id}', { id: h.oldValue }) : null)
     const newName = h.newValue && nameOf ? nameOf(Number(h.newValue), h.newValueLabel) : (h.newValue ? t('Người dùng #{id}', { id: h.newValue }) : t('Chưa phân công'))
-    return `${actionName} · ${t('Người xử lý')}: ${oldName} → ${newName}`
+    if (!oldName || h.action === 'ASSIGN') {
+      return t('Phân công cho {name}', { name: newName })
+    }
+    return t('Phân công lại: {old} → {new}', { old: oldName, new: newName })
   }
 
   // Trường hợp đổi trạng thái: hiển thị label tiếng Việt
   if (h.fieldChanged === 'status') {
+    if (h.oldValue === 'REOPEN_PENDING' && h.newValue === 'RESOLVED') {
+      return t('Từ chối yêu cầu mở lại')
+    }
+    if (h.oldValue === 'REOPEN_PENDING' && h.newValue === 'REOPENED') {
+      return t('Đồng ý mở lại ticket')
+    }
+    if (h.oldValue === 'RESOLVED' && h.newValue === 'REOPEN_PENDING') {
+      return t('Yêu cầu mở lại ticket')
+    }
     const oldSt = t(STATUS[h.oldValue]?.label || h.oldValue || '—')
     const newSt = t(STATUS[h.newValue]?.label || h.newValue || '—')
     return `${t('Đổi trạng thái')}: ${oldSt} → ${newSt}`
@@ -244,7 +262,9 @@ export function HistoryCard({ ticketRef, nameOf, refreshKey }) {
                   <i />
                   <div>
                     <div style={{ fontWeight: 600 }}>{historyText(h, nameOf)}</div>
-                    {h.reasonOrNote && <div className="sm muted" style={{ overflowWrap: 'anywhere' }}>{h.reasonOrNote}</div>}
+                    {h.reasonOrNote && h.reasonOrNote !== 'Tạo mới ticket' && h.action !== 'CREATE' && (
+                      <div className="sm muted" style={{ overflowWrap: 'anywhere' }}>{h.reasonOrNote}</div>
+                    )}
                     <div className="sm muted who"><span className="av xs" style={avatarStyle(nameOf(h.actorId, h.actorName))}>{initials(nameOf(h.actorId, h.actorName))}</span>{nameOf(h.actorId, h.actorName)} · {fmtDateTime(h.timestamp)}</div>
                   </div>
                 </li>

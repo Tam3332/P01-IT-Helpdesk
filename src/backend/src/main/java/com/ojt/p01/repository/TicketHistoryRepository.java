@@ -30,15 +30,19 @@ public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Lo
     List<TicketHistory> findNotificationsForStaff(@Param("userIdStr") String userIdStr, Pageable pageable);
 
  /**
- * 2. Thông báo cho EMPLOYEE: Chỉ hiện ticket khi chuyển sang trạng thái RESOLVED (Staff nhấn Submit giải quyết).
+ * 2. Thông báo cho EMPLOYEE: Nhận các biến động quan trọng của vé do mình tạo:
+ *    - Phân công kỹ thuật viên (ASSIGN / REASSIGN)
+ *    - Trạng thái thay đổi (ASSIGNED, IN_PROGRESS, RESOLVED, REOPEN_PENDING, REOPENED, CLOSED)
  */
     @Query("SELECT h FROM TicketHistory h " +
            "JOIN FETCH h.ticket t " +
            "JOIN FETCH h.actor a " +
            "WHERE t.requester.id = :userId " +
-           "  AND h.fieldChanged = 'status' " +
-           "  AND h.newValue = 'RESOLVED' " +
-           "  AND a.id != :userId " +
+           "  AND ( " +
+           "      (h.action = 'CREATE') " +
+           "   OR (h.fieldChanged = 'current_assignee_id' AND (h.action = 'ASSIGN' OR h.action = 'REASSIGN')) " +
+           "   OR (h.fieldChanged = 'status' AND (h.newValue IN ('NEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPEN_PENDING', 'REOPENED', 'CLOSED') OR h.action IN ('CREATE', 'REOPEN_REQUEST', 'REOPEN_APPROVE', 'REOPEN_REJECT', 'CLOSE'))) " +
+           "  ) " +
            "ORDER BY h.timestamp DESC")
     List<TicketHistory> findNotificationsForEmployee(@Param("userId") Long userId, Pageable pageable);
 
@@ -49,7 +53,10 @@ public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Lo
            "JOIN FETCH h.ticket t " +
            "JOIN FETCH h.actor a " +
            "WHERE h.action = 'CREATE' " +
+           "   OR h.action = 'REOPEN_REQUEST' " +
            "   OR h.action = 'REOPEN' " +
+           "   OR h.action = 'REOPEN_APPROVE' " +
+           "   OR h.action = 'REOPEN_REJECT' " +
            "   OR (h.fieldChanged = 'status' AND (h.newValue = 'REOPENED' OR h.newValue = 'REOPEN_PENDING')) " +
            "ORDER BY h.timestamp DESC")
     List<TicketHistory> findNotificationsForManager(Pageable pageable);

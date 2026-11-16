@@ -53,6 +53,10 @@ export default function ChangePasswordPage() {
   const { user, reloadUser } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
+  const todayKey = `hd_pwd_changes_${user?.id}_${new Date().toISOString().slice(0, 10)}`
+  const [changeCount, setChangeCount] = useState(() => Number(localStorage.getItem(todayKey) || 0))
+  const isLimitReached = changeCount >= 3
+
   const [form, setForm] = useState(EMPTY)
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
@@ -80,7 +84,7 @@ export default function ChangePasswordPage() {
 
   const submit = async (ev) => {
     ev.preventDefault()
-    if (busy) return
+    if (busy || isLimitReached) return
     const e = validate()
     setErrors(e)
     setFormError('')
@@ -88,6 +92,11 @@ export default function ChangePasswordPage() {
     setBusy(true)
     try {
       await changePassword(form.current, form.next)
+      const nextCount = changeCount + 1
+      setChangeCount(nextCount)
+      try {
+        localStorage.setItem(todayKey, String(nextCount))
+      } catch {}
       toast(t('Đã đổi mật khẩu.'))
       try {
         await reloadUser() // gỡ yêu cầu bắt buộc đổi mật khẩu nếu có
@@ -110,6 +119,21 @@ export default function ChangePasswordPage() {
           <div className="grow">{t('Quản trị viên vừa cấp lại mật khẩu cho bạn. Hãy đặt mật khẩu mới để tiếp tục sử dụng hệ thống.')}</div>
         </div>
       )}
+      {isLimitReached ? (
+        <div className="banner bad" role="alert" style={{ marginBottom: 16 }}>
+          <Icon name="alert" />
+          <div className="grow">
+            <b>{t('Đã đạt giới hạn đổi mật khẩu trong ngày:')}</b> {t('Mỗi tài khoản chỉ được tự đổi mật khẩu tối đa 3 lần/ngày. Nếu muốn đổi lại, vui lòng liên hệ Quản trị viên (Admin) để được cấp lại.')}
+          </div>
+        </div>
+      ) : (
+        <div className="banner info" style={{ marginBottom: 16 }}>
+          <Icon name="info" />
+          <div className="grow">
+            {t('Chính sách bảo mật: Bạn được tự đổi mật khẩu tối đa 3 lần/ngày (Hôm nay đã đổi: {n}/3 lần).', { n: changeCount })}
+          </div>
+        </div>
+      )}
       <form className="card pw-card" onSubmit={submit} noValidate>
         <div className="pw-head">
           <span className="pf-ico lg"><Icon name="lock" /></span>
@@ -124,32 +148,34 @@ export default function ChangePasswordPage() {
             <div className="grow">{formError}</div>
           </div>
         )}
-        <PasswordInput id="pf-current" label={t('Mật khẩu hiện tại')} auto="current-password" value={form.current} onChange={set('current')} error={errors.current} />
-        <hr className="pw-sep" />
-        <PasswordInput id="pf-next" label={t('Mật khẩu mới')} auto="new-password" value={form.next} onChange={set('next')} error={errors.next}>
-          <div className="pw-meter" aria-live="polite">
-            <div className={`pw-segs l${level}`}>
-              <i /><i /><i /><i />
+        <fieldset disabled={isLimitReached} style={{ border: 'none', padding: 0, margin: 0 }}>
+          <PasswordInput id="pf-current" label={t('Mật khẩu hiện tại')} auto="current-password" value={form.current} onChange={set('current')} error={errors.current} />
+          <hr className="pw-sep" />
+          <PasswordInput id="pf-next" label={t('Mật khẩu mới')} auto="new-password" value={form.next} onChange={set('next')} error={errors.next}>
+            <div className="pw-meter" aria-live="polite">
+              <div className={`pw-segs l${level}`}>
+                <i /><i /><i /><i />
+              </div>
+              <span className="sm muted">{form.next ? t('Độ mạnh: {l}', { l: t(LEVELS[level] || 'Yếu') }) : t('Mật khẩu dài và đa dạng ký tự sẽ khó đoán hơn.')}</span>
             </div>
-            <span className="sm muted">{form.next ? t('Độ mạnh: {l}', { l: t(LEVELS[level] || 'Yếu') }) : t('Mật khẩu dài và đa dạng ký tự sẽ khó đoán hơn.')}</span>
-          </div>
-        </PasswordInput>
-        <PasswordInput id="pf-confirm" label={t('Nhập lại mật khẩu mới')} auto="new-password" value={form.confirm} onChange={set('confirm')} error={errors.confirm} />
-        <ul className="pw-rules">
-          {rules.map(([text, ok]) => (
-            <li key={text} className={ok ? 'ok' : ''}>
-              <Icon name={ok ? 'check' : 'info'} />
-              {text}
-            </li>
-          ))}
-        </ul>
+          </PasswordInput>
+          <PasswordInput id="pf-confirm" label={t('Nhập lại mật khẩu mới')} auto="new-password" value={form.confirm} onChange={set('confirm')} error={errors.confirm} />
+          <ul className="pw-rules">
+            {rules.map(([text, ok]) => (
+              <li key={text} className={ok ? 'ok' : ''}>
+                <Icon name={ok ? 'check' : 'info'} />
+                {text}
+              </li>
+            ))}
+          </ul>
+        </fieldset>
         <div className="pw-acts">
           {!user.mustChangePassword && (
             <button type="button" className="btn" onClick={() => navigate(profilePath(user.role))} disabled={busy}>
               {t('Hủy')}
             </button>
           )}
-          <button className="btn pri" type="submit" disabled={busy} aria-busy={busy}>
+          <button className="btn pri" type="submit" disabled={busy || isLimitReached} aria-busy={busy}>
             {busy ? t('Đang xử lý...') : t('Lưu mật khẩu mới')}
           </button>
         </div>

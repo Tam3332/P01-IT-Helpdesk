@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Icon from '@/components/Icon'
 import PageHeader from '@/components/PageHeader'
 import FilePicker from '@/components/FilePicker'
+import CustomSelect from '@/components/CustomSelect'
 import { Async } from '@/components/StateViews'
 import { Field } from '@/components/Modal'
 import { useToast } from '@/context/ToastContext'
@@ -67,6 +68,10 @@ export default function CreateTicketPage() {
     }
     toast(t('Đã tạo ticket {n}.', { n: ticket.ticketNumber ?? '' }).replace(' .', '.'))
     if (failed.length) toast(`${t('Có tệp chưa tải lên được.')} ${failed.join(' ')}`, 'err')
+    try {
+      window.dispatchEvent(new Event('ticket_created'))
+      window.dispatchEvent(new Event('ticket_updated'))
+    } catch {}
     navigate(`/employee/tickets/${encodeURIComponent(ref)}`, { replace: true })
   }
 
@@ -81,15 +86,24 @@ export default function CreateTicketPage() {
             </Field>
             <div className="row2">
               <Field label={t('Danh mục')} required htmlFor="f-cat" error={errors.categoryId}>
-                <select className="sel" id="f-cat" value={f.categoryId} onChange={set('categoryId')}>
-                  <option value="">{t('Chọn danh mục')}</option>
-                  {(cats.data || []).map((c) => <option key={c.id} value={c.id}>{c.categoryName}</option>)}
-                </select>
+                <CustomSelect
+                  value={f.categoryId}
+                  onChange={(val) => setF((prev) => ({ ...prev, categoryId: val }))}
+                  placeholder={t('Chọn danh mục')}
+                  options={[
+                    { value: '', label: t('Chọn danh mục') },
+                    ...(cats.data || []).map((c) => ({ value: c.id, label: c.categoryName })),
+                  ]}
+                  ariaLabel={t('Chọn danh mục')}
+                />
               </Field>
               <Field label={t('Mức độ ảnh hưởng')} htmlFor="f-imp" hint={t('IT Manager sẽ chốt mức ưu tiên chính thức khi phân công.')}>
-                <select className="sel" id="f-imp" value={f.impactLevel} onChange={set('impactLevel')}>
-                  {PRIORITY_KEYS.map((p) => <option key={p} value={p}>{t(PRIORITY[p].label)}</option>)}
-                </select>
+                <CustomSelect
+                  value={f.impactLevel}
+                  onChange={(val) => setF((prev) => ({ ...prev, impactLevel: val }))}
+                  options={PRIORITY_KEYS.map((p) => ({ value: p, label: t(PRIORITY[p].label) }))}
+                  ariaLabel={t('Mức độ ảnh hưởng')}
+                />
               </Field>
             </div>
             <Field label={t('Mô tả chi tiết')} required htmlFor="f-desc" error={errors.description} hint={t('{n}/{max} ký tự', { n: f.description.length, max: LIMITS.description })}>

@@ -133,7 +133,13 @@ export default function MainLayout() {
         </nav>
         <div className="sbfoot">
           <button type="button" className="who" aria-current={isProfile || isPassword ? 'page' : undefined} title={t(PROFILE_LABEL)} onClick={() => navigate(profile)}>
-            <div className="av" style={avatarStyle(user.fullName)}>{initials(user.fullName)}</div>
+            <div className="av" style={user.avatarUrl ? { padding: 0, overflow: 'hidden' } : avatarStyle(user.fullName)}>
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              ) : (
+                initials(user.fullName)
+              )}
+            </div>
             <div style={{ minWidth: 0 }}>
               <b style={{ display: 'block', fontSize: 13 }}>{user.fullName}</b>
               <span className="sm muted" style={{ overflowWrap: 'anywhere' }}>

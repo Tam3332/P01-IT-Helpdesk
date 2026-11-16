@@ -33,8 +33,15 @@ export default function NotificationBell() {
 
   useEffect(() => {
     fetchItems()
-    const timer = setInterval(fetchItems, 30000) // Polling nhẹ mỗi 30s
-    return () => clearInterval(timer)
+    const timer = setInterval(fetchItems, 10000) // Polling 10s
+    const handleRefresh = () => fetchItems()
+    window.addEventListener('ticket_created', handleRefresh)
+    window.addEventListener('ticket_updated', handleRefresh)
+    return () => {
+      clearInterval(timer)
+      window.removeEventListener('ticket_created', handleRefresh)
+      window.removeEventListener('ticket_updated', handleRefresh)
+    }
   }, [user])
 
   // Đóng khi click ngoài
@@ -91,8 +98,78 @@ export default function NotificationBell() {
   const handleClickItem = (item) => {
     markAsRead(item.id)
     setOpen(false)
+    if (user.role === 'ADMIN') {
+      if (item.ticketNumber?.startsWith('SEC-')) {
+        navigate('/admin/audit-logs')
+        return
+      }
+      if (item.ticketNumber?.startsWith('USER-')) {
+        navigate('/admin/users')
+        return
+      }
+    }
+    if (user.role === 'IT_MANAGER') {
+      if (item.status === 'REOPEN_PENDING' || item.action === 'REOPEN_REQUEST') {
+        navigate('/manager/reopen-requests')
+        return
+      }
+    }
     const base = `${ROLE_HOME[user.role]}/tickets`
     navigate(`${base}/${encodeURIComponent(item.ticketNumber)}`)
+  }
+
+  const handleToggle = () => {
+    setOpen((prev) => {
+      const next = !prev
+      if (next) fetchItems()
+      return next
+    })
+  }
+
+  const getActionText = (item) => {
+    if (item.action === 'SLA_BREACH' || item.status === 'BREACHED') {
+      return t('⚠️ Vi phạm cam kết SLA')
+    }
+    if (item.action === 'CRITICAL_ALERT') {
+      return t('🚨 Sự cố mức ưu tiên cao')
+    }
+    if (item.status === 'NEW' || item.action === 'TICKET_CREATED' || item.action === 'CREATE') {
+      if (user.role === 'EMPLOYEE') {
+        return t('Gửi yêu cầu hỗ trợ thành công')
+      }
+      return item.actorName ? t('Yêu cầu mới từ {name} · Chờ phân công', { name: item.actorName }) : t('Yêu cầu mới · Chờ phân công')
+    }
+    if (item.action?.includes('AUTHZ_DENIED')) {
+      return t('🔒 Cảnh báo truy cập trái phép')
+    }
+    if (item.action?.includes('LOGIN_FAILED')) {
+      return t('🔒 Đăng nhập thất bại')
+    }
+    if (item.action?.includes('USER_CREATED') || item.action?.includes('PASSWORD') || item.action?.includes('ROLE')) {
+      return t('👤 Quản lý người dùng hệ thống')
+    }
+    if (item.status === 'ASSIGNED' || item.action === 'ASSIGN' || item.action === 'REASSIGN') {
+      return item.actorName ? t('Phân công bởi {name}', { name: item.actorName }) : t('Đã phân công kỹ thuật viên')
+    }
+    if (item.status === 'REOPEN_PENDING' || item.action === 'REOPEN_REQUEST') {
+      return t('Chờ quản lý duyệt mở lại')
+    }
+    if (item.status === 'REOPEN_APPROVED' || item.action === 'REOPEN_APPROVE' || item.status === 'REOPENED') {
+      return item.actorName ? t('Đồng ý mở lại bởi {name}', { name: item.actorName }) : t('Yêu cầu mở lại đã được duyệt')
+    }
+    if (item.status === 'REOPEN_REJECTED' || item.action === 'REOPEN_REJECT') {
+      return item.actorName ? t('Từ chối mở lại bởi {name}', { name: item.actorName }) : t('Yêu cầu mở lại bị từ chối')
+    }
+    if (item.status === 'IN_PROGRESS') {
+      return item.actorName ? t('Xử lý bởi {name}', { name: item.actorName }) : t('Kỹ thuật viên đang xử lý')
+    }
+    if (item.status === 'RESOLVED') {
+      return item.actorName ? t('Giải quyết bởi {name}', { name: item.actorName }) : t('Đã giải quyết')
+    }
+    if (item.status === 'CLOSED') {
+      return t('Ticket đã hoàn tất đóng')
+    }
+    return ''
   }
 
   return (
@@ -102,7 +179,7 @@ export default function NotificationBell() {
         className="iconbtn"
         aria-label={t('Thông báo')}
         title={t('Thông báo cập nhật vé')}
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={handleToggle}
         style={{
           position: 'relative',
           display: 'inline-flex',
@@ -248,7 +325,19 @@ export default function NotificationBell() {
                       >
                         {item.ticketNumber}
                       </span>
-                      <StatusBadge status={item.status} />
+                      {item.status === 'BREACHED' ? (
+                        <span className="badge s-breach">{t('Quá hạn')}</span>
+                      ) : item.status === 'CRITICAL' ? (
+                        <span className="badge p-critical">{t('Nghiêm trọng')}</span>
+                      ) : item.status === 'HIGH' ? (
+                        <span className="badge p-high">{t('Cao')}</span>
+                      ) : item.status === 'REOPEN_REJECTED' || item.action === 'REOPEN_REJECT' ? (
+                        <span className="badge s-breach">{t('Từ chối')}</span>
+                      ) : item.status === 'REOPEN_APPROVED' || item.action === 'REOPEN_APPROVE' ? (
+                        <span className="badge s-reopened">{t('Đồng ý')}</span>
+                      ) : (
+                        <StatusBadge status={item.status} />
+                      )}
                     </div>
                     <div
                       style={{
@@ -269,13 +358,24 @@ export default function NotificationBell() {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'flex-end',
+                        justifyContent: 'space-between',
                         fontSize: 11,
                         color: 'var(--faint)',
                         marginTop: 2,
+                        gap: 8,
                       }}
                     >
-                      <span>{fmtDateTime(item.timestamp)}</span>
+                      <span
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          maxWidth: '65%',
+                        }}
+                      >
+                        {getActionText(item)}
+                      </span>
+                      <span style={{ flexShrink: 0 }}>{fmtDateTime(item.timestamp)}</span>
                     </div>
                   </div>
                 )

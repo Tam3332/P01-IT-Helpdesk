@@ -21,8 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Logic đăng nhập (Task C2).
@@ -46,6 +51,10 @@ public class AuthService {
  */
     private static final String DUMMY_HASH =
             "$2b$12$gLmxogPMpfdQi1/FvfnB3ePHKmjWKk93/7IAPDLHzAI61Y/xedzzO";
+
+    // Giới hạn đổi mật khẩu: tối đa 3 lần/ngày mỗi tài khoản (bảo vệ tài khoản, chống brute-force / lạm dụng)
+    private static final int MAX_PASSWORD_CHANGES_PER_DAY = 3;
+    private final Map<Long, List<OffsetDateTime>> passwordChangeTracker = new ConcurrentHashMap<>();
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -151,6 +160,17 @@ public class AuthService {
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : null;
 
+        // 0. Kiểm tra số lần đổi mật khẩu trong ngày hôm nay (tối đa 3 lần/ngày)
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime startOfDay = now.truncatedTo(ChronoUnit.DAYS);
+        List<OffsetDateTime> history = passwordChangeTracker.computeIfAbsent(user.getId(), k -> new CopyOnWriteArrayList<>());
+        long countToday = history.stream().filter(t -> !t.isBefore(startOfDay)).count();
+        if (countToday >= MAX_PASSWORD_CHANGES_PER_DAY) {
+            auditLogger.log("PASSWORD_CHANGE_LIMIT_EXCEEDED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "FAILURE", 429);
+            throw new AppException(ErrorCode.VALIDATION_FAILED,
+                    "Bạn đã đổi mật khẩu 3 lần trong ngày hôm nay. Nếu muốn đổi lại, vui lòng liên hệ Quản trị viên (Admin) để được hỗ trợ cấp lại.");
+        }
+
         // 1. So khớp mật khẩu hiện tại
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
             auditLogger.log("PASSWORD_CHANGE_FAILED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "FAILURE", 400);
@@ -168,7 +188,19 @@ public class AuthService {
         user.setMustChangePassword(false);
         userRepository.save(user);
 
+        // Ghi nhận lần đổi mật khẩu thành công vào tracker trong ngày
+        history.add(now);
+
         // 4. Ghi Audit Log an toàn
         auditLogger.log("PASSWORD_CHANGED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "SUCCESS", 200);
+    }
+
+    /**
+     * Quản trị viên đặt lại mật khẩu cho người dùng -> xóa giới hạn đổi mật khẩu trong ngày của người dùng đó.
+     */
+    public void resetPasswordChangeLimit(Long userId) {
+        if (userId != null) {
+            passwordChangeTracker.remove(userId);
+        }
     }
 }
