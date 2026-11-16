@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import Loading from '@/components/Loading'
 import { useAuth } from '@/context/AuthContext'
+import { t } from '@/i18n'
 import { ROLE_HOME } from '@/config/constants'
 import ForbiddenPage from '@/pages/common/ForbiddenPage'
 
@@ -9,7 +10,7 @@ import ForbiddenPage from '@/pages/common/ForbiddenPage'
 export function RequireAuth() {
   const { user, ready } = useAuth()
   const location = useLocation()
-  if (!ready) return <Loading text="Đang kiểm tra phiên đăng nhập..." />
+  if (!ready) return <Loading text={t('Đang kiểm tra phiên đăng nhập...')} />
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
   return <Outlet />
 }
@@ -22,7 +23,7 @@ export function RequireRole({ role }) {
 // /login khi đã đăng nhập -> về trang chủ của vai trò
 export function RedirectIfAuthed({ children }) {
   const { user, ready } = useAuth()
-  if (!ready) return <Loading text="Đang kiểm tra phiên đăng nhập..." />
+  if (!ready) return <Loading text={t('Đang kiểm tra phiên đăng nhập...')} />
   return user ? <Navigate to={ROLE_HOME[user.role]} replace /> : children
 }
 

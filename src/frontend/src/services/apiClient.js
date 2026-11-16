@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { API_BASE_URL, STORAGE_KEYS } from '@/config/constants'
 import { LIMITS } from '@/config/domain'
+import { t } from '@/i18n'
 import { emitForbidden, emitUnauthorized } from './authEvents'
 
 const api = axios.create({ baseURL: API_BASE_URL, timeout: 15000 })
@@ -34,8 +35,8 @@ export function unwrap(res) {
 }
 
 // Lấy thông điệp lỗi từ cả hai kiểu: { error: { code, message, details } } hoặc { code, message }
-export function apiError(err, fallback = 'Đã xảy ra lỗi. Vui lòng thử lại.') {
-  if (!err?.response) return 'Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.'
+export function apiError(err, fallback = t('Đã xảy ra lỗi. Vui lòng thử lại.')) {
+  if (!err?.response) return t('Không kết nối được máy chủ. Vui lòng kiểm tra mạng và thử lại.')
   const body = err.response.data
   const e = body?.error
   const details = Array.isArray(e?.details) ? e.details : body?.data && typeof body.data === 'object' && !Array.isArray(body.data) ? Object.values(body.data) : []
@@ -44,8 +45,8 @@ export function apiError(err, fallback = 'Đã xảy ra lỗi. Vui lòng thử l
   if (msg) return msg
   // Nginx chặn trước khi tới backend và trả trang HTML (không có JSON), nên đọc theo mã HTTP
   const status = err.response.status
-  if (status === 413) return `Tệp hoặc yêu cầu quá lớn. Mỗi tệp tối đa ${LIMITS.maxFileBytes / 1048576} MB.`
-  if (status === 429) return 'Bạn thao tác quá nhanh hoặc quá nhiều lần. Vui lòng đợi một lúc rồi thử lại.'
+  if (status === 413) return t('Tệp hoặc yêu cầu quá lớn. Mỗi tệp tối đa {n} MB.', { n: LIMITS.maxFileBytes / 1048576 })
+  if (status === 429) return t('Bạn thao tác quá nhanh hoặc quá nhiều lần. Vui lòng đợi một lúc rồi thử lại.')
   return fallback
 }
 
