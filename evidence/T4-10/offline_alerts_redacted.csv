@@ -1,0 +1,3 @@
+﻿"rule_id","severity","event_count","window_seconds","first_event_at","last_event_at"
+"R1_BRUTE_FORCE_LOGIN","HIGH","5","300","2026-11-05T09:00:00Z","2026-11-05T09:04:00Z"
+"R2_UNAUTHORIZED_TICKET_ACCESS","MEDIUM","3","300","2026-11-05T09:10:00Z","2026-11-05T09:12:00Z"

@@ -1,0 +1,23 @@
+﻿Task: T4-03 / SEC-TC-HD-04
+Phase: BEFORE - offline replay from real lab logs
+Date: 2026-11-14 04:45:24
+Repository commit: a868b63
+Lab source build: v0.4-week4 (a378fdb)
+Input: evidence/T4-02/audit_events_lab_20261112.txt
+Audit events: 33
+Skipped: 0
+Total alerts: 3
+R1 alerts: 0
+R2 alerts: 3
+R2 threshold: 3 events / 300 seconds
+Status: OFFLINE REPLAY VERIFIED
+Limitations: Monitoring sidecar on VM not verified; full SEC-TC-HD-04 pending.
+AUTHZ_DENIED total: 31
+R2 qualifying ticket denials: 21
+Non-qualifying AUTHZ_DENIED: 10
+R2 alerts correspond to 3 distinct actors
+REOPEN_REQUESTED: 1
+REOPEN_REJECTED: 1
+R1 was not exercised by this input dataset
+Evidence: EV-HD-24 BEFORE (supporting offline replay)
+Full lab integration and AFTER retest: pending

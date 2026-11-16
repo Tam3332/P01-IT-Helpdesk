@@ -1,0 +1,5 @@
+﻿"Test","Expected","Actual","Result"
+"LOGIN_SUCCESS","200","200","PASS"
+"ME_VALID_TOKEN","200","200","PASS"
+"LOGOUT","200","200","PASS"
+"ME_REVOKED_TOKEN","401","401","PASS"
