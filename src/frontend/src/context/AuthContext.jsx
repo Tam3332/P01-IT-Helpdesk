@@ -3,6 +3,7 @@ import { ROLES, STORAGE_KEYS } from '@/config/constants'
 import * as authService from '@/services/authService'
 import { onUnauthorized } from '@/services/authEvents'
 import { getTokenExpiryMs } from '@/utils/jwt'
+import { t } from '@/i18n'
 
 const AuthContext = createContext(null)
 const VALID_ROLES = Object.values(ROLES)
@@ -28,7 +29,7 @@ const clearSession = () => {
   sessionStorage.removeItem(STORAGE_KEYS.expiresAt)
 }
 
-export const SESSION_EXPIRED_MSG = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+const sessionExpiredMsg = () => t('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -50,8 +51,8 @@ export function AuthProvider({ children }) {
       const exp = getTokenExpiryMs(token)
       if (!exp) return
       const wait = exp - Date.now()
-      if (wait <= 0) return endSession(SESSION_EXPIRED_MSG)
-      timer.current = setTimeout(() => endSession(SESSION_EXPIRED_MSG), Math.min(wait, 2 ** 31 - 1))
+      if (wait <= 0) return endSession(sessionExpiredMsg())
+      timer.current = setTimeout(() => endSession(sessionExpiredMsg()), Math.min(wait, 2 ** 31 - 1))
     },
     [endSession],
   )
@@ -83,7 +84,7 @@ export function AuthProvider({ children }) {
   }, [armExpiry])
 
   // API trả 401 ở bất kỳ đâu -> kết thúc phiên
-  useEffect(() => onUnauthorized(() => endSession(SESSION_EXPIRED_MSG)), [endSession])
+  useEffect(() => onUnauthorized(() => endSession(sessionExpiredMsg())), [endSession])
 
   const login = useCallback(
     async (email, password) => {
@@ -92,7 +93,7 @@ export function AuthProvider({ children }) {
       try {
         // Ưu tiên user trong LoginResponse, thiếu thì hỏi /auth/me
         const nu = normalizeUser(res.user) ?? normalizeUser(await authService.fetchMe())
-        if (!VALID_ROLES.includes(nu?.role)) throw new Error('Tài khoản chưa được gán vai trò hợp lệ.')
+        if (!VALID_ROLES.includes(nu?.role)) throw Object.assign(new Error(t('Tài khoản chưa được gán vai trò hợp lệ.')), { local: true })
         setUser(nu)
         setNotice('')
         armExpiry(res.accessToken)

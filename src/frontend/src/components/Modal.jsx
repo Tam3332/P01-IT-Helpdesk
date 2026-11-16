@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon'
+import { t } from '@/i18n'
 
 // Hộp thoại theo prototype. onOk có thể async; ném Error(message) để hiện lỗi trong hộp thoại,
 // trả về false để giữ hộp thoại mở, còn lại coi như thành công và gọi onClose.
-export default function Modal({ title, children, okText = 'Xác nhận', cancelText = 'Hủy', okClass = 'pri', wide, onOk, onClose }) {
+export default function Modal({ title, children, okText = t('Xác nhận'), cancelText = t('Hủy'), okClass = 'pri', wide, onOk, onClose }) {
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
   const box = useRef(null)
@@ -24,7 +25,7 @@ export default function Modal({ title, children, okText = 'Xác nhận', cancelT
       const r = await onOk?.()
       if (r !== false) onClose()
     } catch (e) {
-      setErr(e?.message || 'Không thể thực hiện. Vui lòng thử lại.')
+      setErr(e?.message || t('Không thể thực hiện. Vui lòng thử lại.'))
     } finally {
       setBusy(false)
     }
@@ -35,7 +36,7 @@ export default function Modal({ title, children, okText = 'Xác nhận', cancelT
       <div className={`modal ${wide ? 'wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} ref={box}>
         <header>
           <h2>{title}</h2>
-          <button type="button" className="iconbtn" aria-label="Đóng" onClick={onClose} disabled={busy}>
+          <button type="button" className="iconbtn" aria-label={t('Đóng')} onClick={onClose} disabled={busy}>
             <Icon name="x" />
           </button>
         </header>
@@ -52,7 +53,7 @@ export default function Modal({ title, children, okText = 'Xác nhận', cancelT
             {cancelText}
           </button>
           <button type="button" data-ok className={`btn ${okClass}`} onClick={submit} disabled={busy}>
-            {busy ? 'Đang xử lý...' : okText}
+            {busy ? t('Đang xử lý...') : okText}
           </button>
         </footer>
       </div>

@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import Icon from './Icon'
 import { ALLOWED_EXT, LIMITS } from '@/config/domain'
 import { humanSize } from '@/utils/sla'
+import { t } from '@/i18n'
 
 // Kiểm tra tệp phía giao diện theo SRS HD04: ≤ 5 tệp, ≤ 10 MB, đuôi trong danh sách cho phép.
 // Backend vẫn kiểm tra lại (MIME, kích thước, SHA-256).
@@ -10,9 +11,9 @@ export function validateFiles(incoming, existingCount = 0) {
   const errs = []
   for (const f of incoming) {
     const ext = f.name.split('.').pop().toLowerCase()
-    if (existingCount + ok.length >= LIMITS.maxFiles) errs.push(`Tối đa ${LIMITS.maxFiles} tệp mỗi ticket.`)
-    else if (!ALLOWED_EXT.includes(ext)) errs.push(`"${f.name}": định dạng không được hỗ trợ.`)
-    else if (f.size > LIMITS.maxFileBytes) errs.push(`"${f.name}": vượt quá 10 MB.`)
+    if (existingCount + ok.length >= LIMITS.maxFiles) errs.push(t('Tối đa {n} tệp mỗi ticket.', { n: LIMITS.maxFiles }))
+    else if (!ALLOWED_EXT.includes(ext)) errs.push(t('"{name}": định dạng không được hỗ trợ.', { name: f.name }))
+    else if (f.size > LIMITS.maxFileBytes) errs.push(t('"{name}": vượt quá 10 MB.', { name: f.name }))
     else ok.push(f)
   }
   return { ok, errors: [...new Set(errs)] }
@@ -27,11 +28,11 @@ export default function FilePicker({ files, onChange, error }) {
   }
   return (
     <div className={`field ${error ? 'has-err' : ''}`}>
-      <span className="lbl">Tệp đính kèm</span>
+      <span className="lbl">{t('Tệp đính kèm')}</span>
       <label className="drop" htmlFor="f-files">
         <Icon name="upload" />
-        <b style={{ color: 'var(--text)' }}>Bấm để chọn tệp</b>
-        <span className="sm">Tối đa {LIMITS.maxFiles} tệp, mỗi tệp ≤ 10 MB ({ALLOWED_EXT.join(', ')})</span>
+        <b style={{ color: 'var(--text)' }}>{t('Bấm để chọn tệp')}</b>
+        <span className="sm">{t('Tối đa {n} tệp, mỗi tệp ≤ 10 MB ({ext})', { n: LIMITS.maxFiles, ext: ALLOWED_EXT.join(', ') })}</span>
       </label>
       <input type="file" id="f-files" multiple hidden ref={input} onChange={pick} />
       {files.length > 0 && (
@@ -41,7 +42,7 @@ export default function FilePicker({ files, onChange, error }) {
               <Icon name="clip" />
               <span>{f.name}</span>
               <span className="sm muted" style={{ flex: 'none' }}>{humanSize(f.size)}</span>
-              <button type="button" className="btn ghost sm" aria-label={`Bỏ tệp ${f.name}`} onClick={() => onChange(files.filter((_, j) => j !== i), '')}>
+              <button type="button" className="btn ghost sm" aria-label={t('Bỏ tệp {name}', { name: f.name })} onClick={() => onChange(files.filter((_, j) => j !== i), '')}>
                 <Icon name="x" />
               </button>
             </div>

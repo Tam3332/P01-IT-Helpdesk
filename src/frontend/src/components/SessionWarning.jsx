@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Icon from '@/components/Icon'
 import { STORAGE_KEYS } from '@/config/constants'
 import { getTokenExpiryMs } from '@/utils/jwt'
+import { t } from '@/i18n'
 
 const WARN_MS = 2 * 60 * 1000 // báo trước 2 phút để kịp lưu việc đang làm
 
@@ -28,13 +29,13 @@ export default function SessionWarning() {
     <div className="sesswarn" role="alert">
       <Icon name="clock" />
       <div className="grow">
-        <b>Phiên đăng nhập sắp hết hạn</b>
+        <b>{t('Phiên đăng nhập sắp hết hạn')}</b>
         <span>
-          Còn <time aria-live="off">{mmss(left)}</time>. Hãy lưu công việc đang làm, sau đó bạn sẽ được đưa về trang đăng nhập.
+          {t('Còn')} <time aria-live="off">{mmss(left)}</time>. {t('Hãy lưu công việc đang làm, sau đó bạn sẽ được đưa về trang đăng nhập.')}
         </span>
       </div>
       <button type="button" className="btn sm" onClick={() => setDismissed(exp)}>
-        Đã hiểu
+        {t('Đã hiểu')}
       </button>
     </div>
   )

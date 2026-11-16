@@ -1,3 +1,5 @@
+import { t } from '@/i18n'
+
 // Hằng số nghiệp vụ lấy từ SDD/SRS và openapi.yaml. Đây là quy tắc hệ thống, không phải dữ liệu mẫu.
 
 // Trường dùng làm mã ticket trong URL và trong đường dẫn API (/tickets/{ref}).
@@ -10,7 +12,7 @@ export const STATUS = {
   IN_PROGRESS: { label: 'Đang xử lý', badge: 'b-InProgress' },
   RESOLVED: { label: 'Đã giải quyết', badge: 'b-Resolved' },
   CLOSED: { label: 'Đã đóng', badge: 'b-Closed' },
-  REOPENED: { label: 'Mở lại', badge: 'b-Reopened' },
+  REOPENED: { label: 'Mở lại|trạng thái', badge: 'b-Reopened' },
   REOPEN_PENDING: { label: 'Chờ duyệt mở lại', badge: 'b-ReopenPending' },
 }
 export const STATUS_KEYS = Object.keys(STATUS)
@@ -53,5 +55,5 @@ export const LIMITS = {
 }
 export const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'docx', 'xlsx', 'txt', 'log']
 
-export const statusLabel = (s) => STATUS[s]?.label || s || '—'
-export const priorityLabel = (p) => PRIORITY[p]?.label || p || '—'
+export const statusLabel = (s) => t(STATUS[s]?.label || s || '—')
+export const priorityLabel = (p) => t(PRIORITY[p]?.label || p || '—')

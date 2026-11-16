@@ -1,4 +1,5 @@
 import { OPEN_STATUSES } from '@/config/domain'
+import { t } from '@/i18n'
 
 // Trả { key, pct, left, done } cho một ticket.
 // Ưu tiên nhãn slaLabel do backend tính (SDD: Normal < 80%, Near 80–100%, Breached > 100%); thiếu thì tự tính từ hạn.
@@ -28,8 +29,8 @@ export function dur(ms) {
   const m = Math.max(0, Math.round(Math.abs(ms) / 60000))
   const h = Math.floor(m / 60)
   const mm = m % 60
-  if (h >= 48) return `${Math.floor(h / 24)} ngày ${h % 24} giờ`
-  return h > 0 ? `${h} giờ ${mm} phút` : `${mm} phút`
+  if (h >= 48) return t('{d} ngày {h} giờ', { d: Math.floor(h / 24), h: h % 24 })
+  return h > 0 ? t('{h} giờ {m} phút', { h, m: mm }) : t('{m} phút', { m: mm })
 }
 
 export const humanSize = (b = 0) => (b > 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`)

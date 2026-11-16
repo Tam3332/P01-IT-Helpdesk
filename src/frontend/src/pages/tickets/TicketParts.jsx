@@ -7,10 +7,13 @@ import useAsync from '@/hooks/useAsync'
 import { LIMITS, ALLOWED_EXT, STATUS, PRIORITY } from '@/config/domain'
 import { apiError } from '@/services/apiClient'
 import { addComment, downloadAttachment, getFeedback, listAttachments, listComments, listHistory, sendFeedback, uploadAttachment } from '@/services/ticketService'
-import { initials, fmtDateTime } from '@/utils/format'
+import { fmtDateTime } from '@/utils/format'
+import { avatarStyle, initials } from '@/utils/avatar'
+import useUnsavedGuard from '@/hooks/useUnsavedGuard'
 import { humanSize } from '@/utils/sla'
+import { t } from '@/i18n'
 
-const PENDING_API = 'Backend chưa có API này. Mục sẽ hiện dữ liệu khi API được triển khai.'
+const pendingApi = () => t('Backend chưa có API này. Mục sẽ hiện dữ liệu khi API được triển khai.')
 
 export function CommentsCard({ ticketRef, nameOf, canComment, canInternal, closed, onChanged }) {
   const toast = useToast()
@@ -18,22 +21,23 @@ export function CommentsCard({ ticketRef, nameOf, canComment, canInternal, close
   const [text, setText] = useState('')
   const [internal, setInternal] = useState(false)
   const [busy, setBusy] = useState(false)
+  useUnsavedGuard(!!text.trim())
 
   const submit = async (e) => {
     e.preventDefault()
     const v = text.trim()
-    if (!v) return toast('Vui lòng nhập nội dung bình luận.', 'err')
-    if (v.length > LIMITS.comment) return toast(`Bình luận tối đa ${LIMITS.comment} ký tự.`, 'err')
+    if (!v) return toast(t('Vui lòng nhập nội dung bình luận.'), 'err')
+    if (v.length > LIMITS.comment) return toast(t('Bình luận tối đa {n} ký tự.', { n: LIMITS.comment }), 'err')
     setBusy(true)
     try {
       await addComment(ticketRef, { commentText: v, isInternal: canInternal && internal })
       setText('')
       setInternal(false)
-      toast('Đã gửi bình luận.')
+      toast(t('Đã gửi bình luận.'))
       await list.reload()
       onChanged?.()
     } catch (err) {
-      toast(apiError(err, 'Không gửi được bình luận.'), 'err')
+      toast(apiError(err, t('Không gửi được bình luận.')), 'err')
     } finally {
       setBusy(false)
     }
@@ -42,19 +46,19 @@ export function CommentsCard({ ticketRef, nameOf, canComment, canInternal, close
   const items = list.data || []
   return (
     <section className="card">
-      <div className="ch"><h2>Bình luận ({items.length})</h2></div>
+      <div className="ch"><h2>{t('Bình luận ({n})', { n: items.length })}</h2></div>
       <div className="cb">
-        <Async state={list} notReadyText={PENDING_API}>
+        <Async state={list} notReadyText={pendingApi()}>
           {items.length ? (
             items.map((c) => {
               const nm = nameOf(c.authorId, c.authorName)
               return (
                 <div className="cm" key={c.id}>
-                  <div className="av">{initials(nm)}</div>
+                  <div className="av" style={avatarStyle(nm)}>{initials(nm)}</div>
                   <div className="bub">
                     <div className="meta">
                       <b>{nm}</b>{c.authorRole ? ` · ${c.authorRole}` : ''} · {fmtDateTime(c.createdAt)}
-                      {c.isInternal && <span className="badge b-x" style={{ marginLeft: 8 }}>Nội bộ</span>}
+                      {c.isInternal && <span className="badge b-x" style={{ marginLeft: 8 }}>{t('Nội bộ')}</span>}
                     </div>
                     <span style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{c.commentText}</span>
                   </div>
@@ -62,24 +66,24 @@ export function CommentsCard({ ticketRef, nameOf, canComment, canInternal, close
               )
             })
           ) : (
-            <p className="muted">Chưa có bình luận nào.</p>
+            <p className="muted">{t('Chưa có bình luận nào.')}</p>
           )}
         </Async>
         {canComment ? (
           <form onSubmit={submit} style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <label className="lbl" htmlFor="cmtext">Thêm bình luận</label>
-            <textarea className="ta" id="cmtext" style={{ minHeight: 76 }} maxLength={LIMITS.comment} value={text} onChange={(e) => setText(e.target.value)} placeholder="Nhập nội dung trao đổi" />
+            <label className="lbl" htmlFor="cmtext">{t('Thêm bình luận')}</label>
+            <textarea className="ta" id="cmtext" style={{ minHeight: 76 }} maxLength={LIMITS.comment} value={text} onChange={(e) => setText(e.target.value)} placeholder={t('Nhập nội dung trao đổi')} />
             {canInternal && (
               <label className="chk">
-                <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> Ghi chú nội bộ (nhân viên không thấy)
+                <input type="checkbox" checked={internal} onChange={(e) => setInternal(e.target.checked)} /> {t('Ghi chú nội bộ (nhân viên không thấy)')}
               </label>
             )}
             <div>
-              <button className="btn pri sm" type="submit" disabled={busy}><Icon name="send" />{busy ? 'Đang gửi...' : 'Gửi bình luận'}</button>
+              <button className="btn pri sm" type="submit" disabled={busy} aria-busy={busy}><Icon name="send" />{busy ? t('Đang gửi...') : t('Gửi bình luận')}</button>
             </div>
           </form>
         ) : (
-          <p className="sm muted" style={{ marginTop: 16 }}>{closed ? 'Ticket đã đóng nên không thể bình luận thêm.' : 'Vai trò hiện tại không được bình luận trên ticket này.'}</p>
+          <p className="sm muted" style={{ marginTop: 16 }}>{closed ? t('Ticket đã đóng nên không thể bình luận thêm.') : t('Vai trò hiện tại không được bình luận trên ticket này.')}</p>
         )}
       </div>
     </section>
@@ -105,12 +109,12 @@ export function AttachmentsCard({ ticketRef, canUpload, onChanged }) {
         await uploadAttachment(ticketRef, f)
         added += 1
       } catch (err) {
-        toast(`"${f.name}": ${apiError(err, 'tải lên thất bại')}`, 'err')
+        toast(`"${f.name}": ${apiError(err, t('tải lên thất bại'))}`, 'err')
       }
     }
     setBusy(false)
     if (added) {
-      toast(`Đã tải lên ${added} tệp.`)
+      toast(t('Đã tải lên {n} tệp.', { n: added }))
       await list.reload()
       onChanged?.()
     }
@@ -119,24 +123,24 @@ export function AttachmentsCard({ ticketRef, canUpload, onChanged }) {
     try {
       await downloadAttachment(ticketRef, a)
     } catch (err) {
-      toast(apiError(err, 'Không tải được tệp.'), 'err')
+      toast(apiError(err, t('Không tải được tệp.')), 'err')
     }
   }
 
   return (
     <section className="card">
       <div className="ch">
-        <h2>Tệp đính kèm ({items.length})</h2>
+        <h2>{t('Tệp đính kèm ({n})', { n: items.length })}</h2>
         {canUpload && (
           <>
-            <button type="button" className="btn sm" onClick={() => input.current?.click()} disabled={busy}><Icon name="upload" />{busy ? 'Đang tải...' : 'Tải tệp lên'}</button>
+            <button type="button" className="btn sm" onClick={() => input.current?.click()} disabled={busy}><Icon name="upload" />{busy ? t('Đang tải...') : t('Tải tệp lên')}</button>
             <input type="file" multiple hidden ref={input} onChange={pick} />
           </>
         )}
       </div>
       <div className="cb">
-        {canUpload && <p className="sm muted" style={{ marginBottom: 12 }}>Tối đa {LIMITS.maxFiles} tệp, mỗi tệp ≤ 10 MB ({ALLOWED_EXT.join(', ')}).</p>}
-        <Async state={list} notReadyText={PENDING_API}>
+        {canUpload && <p className="sm muted" style={{ marginBottom: 12 }}>{t('Tối đa {n} tệp, mỗi tệp ≤ 10 MB ({ext}).', { n: LIMITS.maxFiles, ext: ALLOWED_EXT.join(', ') })}</p>}
+        <Async state={list} notReadyText={pendingApi()}>
           {items.length ? (
             <div style={{ display: 'grid', gap: 8 }}>
               {items.map((a) => (
@@ -144,12 +148,12 @@ export function AttachmentsCard({ ticketRef, canUpload, onChanged }) {
                   <Icon name="clip" />
                   <span>{a.fileName}</span>
                   <span className="sm muted" style={{ flex: 'none' }}>{humanSize(a.fileSize)}</span>
-                  <button type="button" className="btn ghost sm" onClick={() => download(a)} aria-label={`Tải ${a.fileName}`}>Tải về</button>
+                  <button type="button" className="btn ghost sm" onClick={() => download(a)} aria-label={t('Tải {name}', { name: a.fileName })}>{t('Tải về')}</button>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="muted">Ticket này không có tệp đính kèm.</p>
+            <p className="muted">{t('Ticket này không có tệp đính kèm.')}</p>
           )}
         </Async>
       </div>
@@ -157,70 +161,70 @@ export function AttachmentsCard({ ticketRef, canUpload, onChanged }) {
   )
 }
 
-const ACTION_LABEL = {
-  CREATE: 'Tạo mới ticket',
-  ASSIGN: 'Phân công xử lý',
-  REASSIGN: 'Phân công lại',
-  STATUS_CHANGE: 'Đổi trạng thái',
-  COMMENT: 'Bình luận trao đổi',
-  ATTACH_FILE: 'Đính kèm tệp tin',
-  CLOSE: 'Xác nhận đóng ticket',
-  REOPEN: 'Mở lại ticket',
-}
+const actionLabel = (a) => ({
+  CREATE: t('Tạo mới ticket'),
+  ASSIGN: t('Phân công xử lý'),
+  REASSIGN: t('Phân công lại'),
+  STATUS_CHANGE: t('Đổi trạng thái'),
+  COMMENT: t('Bình luận trao đổi'),
+  ATTACH_FILE: t('Đính kèm tệp tin'),
+  CLOSE: t('Xác nhận đóng ticket'),
+  REOPEN: t('Mở lại ticket'),
+}[a])
 
-const FIELD_LABEL = {
-  status: 'Trạng thái',
-  priority: 'Mức ưu tiên',
-  assignee: 'Người xử lý',
-  current_assignee_id: 'Người xử lý',
-  currentAssigneeId: 'Người xử lý',
-}
+const fieldLabel = (f) => ({
+  status: t('Trạng thái'),
+  priority: t('Mức ưu tiên'),
+  assignee: t('Người xử lý'),
+  current_assignee_id: t('Người xử lý'),
+  currentAssigneeId: t('Người xử lý'),
+}[f])
 
 function historyText(h, nameOf) {
-  const actionName = ACTION_LABEL[h.action] || h.action || 'Cập nhật'
+  const actionName = actionLabel(h.action) || h.action || t('Cập nhật')
 
   // Trường hợp bình luận hoặc đính kèm: không in ID kỹ thuật
   if (h.action === 'COMMENT' || h.fieldChanged === 'comment_id') {
-    return 'Bình luận trao đổi'
+    return t('Bình luận trao đổi')
   }
   if (h.action === 'ATTACH_FILE' || h.fieldChanged === 'attachment_id') {
-    return 'Đính kèm tệp tin'
+    return t('Đính kèm tệp tin')
   }
   if (h.action === 'CREATE') {
-    return 'Tạo mới ticket'
+    return t('Tạo mới ticket')
   }
   if (h.action === 'CLOSE') {
-    return 'Xác nhận đóng ticket'
+    return t('Xác nhận đóng ticket')
   }
   if (h.action === 'FEEDBACK' || h.fieldChanged === 'feedback') {
-    return `Đánh giá chất lượng hỗ trợ (${h.newValue || 'Hoàn tất'})`
+    return t('Đánh giá chất lượng hỗ trợ ({v})', { v: h.newValue || t('Hoàn tất') })
   }
   if (h.action === 'REOPEN') {
-    return 'Yêu cầu mở lại ticket'
+    return t('Yêu cầu mở lại ticket')
   }
 
   // Trường hợp phân công người xử lý: map ID thành tên người dùng
   if (h.fieldChanged === 'current_assignee_id' || h.fieldChanged === 'currentAssigneeId') {
-    const oldName = h.oldValue && nameOf ? nameOf(Number(h.oldValue), h.oldValueLabel) : (h.oldValue ? `Người dùng #${h.oldValue}` : 'Chưa phân công')
-    const newName = h.newValue && nameOf ? nameOf(Number(h.newValue), h.newValueLabel) : (h.newValue ? `Người dùng #${h.newValue}` : 'Chưa phân công')
-    return `${actionName} · Người xử lý: ${oldName} → ${newName}`
+    const oldName = h.oldValue && nameOf ? nameOf(Number(h.oldValue), h.oldValueLabel) : (h.oldValue ? t('Người dùng #{id}', { id: h.oldValue }) : t('Chưa phân công'))
+    const newName = h.newValue && nameOf ? nameOf(Number(h.newValue), h.newValueLabel) : (h.newValue ? t('Người dùng #{id}', { id: h.newValue }) : t('Chưa phân công'))
+    return `${actionName} · ${t('Người xử lý')}: ${oldName} → ${newName}`
   }
 
   // Trường hợp đổi trạng thái: hiển thị label tiếng Việt
   if (h.fieldChanged === 'status') {
-    const oldSt = STATUS[h.oldValue]?.label || h.oldValue || '—'
-    const newSt = STATUS[h.newValue]?.label || h.newValue || '—'
-    return `Đổi trạng thái: ${oldSt} → ${newSt}`
+    const oldSt = t(STATUS[h.oldValue]?.label || h.oldValue || '—')
+    const newSt = t(STATUS[h.newValue]?.label || h.newValue || '—')
+    return `${t('Đổi trạng thái')}: ${oldSt} → ${newSt}`
   }
 
   // Trường hợp đổi mức ưu tiên: hiển thị label tiếng Việt
   if (h.fieldChanged === 'priority') {
-    const oldPr = PRIORITY[h.oldValue]?.label || h.oldValue || '—'
-    const newPr = PRIORITY[h.newValue]?.label || h.newValue || '—'
-    return `Đổi mức ưu tiên: ${oldPr} → ${newPr}`
+    const oldPr = t(PRIORITY[h.oldValue]?.label || h.oldValue || '—')
+    const newPr = t(PRIORITY[h.newValue]?.label || h.newValue || '—')
+    return `${t('Đổi mức ưu tiên')}: ${oldPr} → ${newPr}`
   }
 
-  const field = FIELD_LABEL[h.fieldChanged] || h.fieldChanged
+  const field = fieldLabel(h.fieldChanged) || h.fieldChanged
   const ch = field ? ` · ${field}: ${h.oldValue ?? '—'} → ${h.newValue ?? '—'}` : ''
   return actionName + ch
 }
@@ -230,9 +234,9 @@ export function HistoryCard({ ticketRef, nameOf, refreshKey }) {
   const items = (list.data || []).slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
   return (
     <section className="card">
-      <div className="ch"><h2>Lịch sử xử lý</h2></div>
+      <div className="ch"><h2>{t('Lịch sử xử lý')}</h2></div>
       <div className="cb">
-        <Async state={list} notReadyText={PENDING_API}>
+        <Async state={list} notReadyText={pendingApi()}>
           {items.length ? (
             <ul className="tl">
               {items.map((h) => (
@@ -241,13 +245,13 @@ export function HistoryCard({ ticketRef, nameOf, refreshKey }) {
                   <div>
                     <div style={{ fontWeight: 600 }}>{historyText(h, nameOf)}</div>
                     {h.reasonOrNote && <div className="sm muted" style={{ overflowWrap: 'anywhere' }}>{h.reasonOrNote}</div>}
-                    <div className="sm muted">{nameOf(h.actorId, h.actorName)} · {fmtDateTime(h.timestamp)}</div>
+                    <div className="sm muted who"><span className="av xs" style={avatarStyle(nameOf(h.actorId, h.actorName))}>{initials(nameOf(h.actorId, h.actorName))}</span>{nameOf(h.actorId, h.actorName)} · {fmtDateTime(h.timestamp)}</div>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="muted">Chưa có lịch sử.</p>
+            <p className="muted">{t('Chưa có lịch sử.')}</p>
           )}
         </Async>
       </div>
@@ -267,14 +271,14 @@ export function FeedbackCard({ ticketRef }) {
 
   const submit = async (e) => {
     e.preventDefault()
-    if (stars < 1) return toast('Vui lòng chọn số sao đánh giá.', 'err')
+    if (stars < 1) return toast(t('Vui lòng chọn số sao đánh giá.'), 'err')
     setBusy(true)
     try {
       await sendFeedback(ticketRef, { ratingStars: stars, feedbackComment: comment.trim() || undefined })
-      toast('Cảm ơn bạn đã gửi đánh giá chất lượng hỗ trợ!')
+      toast(t('Cảm ơn bạn đã gửi đánh giá chất lượng hỗ trợ!'))
       await fb.reload()
     } catch (err) {
-      toast(apiError(err, 'Không gửi được đánh giá.'), 'err')
+      toast(apiError(err, t('Không gửi được đánh giá.')), 'err')
     } finally {
       setBusy(false)
     }
@@ -282,12 +286,12 @@ export function FeedbackCard({ ticketRef }) {
 
   return (
     <section className="card">
-      <div className="ch"><h2>Đánh giá chất lượng hỗ trợ</h2></div>
+      <div className="ch"><h2>{t('Đánh giá chất lượng hỗ trợ')}</h2></div>
       <div className="cb">
-        <Async state={fb} notReadyText="Đang tải đánh giá...">
+        <Async state={fb} notReadyText={t('Đang tải đánh giá...')}>
           {feedback ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div aria-label={`${feedback.ratingStars} trên 5 sao`} style={{ fontSize: 24, color: '#f59e0b', letterSpacing: 4 }}>
+              <div aria-label={t('{n} trên 5 sao', { n: feedback.ratingStars })} style={{ fontSize: 24, color: '#f59e0b', letterSpacing: 4 }}>
                 {'★'.repeat(feedback.ratingStars)}{'☆'.repeat(5 - feedback.ratingStars)}
               </div>
               {feedback.feedbackComment ? (
@@ -295,22 +299,22 @@ export function FeedbackCard({ ticketRef }) {
                   "{feedback.feedbackComment}"
                 </p>
               ) : (
-                <p className="sm muted" style={{ marginTop: 4 }}>Bạn đã đánh giá {feedback.ratingStars}/5 sao.</p>
+                <p className="sm muted" style={{ marginTop: 4 }}>{t('Bạn đã đánh giá {n}/5 sao.', { n: feedback.ratingStars })}</p>
               )}
             </div>
           ) : (
             <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <p className="sm muted" style={{ margin: 0 }}>
-                Vui lòng đánh giá mức độ hài lòng về chất lượng hỗ trợ của kỹ thuật viên:
+                {t('Vui lòng đánh giá mức độ hài lòng về chất lượng hỗ trợ của kỹ thuật viên:')}
               </p>
-              <div role="radiogroup" aria-label="Số sao" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <div role="radiogroup" aria-label={t('Số sao')} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
                     key={n}
                     type="button"
                     role="radio"
                     aria-checked={stars === n}
-                    aria-label={`${n} sao`}
+                    aria-label={t('{n} sao', { n })}
                     onClick={() => setStars(n)}
                     style={{
                       border: 0,
@@ -330,7 +334,7 @@ export function FeedbackCard({ ticketRef }) {
                 ))}
                 {stars > 0 && (
                   <span style={{ fontSize: 13, color: '#94a3b8', marginLeft: 8 }}>
-                    ({stars}/5 sao)
+                    {t('({n}/5 sao)', { n: stars })}
                   </span>
                 )}
               </div>
@@ -339,12 +343,12 @@ export function FeedbackCard({ ticketRef }) {
                 maxLength={LIMITS.feedbackComment}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Nhận xét thêm về mức độ hài lòng (không bắt buộc)..."
+                placeholder={t('Nhận xét thêm về mức độ hài lòng (không bắt buộc)...')}
                 rows={3}
               />
               <div>
-                <button className="btn pri sm" type="submit" disabled={busy || stars === 0}>
-                  {busy ? 'Đang gửi...' : 'Gửi đánh giá'}
+                <button className="btn pri sm" type="submit" disabled={busy || stars === 0} aria-busy={busy}>
+                  {busy ? t('Đang gửi...') : t('Gửi đánh giá')}
                 </button>
               </div>
             </form>
