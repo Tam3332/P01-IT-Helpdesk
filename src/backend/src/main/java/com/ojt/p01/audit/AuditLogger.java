@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
  * Ghi Security Audit Log dạng JSON Lines: mỗi sự kiện là 1 dòng JSON trong audit_events.jsonl.
  *
  * Log riêng với bảng ticket_history.
- * Trường theo : timestamp (UTC), event_type, actor_id, role, target_type, target_id, action, outcome
+ * Các trường ghi nhận: timestamp (UTC), event_type, actor_id, role, target_type, target_id, action, outcome
  * src_ip, correlation_id, http_status.
  * KHÔNG truyền mật khẩu, JWT hay token vào bất kỳ trường nào.
  * Ghi file trên 1 luồng riêng để không chặn request; lỗi ghi log chỉ in ra console, không làm hỏng API.

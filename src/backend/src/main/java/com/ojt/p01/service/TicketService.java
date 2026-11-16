@@ -45,7 +45,7 @@ import java.util.Map;
 
 /**
  * Service xử lý nghiệp vụ Ticket.
- * Tuân thủ Access Matrix (02 §5), , Anti-IDOR.
+ * Tuân thủ Access Matrix, kiểm tra quyền và Anti-IDOR.
  */
 @Service
 public class TicketService {
@@ -83,7 +83,7 @@ public class TicketService {
 
  /**
  * Tạo ticket mới.
- * Quy tắc phân quyền: CHỈ EMPLOYEE được tạo ticket (Access Matrix §5).
+ * Quy tắc phân quyền: CHỈ EMPLOYEE được tạo ticket.
  * Role khác gọi đến → 403 FORBIDDEN.
  */
     @Transactional
@@ -110,12 +110,12 @@ public class TicketService {
         TicketCategory category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // 3. : Chặn danh mục đã bị vô hiệu hóa (isActive = false)
+        // 3. Chặn danh mục đã bị vô hiệu hóa (isActive = false)
         if (Boolean.FALSE.equals(category.getIsActive())) {
             throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
         }
 
-        // 4. Tính priority = impactLevel (quy tắc sơ bộ ở)
+        // 4. Tính priority = impactLevel
         String priority = request.impactLevel();
 
         // 5. Tra SLA config + tính deadline
@@ -308,7 +308,7 @@ public class TicketService {
  *.
  * Phân công lại sau Reopen: REOPENED → ASSIGNED, IT Staff nhận thì sang IN_PROGRESS;
  * không tính lại SLA vì hạn xử lý mới đã tính lúc duyệt mở lại.
- * Không ghi first_responded_at: P2 "Hạn phản hồi dừng tính ngay khi IT Staff tiếp nhận (In Progress)".
+ * Không ghi first_responded_at: Hạn phản hồi dừng tính ngay khi IT Staff tiếp nhận (In Progress).
  */
     @Transactional
     public TicketDetailResponse assignTicket(String idOrNumber, AssignTicketRequest request, String ipAddress) {
@@ -355,7 +355,7 @@ public class TicketService {
             throw new AppException(ErrorCode.ASSIGNEE_UNCHANGED);
         }
 
-        // / : kết thúc phân công cũ TRƯỚC (flush ngay), rồi mới thêm dòng mới
+        // Kết thúc phân công cũ trước (flush ngay), rồi mới thêm dòng mới
         // để không vi phạm unique index "mỗi ticket 1 dòng is_current = true"
         assignmentRepository.findByTicket_IdAndIsCurrentTrue(ticket.getId()).ifPresent(old -> {
             old.end(now);

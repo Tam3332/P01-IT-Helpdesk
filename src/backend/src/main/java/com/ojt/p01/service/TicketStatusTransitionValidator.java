@@ -14,7 +14,7 @@ import java.util.Set;
  * Trình kiểm tra chuyển trạng thái vé hợp lệ (State Machine Validator).
  *
  * Áp dụng bảng chuyển trạng thái trong TicketStatus Javadoc.
- * Dùng trong các service: AssignTicketService (T6), UpdateStatusService (T5), ReopenService (T7).
+ * Dùng trong các service: TicketService, ReopenService.
  *
  * Cách dùng:
  * transitionValidator.assertTransitionAllowed(currentStatus, newStatus);
@@ -33,15 +33,15 @@ public class TicketStatusTransitionValidator {
     static {
         ALLOWED_TRANSITIONS = new EnumMap<>(TicketStatus.class);
 
-        // NEW → ASSIGNED (IT_MANAGER phân công —)
+        // NEW → ASSIGNED (IT_MANAGER phân công)
         ALLOWED_TRANSITIONS.put(TicketStatus.NEW,
                 EnumSet.of(TicketStatus.ASSIGNED));
 
-        // ASSIGNED → IN_PROGRESS (IT_STAFF nhận xử lý —)
+        // ASSIGNED → IN_PROGRESS (IT_STAFF nhận xử lý)
         ALLOWED_TRANSITIONS.put(TicketStatus.ASSIGNED,
                 EnumSet.of(TicketStatus.IN_PROGRESS));
 
-        // IN_PROGRESS → RESOLVED (IT_STAFF hoàn thành, bắt buộc resolution_note —)
+        // IN_PROGRESS → RESOLVED (IT_STAFF hoàn thành, bắt buộc resolution_note)
         ALLOWED_TRANSITIONS.put(TicketStatus.IN_PROGRESS,
                 EnumSet.of(TicketStatus.RESOLVED));
 
@@ -54,7 +54,7 @@ public class TicketStatusTransitionValidator {
                 EnumSet.of(TicketStatus.REOPENED, TicketStatus.RESOLVED));
 
         // REOPENED → IN_PROGRESS (IT_STAFF cũ tiếp tục)
-        // REOPENED → ASSIGNED (IT_MANAGER phân công lại sau Reopen — , ; "P3 – bước 6")
+        // REOPENED → ASSIGNED (IT_MANAGER phân công lại sau Reopen)
         ALLOWED_TRANSITIONS.put(TicketStatus.REOPENED,
                 EnumSet.of(TicketStatus.IN_PROGRESS, TicketStatus.ASSIGNED));
 

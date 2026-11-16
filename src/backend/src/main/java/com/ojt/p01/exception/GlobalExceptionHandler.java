@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * Xử lý tập trung tất cả exception của P01 backend.
  *
- * Quy tắc (theo + //):
+ * Quy tắc xử lý mã lỗi:
  * AccessDenied → 403 FORBIDDEN (không 401)
  * BadCredentials → 401 INVALID_CREDENTIALS
  * AppException → httpStatus của ErrorCode tương ứng
@@ -97,14 +97,14 @@ public class GlobalExceptionHandler {
 
     /**
      * Tệp vượt giới hạn multipart (10 MB/tệp, 11 MB/request) → 400 FILE_TOO_LARGE, không lưu.
-     * SecRS IA-HD03: "Sai loại/MIME, >10 MB hoặc file thứ 6 → 400, không lưu".
+     * Quy tắc: Sai loại/MIME, dung lượng > 10 MB hoặc quá 5 tệp → trả lỗi 400, không lưu.
      * Bắt riêng để trả đúng 400 + mã lỗi của nhóm, không để rơi vào handler chung bên dưới (413/500).
      */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<Object>> handleMaxUploadSize(MaxUploadSizeExceededException ex,
                                                                    HttpServletRequest request) {
         ErrorCode ec = ErrorCode.FILE_TOO_LARGE;
-        // Bị chặn khi đọc multipart, chưa vào service nên chưa biết ticket → ghi theo endpoint (SDD §7)
+        // Bị chặn khi đọc multipart, chưa vào service nên chưa biết ticket → ghi theo endpoint
         auditLogger.logForCurrentUser("FILE_UPLOAD_REJECTED", "ENDPOINT",
                 request.getMethod() + " " + request.getRequestURI(), "UPLOAD_ATTACHMENT", "FAILURE",
                 ec.getHttpStatus().value());

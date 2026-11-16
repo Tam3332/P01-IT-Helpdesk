@@ -52,7 +52,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
            "ORDER BY t.createdAt DESC")
     List<Ticket> findNotificationsForManager(Pageable pageable);
 
- /** Lấy danh sách ticket mở phục vụ SLA Background Worker quét định kỳ (P2) */
+ /** Lấy danh sách ticket mở phục vụ SLA Background Worker quét định kỳ */
     @EntityGraph(attributePaths = {"category", "requester", "currentAssignee"})
     List<Ticket> findByStatusIn(List<String> statuses);
 }

@@ -105,7 +105,7 @@ public class SecurityConfig {
                 // Gửi yêu cầu mở lại: chỉ EMPLOYEE.
                 // Kiểm chủ ticket (404 + AUTHZ_DENIED) nằm trong ReopenService
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/reopen").hasRole("EMPLOYEE")
-                // Tạo ticket: chỉ EMPLOYEE; role khác bị chặn 403 ở tầng Security và tự ghi AUTHZ_DENIED (BUG-HD-007)
+                // Tạo ticket: chỉ EMPLOYEE; role khác bị chặn 403 ở tầng Security và tự ghi AUTHZ_DENIED
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets").hasRole("EMPLOYEE")
                 // Upload tệp: Admin bị từ chối 403; 403 tự ghi AUTHZ_DENIED
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/attachments")

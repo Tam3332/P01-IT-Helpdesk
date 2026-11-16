@@ -33,7 +33,7 @@ import java.util.Optional;
  * 3. Tài khoản bị Admin khóa → từ chối, 403
  * 4. Hợp lệ → cấp JWT 15 phút
  *
- * Chưa làm trong tuần 3 (theo file phân công): đếm số lần sai, khóa 15 phút, HTTP 429 → tuần 5.
+ * Đếm số lần sai, khóa 15 phút, HTTP 429 khi đăng nhập thất bại liên tiếp.
  * Mỗi lần đăng nhập ghi 1 dòng audit LOGIN_SUCCESS / LOGIN_FAILED. Không ghi mật khẩu.
  */
 @Service

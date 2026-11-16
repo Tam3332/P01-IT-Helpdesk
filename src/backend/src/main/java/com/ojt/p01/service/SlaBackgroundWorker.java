@@ -17,7 +17,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
- * SLA Background Worker chạy ngầm định kỳ mỗi 5 phút (Quy trình P2,).
+ * SLA Background Worker chạy ngầm định kỳ mỗi 5 phút.
  *
  * Nhiệm vụ:
  * 1. Quét toàn bộ active tickets đang mở: NEW, ASSIGNED, IN_PROGRESS, REOPENED (loại trừ RESOLVED, CLOSED, REOPEN_PENDING).
@@ -32,7 +32,7 @@ public class SlaBackgroundWorker {
 
     private static final Logger log = LoggerFactory.getLogger(SlaBackgroundWorker.class);
 
- /** Các trạng thái mở cần quét tính hạn SLA theo sơ đồ P2 và */
+ /** Các trạng thái mở cần quét tính hạn SLA */
     private static final List<String> ACTIVE_STATUSES = List.of(
             TicketStatus.NEW.name(),
             TicketStatus.ASSIGNED.name(),
