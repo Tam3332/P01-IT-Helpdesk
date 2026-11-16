@@ -9,14 +9,16 @@ import { LIMITS } from '@/config/domain'
 import { PASSWORD_LABEL, profilePath } from '@/config/nav'
 import { apiError, httpStatus } from '@/services/apiClient'
 import { changePassword } from '@/services/authService'
+import useUnsavedGuard from '@/hooks/useUnsavedGuard'
+import { t } from '@/i18n'
 
 const EMPTY = { current: '', next: '', confirm: '' }
 
 function messageFor(err) {
   const status = httpStatus(err)
-  if (status === 404 || status === 405) return 'Máy chủ chưa hỗ trợ đổi mật khẩu. Vui lòng liên hệ quản trị viên.'
-  if (status === 401) return 'Mật khẩu hiện tại không đúng.'
-  return apiError(err, 'Không đổi được mật khẩu. Vui lòng thử lại.')
+  if (status === 404 || status === 405) return t('Máy chủ chưa hỗ trợ đổi mật khẩu. Vui lòng liên hệ quản trị viên.')
+  if (status === 401) return t('Mật khẩu hiện tại không đúng.')
+  return apiError(err, t('Không đổi được mật khẩu. Vui lòng thử lại.'))
 }
 
 // Gợi ý độ mạnh (chỉ để tham khảo, không chặn gửi): 0..4
@@ -37,7 +39,7 @@ function PasswordInput({ id, label, value, onChange, auto, error, hint, children
     <Field label={label} required htmlFor={id} error={error} hint={hint}>
       <div className="pw">
         <input className="in" id={id} type={show ? 'text' : 'password'} autoComplete={auto} value={value} onChange={onChange} maxLength={LIMITS.passwordMax} aria-invalid={!!error} />
-        <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
+        <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? t('Ẩn mật khẩu') : t('Hiện mật khẩu')}>
           <Icon name={show ? 'eyeoff' : 'eye'} />
         </button>
       </div>
@@ -55,23 +57,24 @@ export default function ChangePasswordPage() {
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
   const [busy, setBusy] = useState(false)
+  useUnsavedGuard(!busy && !!(form.current || form.next || form.confirm))
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   const rules = [
-    [`Ít nhất ${LIMITS.passwordMin} ký tự`, form.next.length >= LIMITS.passwordMin],
-    ['Khác mật khẩu hiện tại', !!form.next && form.next !== form.current],
-    ['Nhập lại khớp mật khẩu mới', !!form.confirm && form.confirm === form.next],
+    [t('Ít nhất {n} ký tự', { n: LIMITS.passwordMin }), form.next.length >= LIMITS.passwordMin],
+    [t('Khác mật khẩu hiện tại'), !!form.next && form.next !== form.current],
+    [t('Nhập lại khớp mật khẩu mới'), !!form.confirm && form.confirm === form.next],
   ]
   const level = strength(form.next)
 
   const validate = () => {
     const e = {}
-    if (!form.current) e.current = 'Vui lòng nhập mật khẩu hiện tại.'
-    if (!form.next) e.next = 'Vui lòng nhập mật khẩu mới.'
-    else if (form.next.length < LIMITS.passwordMin) e.next = `Mật khẩu mới cần ít nhất ${LIMITS.passwordMin} ký tự.`
-    else if (form.next === form.current) e.next = 'Mật khẩu mới phải khác mật khẩu hiện tại.'
-    if (!form.confirm) e.confirm = 'Vui lòng nhập lại mật khẩu mới.'
-    else if (form.next && form.confirm !== form.next) e.confirm = 'Mật khẩu nhập lại không khớp.'
+    if (!form.current) e.current = t('Vui lòng nhập mật khẩu hiện tại.')
+    if (!form.next) e.next = t('Vui lòng nhập mật khẩu mới.')
+    else if (form.next.length < LIMITS.passwordMin) e.next = t('Mật khẩu mới cần ít nhất {n} ký tự.', { n: LIMITS.passwordMin })
+    else if (form.next === form.current) e.next = t('Mật khẩu mới phải khác mật khẩu hiện tại.')
+    if (!form.confirm) e.confirm = t('Vui lòng nhập lại mật khẩu mới.')
+    else if (form.next && form.confirm !== form.next) e.confirm = t('Mật khẩu nhập lại không khớp.')
     return e
   }
 
@@ -85,7 +88,7 @@ export default function ChangePasswordPage() {
     setBusy(true)
     try {
       await changePassword(form.current, form.next)
-      toast('Đã đổi mật khẩu.')
+      toast(t('Đã đổi mật khẩu.'))
       try {
         await reloadUser() // gỡ yêu cầu bắt buộc đổi mật khẩu nếu có
       } catch {
@@ -100,11 +103,11 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="pw-page">
-      <PageHeader title={PASSWORD_LABEL} subtitle="Chọn mật khẩu mới cho tài khoản của bạn." />
+      <PageHeader title={t(PASSWORD_LABEL)} subtitle={t('Chọn mật khẩu mới cho tài khoản của bạn.')} />
       {user.mustChangePassword && (
         <div className="banner" role="alert">
           <Icon name="alert" />
-          <div className="grow">Quản trị viên vừa cấp lại mật khẩu cho bạn. Hãy đặt mật khẩu mới để tiếp tục sử dụng hệ thống.</div>
+          <div className="grow">{t('Quản trị viên vừa cấp lại mật khẩu cho bạn. Hãy đặt mật khẩu mới để tiếp tục sử dụng hệ thống.')}</div>
         </div>
       )}
       <form className="card pw-card" onSubmit={submit} noValidate>
@@ -121,17 +124,17 @@ export default function ChangePasswordPage() {
             <div className="grow">{formError}</div>
           </div>
         )}
-        <PasswordInput id="pf-current" label="Mật khẩu hiện tại" auto="current-password" value={form.current} onChange={set('current')} error={errors.current} />
+        <PasswordInput id="pf-current" label={t('Mật khẩu hiện tại')} auto="current-password" value={form.current} onChange={set('current')} error={errors.current} />
         <hr className="pw-sep" />
-        <PasswordInput id="pf-next" label="Mật khẩu mới" auto="new-password" value={form.next} onChange={set('next')} error={errors.next}>
+        <PasswordInput id="pf-next" label={t('Mật khẩu mới')} auto="new-password" value={form.next} onChange={set('next')} error={errors.next}>
           <div className="pw-meter" aria-live="polite">
             <div className={`pw-segs l${level}`}>
               <i /><i /><i /><i />
             </div>
-            <span className="sm muted">{form.next ? `Độ mạnh: ${LEVELS[level] || 'Yếu'}` : 'Mật khẩu dài và đa dạng ký tự sẽ khó đoán hơn.'}</span>
+            <span className="sm muted">{form.next ? t('Độ mạnh: {l}', { l: t(LEVELS[level] || 'Yếu') }) : t('Mật khẩu dài và đa dạng ký tự sẽ khó đoán hơn.')}</span>
           </div>
         </PasswordInput>
-        <PasswordInput id="pf-confirm" label="Nhập lại mật khẩu mới" auto="new-password" value={form.confirm} onChange={set('confirm')} error={errors.confirm} />
+        <PasswordInput id="pf-confirm" label={t('Nhập lại mật khẩu mới')} auto="new-password" value={form.confirm} onChange={set('confirm')} error={errors.confirm} />
         <ul className="pw-rules">
           {rules.map(([text, ok]) => (
             <li key={text} className={ok ? 'ok' : ''}>
@@ -143,11 +146,11 @@ export default function ChangePasswordPage() {
         <div className="pw-acts">
           {!user.mustChangePassword && (
             <button type="button" className="btn" onClick={() => navigate(profilePath(user.role))} disabled={busy}>
-              Hủy
+              {t('Hủy')}
             </button>
           )}
-          <button className="btn pri" type="submit" disabled={busy}>
-            {busy ? 'Đang xử lý...' : 'Lưu mật khẩu mới'}
+          <button className="btn pri" type="submit" disabled={busy} aria-busy={busy}>
+            {busy ? t('Đang xử lý...') : t('Lưu mật khẩu mới')}
           </button>
         </div>
       </form>

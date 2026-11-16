@@ -9,6 +9,7 @@ import { getStatusCounts } from '@/services/ticketService'
 import { OPEN_STATUSES } from '@/config/domain'
 import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
+import { t } from '@/i18n'
 
 export default function EmployeeOverview() {
   const navigate = useNavigate()
@@ -18,22 +19,22 @@ export default function EmployeeOverview() {
   const sum = (keys) => keys.reduce((a, k) => a + (c?.[k] || 0), 0)
   return (
     <>
-      <PageHeader title={item.label} subtitle={item.subtitle}>
+      <PageHeader title={t(item.label)} subtitle={t(item.subtitle)}>
         <button type="button" className="btn pri" onClick={() => navigate('/employee/tickets/new')}>
-          <Icon name="plus" />Tạo ticket
+          <Icon name="plus" />{t('Tạo ticket')}
         </button>
       </PageHeader>
       <Async state={counts}>
         {c && (
           <div className="kpis">
-            <Kpi label="Tổng số ticket" value={sum(Object.keys(c))} tone="primary" icon="ticket" />
-            <Kpi label="Đang mở" value={sum([...OPEN_STATUSES, 'REOPEN_PENDING'])} tone="info" icon="clock" />
-            <Kpi label="Đã giải quyết (chờ xác nhận)" value={c.RESOLVED} tone="ok" icon="check" />
-            <Kpi label="Đã đóng" value={c.CLOSED} tone="neu" icon="lock" />
+            <Kpi label={t('Tổng số ticket')} value={sum(Object.keys(c))} tone="primary" icon="ticket" to="/employee/tickets" />
+            <Kpi label={t('Đang mở')} value={sum([...OPEN_STATUSES, 'REOPEN_PENDING'])} tone="info" icon="clock" />
+            <Kpi label={t('Đã giải quyết (chờ xác nhận)')} value={c.RESOLVED} tone="ok" icon="check" to="/employee/tickets?status=RESOLVED" />
+            <Kpi label={t('Đã đóng')} value={c.CLOSED} tone="neu" icon="lock" to="/employee/tickets?status=CLOSED" />
           </div>
         )}
       </Async>
-      <TicketListCard title="Ticket gần đây" />
+      <TicketListCard title={t('Ticket gần đây')} />
     </>
   )
 }
