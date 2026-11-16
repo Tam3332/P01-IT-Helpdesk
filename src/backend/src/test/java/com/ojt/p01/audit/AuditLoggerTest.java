@@ -115,4 +115,32 @@ class AuditLoggerTest {
         assertThat(parsed).doesNotContainKey("before");
         assertThat(parsed).doesNotContainKey("after");
     }
+
+    @Test
+    @DisplayName("FILE_UPLOAD_REJECTED ghi trường reason = mã lỗi, không có before/after")
+    void shouldLogReasonForRejectedUpload() throws Exception {
+        auditLogger.logWithReason("FILE_UPLOAD_REJECTED", 1L, "EMPLOYEE", "TICKET", "HD-2026-0007",
+                "UPLOAD_ATTACHMENT", "FAILURE", 400, "FILE_TOO_LARGE");
+
+        Thread.sleep(150);
+
+        List<String> lines = Files.readAllLines(logFile);
+        assertThat(lines).hasSize(1);
+        Map<String, Object> parsed = objectMapper.readValue(lines.get(0), new TypeReference<>() {});
+        assertThat(parsed.get("reason")).isEqualTo("FILE_TOO_LARGE");
+        assertThat(parsed.get("http_status")).isEqualTo(400);
+        assertThat(parsed).doesNotContainKey("before");
+        assertThat(parsed).doesNotContainKey("after");
+    }
+
+    @Test
+    @DisplayName("Sự kiện không truyền reason thì không có trường reason")
+    void shouldOmitReasonWhenNotGiven() throws Exception {
+        auditLogger.log("LOGIN_SUCCESS", 1L, "EMPLOYEE", "USER", "1", "LOGIN", "SUCCESS", 200);
+
+        Thread.sleep(150);
+
+        Map<String, Object> parsed = objectMapper.readValue(Files.readAllLines(logFile).get(0), new TypeReference<>() {});
+        assertThat(parsed).doesNotContainKey("reason");
+    }
 }

@@ -417,13 +417,14 @@ public class AttachmentService {
 
     /**
      * Ghi audit FILE_UPLOAD_REJECTED rồi trả exception để throw.
-     * Không ghi tên tệp hay nội dung tệp vào log; lý do từ chối nằm ở http_status và mã lỗi trả về.
+     * Không ghi tên tệp hay nội dung tệp vào log; lý do từ chối ghi ở trường reason = mã lỗi
+     * (FILE_TOO_LARGE, FILE_TYPE_NOT_ALLOWED, ATTACHMENT_LIMIT_EXCEEDED, TICKET_CLOSED, VALIDATION_FAILED).
      */
     private AppException rejectUpload(Ticket ticket, ErrorCode code, String message) {
         User user = getCurrentUser();
         String role = user.getRole() != null ? user.getRole().getRoleName() : null;
-        auditLogger.log("FILE_UPLOAD_REJECTED", user.getId(), role, "TICKET", ticket.getTicketNumber(),
-                "UPLOAD_ATTACHMENT", "FAILURE", code.getHttpStatus().value());
+        auditLogger.logWithReason("FILE_UPLOAD_REJECTED", user.getId(), role, "TICKET", ticket.getTicketNumber(),
+                "UPLOAD_ATTACHMENT", "FAILURE", code.getHttpStatus().value(), code.getCode());
         return message != null ? new AppException(code, message) : new AppException(code);
     }
 
