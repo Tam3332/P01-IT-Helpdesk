@@ -114,8 +114,9 @@ public class AttachmentService {
         Ticket ticket = findTicket(idOrNumber);
         validateAccess(ticket);
 
+        // Ticket đã đóng không nhận tệp mới (BR-HD-04): trả 422 và ghi FILE_UPLOAD_REJECTED như các ca từ chối khác
         if ("CLOSED".equalsIgnoreCase(ticket.getStatus())) {
-            throw new AppException(ErrorCode.TICKET_CLOSED);
+            throw rejectUpload(ticket, ErrorCode.TICKET_CLOSED, null);
         }
 
         // Đính kèm vào bình luận (tùy chọn): bình luận phải thuộc cùng ticket, sai thì 404
@@ -221,6 +222,15 @@ public class AttachmentService {
                 clientIp,
                 saved.getCreatedAt()
         ));
+
+        // Audit FILE_UPLOADED sau khi commit: chỉ ghi metadata (id, kích thước, MIME), không ghi tên tệp hay nội dung tệp
+        String uploaderRole = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : null;
+        java.util.Map<String, Object> uploadedInfo = new java.util.LinkedHashMap<>();
+        uploadedInfo.put("attachment_id", saved.getId());
+        uploadedInfo.put("file_size", file.getSize());
+        uploadedInfo.put("mime_type", mimeType);
+        auditLogger.logAfterCommit("FILE_UPLOADED", currentUser.getId(), uploaderRole, "TICKET",
+                ticket.getTicketNumber(), "UPLOAD_ATTACHMENT", "SUCCESS", 201, null, uploadedInfo);
 
         return toResponse(saved);
     }

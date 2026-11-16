@@ -146,6 +146,13 @@ public class CommentService {
                 saved.getCreatedAt()
         ));
 
+        // Audit COMMENT_ADDED sau khi commit: ghi id bình luận và cờ nội bộ, không ghi nội dung bình luận
+        java.util.Map<String, Object> commentInfo = new java.util.LinkedHashMap<>();
+        commentInfo.put("comment_id", saved.getId());
+        commentInfo.put("is_internal", isInternal);
+        auditLogger.logAfterCommit("COMMENT_ADDED", currentUser.getId(), roleName, "TICKET",
+                ticket.getTicketNumber(), "ADD_COMMENT", "SUCCESS", 201, null, commentInfo);
+
         return toResponse(saved);
     }
 
