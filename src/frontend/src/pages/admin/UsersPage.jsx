@@ -327,7 +327,7 @@ function EditUserDialog({ user, currentUser, onClose, onDone, onOpenResetPasswor
               department: f.department.trim(),
             })
           )
-        } catch {}
+        } catch { /* không ảnh hưởng luồng chính */ }
         onDone(t('Đã cập nhật thông tin cho {name}.', { name: f.fullName.trim() }))
       }}
     >
