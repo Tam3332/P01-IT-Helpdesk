@@ -184,7 +184,7 @@ public class TicketService {
  /**
  * Lấy danh sách ticket có phân quyền và bộ lọc:
  * EMPLOYEE : chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
- * IT_STAFF : xem vé được giao cho mình (currentAssignee) + tất cả vé trạng thái NEW (chờ tiếp nhận).
+ * IT_STAFF : chỉ xem vé được giao cho mình (currentAssignee), theo SRS HD05 sửa 05/11.
  * IT_MANAGER : xem toàn bộ vé trong hệ thống.
  * ADMIN : xem toàn bộ vé (chế độ chỉ đọc).
  *
