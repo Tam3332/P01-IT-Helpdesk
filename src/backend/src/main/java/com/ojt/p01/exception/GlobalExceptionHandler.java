@@ -107,7 +107,7 @@ public class GlobalExceptionHandler {
         // Bị chặn khi đọc multipart, chưa vào service nên chưa biết ticket → ghi theo endpoint
         auditLogger.logForCurrentUser("FILE_UPLOAD_REJECTED", "ENDPOINT",
                 request.getMethod() + " " + request.getRequestURI(), "UPLOAD_ATTACHMENT", "FAILURE",
-                ec.getHttpStatus().value());
+                ec.getHttpStatus().value(), ec.getCode());
         return ResponseEntity.status(ec.getHttpStatus()).body(ApiResponse.error(ec.getCode(), ec.getMessage()));
     }
 

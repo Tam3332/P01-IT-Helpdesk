@@ -39,6 +39,7 @@ public enum ErrorCode {
     ROLE_NOT_FOUND             ("ROLE_NOT_FOUND", "Vai trò không hợp lệ", HttpStatus.BAD_REQUEST),
     CANNOT_CHANGE_OWN_ROLE     ("CANNOT_CHANGE_OWN_ROLE", "Không thể thay đổi vai trò của chính bạn", HttpStatus.BAD_REQUEST),
     CANNOT_LOCK_OWN_ACCOUNT    ("CANNOT_LOCK_OWN_ACCOUNT", "Không thể khóa tài khoản của chính bạn", HttpStatus.BAD_REQUEST),
+    TOO_MANY_LOGIN_ATTEMPTS    ("TOO_MANY_LOGIN_ATTEMPTS", "Bạn đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút", HttpStatus.TOO_MANY_REQUESTS), // 429: UC-01 2b
 
     // -------------------------------------------------------------------------
     // Ticket state machine
@@ -65,6 +66,8 @@ public enum ErrorCode {
     RESOLUTION_NOTE_REQUIRED   ("RESOLUTION_NOTE_REQUIRED", "Giải pháp kỹ thuật bắt buộc khi hoàn tất xử lý (tối thiểu 20 ký tự)", HttpStatus.BAD_REQUEST),
     TICKET_CLOSED              ("TICKET_CLOSED", "Ticket đã đóng, không thể thao tác", HttpStatus.UNPROCESSABLE_ENTITY),
     TICKET_NOT_RESOLVED        ("TICKET_NOT_RESOLVED", "Chỉ có thể đóng ticket khi đang ở trạng thái RESOLVED", HttpStatus.UNPROCESSABLE_ENTITY),
+    TICKET_NOT_CLOSED          ("TICKET_NOT_CLOSED", "Chỉ có thể đánh giá sau khi ticket đã đóng", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS HD15
+    FEEDBACK_ALREADY_SUBMITTED ("FEEDBACK_ALREADY_SUBMITTED", "Ticket này đã được gửi đánh giá trước đó", HttpStatus.UNPROCESSABLE_ENTITY), // 422: SRS HD15 (nhóm không dùng 409)
     FILE_TOO_LARGE             ("FILE_TOO_LARGE", "Dung lượng tệp vượt quá giới hạn 10MB", HttpStatus.BAD_REQUEST),
     FILE_TYPE_NOT_ALLOWED      ("FILE_TYPE_NOT_ALLOWED", "Định dạng tệp không được hỗ trợ", HttpStatus.BAD_REQUEST),
     ATTACHMENT_LIMIT_EXCEEDED  ("ATTACHMENT_LIMIT_EXCEEDED", "Mỗi ticket chỉ được đính kèm tối đa 5 tệp", HttpStatus.BAD_REQUEST),
