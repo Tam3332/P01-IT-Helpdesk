@@ -170,7 +170,7 @@ const actionLabel = (a) => ({
   ATTACH_FILE: t('Đính kèm tệp tin'),
   CLOSE: t('Xác nhận đóng ticket'),
   REOPEN: t('Mở lại ticket'),
-  SLA_BREACH: t('Hệ thống cảnh báo vi phạm SLA'),
+  SLA_BREACH: t('Hệ thống cảnh báo vi phạm'),
 }[a])
 
 const fieldLabel = (f) => ({
@@ -184,7 +184,7 @@ const fieldLabel = (f) => ({
 
 function historyText(h, nameOf) {
   if (h.action === 'SLA_BREACH' || h.fieldChanged === 'is_sla_breached') {
-    return t('Hệ thống cảnh báo vi phạm SLA')
+    return t('Hệ thống cảnh báo vi phạm')
   }
 
   const actionName = actionLabel(h.action) || h.action || t('Cập nhật')
