@@ -10,13 +10,18 @@ import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
 import { fetchOpenTickets, ticketRef } from '@/services/ticketService'
 import { listReopenRequests } from '@/services/referenceService'
+import { getDashboardStats } from '@/services/dashboardService'
 import CountUp, { useCountUp } from '@/components/CountUp'
 import { dur, slaOf } from '@/utils/sla'
 import { t } from '@/i18n'
 
 async function load() {
-  const [open, pending] = await Promise.all([fetchOpenTickets(), listReopenRequests('PENDING').catch(() => [])])
-  return { open, pending: pending.length }
+  const [open, pending, stats] = await Promise.all([
+    fetchOpenTickets(),
+    listReopenRequests('PENDING').catch(() => []),
+    getDashboardStats().catch(() => null),
+  ])
+  return { open, pending: pending.length, stats }
 }
 
 const BAR = { LOW: 'var(--neu)', MEDIUM: 'var(--info)', HIGH: 'var(--warn)', CRITICAL: 'var(--bad)' }
@@ -26,12 +31,14 @@ export default function ManagerOverview() {
   const navigate = useNavigate()
   const d = useAsync(load, [])
   const open = d.data?.open || []
+  const stats = d.data?.stats
   const sl = open.map((x) => ({ tk: x, s: slaOf(x) }))
-  const near = sl.filter((x) => x.s.key === 'NEAR_BREACH').length
-  const breach = sl.filter((x) => x.s.key === 'BREACHED').length
-  const unassigned = open.filter((x) => x.status === 'NEW').length
-  const okCount = open.length - near - breach
-  const pct = open.length ? Math.round((okCount / open.length) * 100) : 100
+  const near = stats != null ? stats.nearBreachCount : sl.filter((x) => x.s.key === 'NEAR_BREACH').length
+  const breach = stats != null ? stats.slaBreachedCount : sl.filter((x) => x.s.key === 'BREACHED').length
+  const unassigned = stats != null ? stats.newTickets : open.filter((x) => x.status === 'NEW').length
+  const openCount = stats != null ? (stats.newTickets + stats.inProgressTickets) : open.length
+  const okCount = Math.max(0, openCount - near - breach)
+  const pct = openCount ? Math.round((okCount / openCount) * 100) : 100
   const mx = Math.max(1, ...PRIORITY_KEYS.map((p) => open.filter((x) => x.priority === p).length))
   const donutPct = useCountUp(pct) // vòng SLA vẽ dần từ 0 tới giá trị thật
   const attention = sl.filter((x) => x.s.key !== 'NORMAL').sort((a, b) => b.s.pct - a.s.pct)
@@ -50,7 +57,7 @@ export default function ManagerOverview() {
               </div>
             )}
             <div className="kpis">
-              <Kpi label={t('Ticket đang mở')} value={open.length} tone="primary" icon="ticket" to="/manager/tickets" />
+              <Kpi label={t('Ticket đang mở')} value={openCount} tone="primary" icon="ticket" to="/manager/tickets" />
               <Kpi label={t('Chưa phân công')} value={unassigned} tone="info" icon="inbox" to="/manager/tickets?status=NEW" />
               <Kpi label={t('Sắp quá hạn')} value={near} tone="warn" icon="clock" to="/manager/sla" />
               <Kpi label={t('Quá hạn')} value={breach} tone="bad" icon="alert" to="/manager/sla" />

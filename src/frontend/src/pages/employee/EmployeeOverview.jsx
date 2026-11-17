@@ -6,14 +6,27 @@ import { Async } from '@/components/StateViews'
 import TicketListCard from '@/components/TicketListCard'
 import useAsync from '@/hooks/useAsync'
 import { getStatusCounts } from '@/services/ticketService'
+import { getDashboardStats } from '@/services/dashboardService'
 import { OPEN_STATUSES } from '@/config/domain'
 import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
 import { t } from '@/i18n'
 
+async function loadEmployeeStats() {
+  try {
+    const stats = await getDashboardStats()
+    if (stats?.byStatus) {
+      return stats.byStatus
+    }
+  } catch {
+    // Fallback sang hàm đếm cũ nếu lỗi
+  }
+  return getStatusCounts()
+}
+
 export default function EmployeeOverview() {
   const navigate = useNavigate()
-  const counts = useAsync(getStatusCounts, [])
+  const counts = useAsync(loadEmployeeStats, [])
   const item = NAV[ROLES.EMPLOYEE][0]
   const c = counts.data
   const sum = (keys) => keys.reduce((a, k) => a + (c?.[k] || 0), 0)
