@@ -170,6 +170,7 @@ const actionLabel = (a) => ({
   ATTACH_FILE: t('Đính kèm tệp tin'),
   CLOSE: t('Xác nhận đóng ticket'),
   REOPEN: t('Mở lại ticket'),
+  SLA_BREACH: t('Hệ thống cảnh báo vi phạm'),
 }[a])
 
 const fieldLabel = (f) => ({
@@ -178,9 +179,14 @@ const fieldLabel = (f) => ({
   assignee: t('Người xử lý'),
   current_assignee_id: t('Người xử lý'),
   currentAssigneeId: t('Người xử lý'),
+  is_sla_breached: t('Vi phạm cam kết SLA'),
 }[f])
 
 function historyText(h, nameOf) {
+  if (h.action === 'SLA_BREACH' || h.fieldChanged === 'is_sla_breached') {
+    return t('Hệ thống cảnh báo vi phạm')
+  }
+
   const actionName = actionLabel(h.action) || h.action || t('Cập nhật')
 
   // Trường hợp bình luận hoặc đính kèm: không in ID kỹ thuật
@@ -265,7 +271,14 @@ export function HistoryCard({ ticketRef, nameOf, refreshKey }) {
                     {h.reasonOrNote && h.reasonOrNote !== 'Tạo mới ticket' && h.action !== 'CREATE' && (
                       <div className="sm muted" style={{ overflowWrap: 'anywhere' }}>{h.reasonOrNote}</div>
                     )}
-                    <div className="sm muted who"><span className="av xs" style={avatarStyle(nameOf(h.actorId, h.actorName))}>{initials(nameOf(h.actorId, h.actorName))}</span>{nameOf(h.actorId, h.actorName)} · {fmtDateTime(h.timestamp)}</div>
+                    {h.action === 'SLA_BREACH' || h.fieldChanged === 'is_sla_breached' ? (
+                      <div className="sm muted who">
+                        <span className="av xs" style={{ background: 'var(--bad-bg)', color: 'var(--bad)', display: 'inline-grid', placeItems: 'center', fontWeight: 700 }}>⚙</span>
+                        {t('Hệ thống (Tự động)')} · {fmtDateTime(h.timestamp)}
+                      </div>
+                    ) : (
+                      <div className="sm muted who"><span className="av xs" style={avatarStyle(nameOf(h.actorId, h.actorName))}>{initials(nameOf(h.actorId, h.actorName))}</span>{nameOf(h.actorId, h.actorName)} · {fmtDateTime(h.timestamp)}</div>
+                    )}
                   </div>
                 </li>
               ))}

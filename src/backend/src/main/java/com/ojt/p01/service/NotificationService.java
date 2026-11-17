@@ -77,6 +77,8 @@ public class NotificationService {
                     status = "REOPEN_REJECTED";
                 } else if ("CREATE".equals(action)) {
                     status = "NEW";
+                } else if ("SLA_BREACH".equals(action)) {
+                    status = "BREACHED";
                 } else {
                     status = (h.getNewValue() != null && !h.getNewValue().isBlank()) ? h.getNewValue() : t.getStatus();
                 }
@@ -119,18 +121,20 @@ public class NotificationService {
             }
 
         } else if ("IT_STAFF".equalsIgnoreCase(roleName)) {
-            // Staff: Chỉ hiện ticket khi Manager phân công cho mình
+            // Staff: Chỉ hiện ticket khi Manager phân công cho mình hoặc cảnh báo vi phạm SLA
             List<TicketHistory> staffHistories = historyRepository.findNotificationsForStaff(
-                    String.valueOf(currentUser.getId()), PageRequest.of(0, safeLimit));
+                    currentUser.getId(), String.valueOf(currentUser.getId()), PageRequest.of(0, safeLimit));
 
             for (TicketHistory h : staffHistories) {
                 Ticket t = h.getTicket();
+                String notifStatus = "SLA_BREACH".equals(h.getAction()) ? "BREACHED" : "ASSIGNED";
+                String notifTitle = "SLA_BREACH".equals(h.getAction()) ? "Cảnh báo: Vé đã quá hạn cam kết SLA!" : t.getTitle();
                 result.add(new NotificationResponse(
                         h.getId(),
                         t.getId(),
                         t.getTicketNumber(),
-                        t.getTitle(),
-                        "ASSIGNED", // Hiển thị rõ trạng thái: Đã phân công
+                        notifTitle,
+                        notifStatus,
                         h.getAction(),
                         h.getActor() != null ? h.getActor().getFullName() : "IT Manager",
                         h.getTimestamp()

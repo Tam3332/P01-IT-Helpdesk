@@ -18,16 +18,15 @@ public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Lo
     List<TicketHistory> findByTicket_IdOrderByTimestampAsc(Long ticketId);
 
  /**
- * 1. Thông báo cho STAFF: Chỉ hiện ticket khi Manager phân công cho Staff đó.
+ * 1. Thông báo cho STAFF: Chỉ hiện ticket khi Manager phân công cho Staff đó hoặc cảnh báo vi phạm SLA.
  */
     @Query("SELECT h FROM TicketHistory h " +
            "JOIN FETCH h.ticket t " +
            "JOIN FETCH h.actor a " +
-           "WHERE h.fieldChanged = 'current_assignee_id' " +
-           "  AND (h.action = 'ASSIGN' OR h.action = 'REASSIGN') " +
-           "  AND h.newValue = :userIdStr " +
+           "WHERE (h.fieldChanged = 'current_assignee_id' AND (h.action = 'ASSIGN' OR h.action = 'REASSIGN') AND h.newValue = :userIdStr) " +
+           "   OR (h.action = 'SLA_BREACH' AND t.currentAssignee.id = :userId) " +
            "ORDER BY h.timestamp DESC")
-    List<TicketHistory> findNotificationsForStaff(@Param("userIdStr") String userIdStr, Pageable pageable);
+    List<TicketHistory> findNotificationsForStaff(@Param("userId") Long userId, @Param("userIdStr") String userIdStr, Pageable pageable);
 
  /**
  * 2. Thông báo cho EMPLOYEE: Nhận các biến động quan trọng của vé do mình tạo:
@@ -41,13 +40,13 @@ public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Lo
            "  AND ( " +
            "      (h.action = 'CREATE') " +
            "   OR (h.fieldChanged = 'current_assignee_id' AND (h.action = 'ASSIGN' OR h.action = 'REASSIGN')) " +
-           "   OR (h.fieldChanged = 'status' AND (h.newValue IN ('NEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPEN_PENDING', 'REOPENED', 'CLOSED') OR h.action IN ('CREATE', 'REOPEN_REQUEST', 'REOPEN_APPROVE', 'REOPEN_REJECT', 'CLOSE'))) " +
+           "   OR (h.fieldChanged = 'status' AND (h.newValue IN ('NEW', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPEN_PENDING', 'REOPENED', 'CLOSED') OR h.action IN ('CREATE', 'REOPEN_REQUEST', 'REOPEN_APPROVE', 'REOPEN_REJECT', 'CLOSE', 'SLA_BREACH'))) " +
            "  ) " +
            "ORDER BY h.timestamp DESC")
     List<TicketHistory> findNotificationsForEmployee(@Param("userId") Long userId, Pageable pageable);
 
  /**
- * 3. Thông báo cho MANAGER: Chỉ hiện khi có ticket mới tạo (CREATE) hoặc mở lại (REOPEN).
+ * 3. Thông báo cho MANAGER: Chỉ hiện khi có ticket mới tạo (CREATE), mở lại (REOPEN) hoặc cảnh báo vi phạm SLA.
  */
     @Query("SELECT h FROM TicketHistory h " +
            "JOIN FETCH h.ticket t " +
@@ -57,6 +56,7 @@ public interface TicketHistoryRepository extends JpaRepository<TicketHistory, Lo
            "   OR h.action = 'REOPEN' " +
            "   OR h.action = 'REOPEN_APPROVE' " +
            "   OR h.action = 'REOPEN_REJECT' " +
+           "   OR h.action = 'SLA_BREACH' " +
            "   OR (h.fieldChanged = 'status' AND (h.newValue = 'REOPENED' OR h.newValue = 'REOPEN_PENDING')) " +
            "ORDER BY h.timestamp DESC")
     List<TicketHistory> findNotificationsForManager(Pageable pageable);

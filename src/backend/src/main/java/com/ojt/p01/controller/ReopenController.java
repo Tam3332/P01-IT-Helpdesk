@@ -66,15 +66,13 @@ public class ReopenController {
             summary = "Phê duyệt yêu cầu mở lại ticket (IT Manager)",
             description = "Chuyển ticket sang REOPENED, kích hoạt SLA xử lý mới, tăng reopen_count, có thể chọn phân công lại IT Staff mới."
     )
-    @PostMapping({"/reopen-requests/{id}/approve", "/reopen-requests/{requestId}/approve"})
+    @PostMapping("/reopen-requests/{id}/approve")
     public ResponseEntity<ApiResponse<ReopenRequestResponse>> approveReopen(
-            @Parameter(description = "ID của yêu cầu ReopenRequest") @PathVariable(value = "id", required = false) Long id,
-            @PathVariable(value = "requestId", required = false) Long requestId,
+            @Parameter(description = "ID của yêu cầu ReopenRequest") @PathVariable("id") Long id,
             @Valid @RequestBody(required = false) ApproveReopenRequest request,
             HttpServletRequest httpRequest
     ) {
-        Long targetId = id != null ? id : requestId;
-        ReopenRequestResponse response = reopenService.approveReopenRequest(targetId, request, httpRequest.getRemoteAddr());
+        ReopenRequestResponse response = reopenService.approveReopenRequest(id, request, httpRequest.getRemoteAddr());
         return ResponseEntity.ok(ApiResponse.success("Đã phê duyệt mở lại ticket thành công", response));
     }
 
@@ -82,15 +80,13 @@ public class ReopenController {
             summary = "Từ chối yêu cầu mở lại ticket (IT Manager)",
             description = "Bắt buộc có reviewNote (lý do từ chối), chuyển ticket quay lại trạng thái RESOLVED."
     )
-    @PostMapping({"/reopen-requests/{id}/reject", "/reopen-requests/{requestId}/reject"})
+    @PostMapping("/reopen-requests/{id}/reject")
     public ResponseEntity<ApiResponse<ReopenRequestResponse>> rejectReopen(
-            @Parameter(description = "ID của yêu cầu ReopenRequest") @PathVariable(value = "id", required = false) Long id,
-            @PathVariable(value = "requestId", required = false) Long requestId,
+            @Parameter(description = "ID của yêu cầu ReopenRequest") @PathVariable("id") Long id,
             @Valid @RequestBody RejectReopenRequest request,
             HttpServletRequest httpRequest
     ) {
-        Long targetId = id != null ? id : requestId;
-        ReopenRequestResponse response = reopenService.rejectReopenRequest(targetId, request, httpRequest.getRemoteAddr());
+        ReopenRequestResponse response = reopenService.rejectReopenRequest(id, request, httpRequest.getRemoteAddr());
         return ResponseEntity.ok(ApiResponse.success("Đã từ chối yêu cầu mở lại ticket", response));
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SLA Background Worker chạy ngầm định kỳ mỗi 5 phút.
@@ -123,16 +124,18 @@ public class SlaBackgroundWorker {
                     ? "Quá cả hạn phản hồi và hạn xử lý sự cố"
                     : (isResponseBreached ? "Quá hạn phản hồi ban đầu" : "Quá hạn hoàn tất xử lý sự cố");
 
-            // Ghi nhận vào Security Audit Log
-            auditLogger.log(
+            // Ghi nhận vào Security Audit Log theo format thống nhất với Hoà (17/11, SDD §7 v2)
+            auditLogger.logAfterCommit(
                     "SLA_BREACHED",
                     null,
-                    "SYSTEM",
+                    null,
                     "TICKET",
                     ticket.getTicketNumber(),
-                    "SLA_MONITOR",
-                    "BREACHED",
-                    200
+                    "MARK_SLA_BREACHED",
+                    "SUCCESS",
+                    null,
+                    Map.of("is_sla_breached", false),
+                    Map.of("is_sla_breached", true)
             );
 
             // Ghi nhận vào nhật ký lịch sử TicketHistory
