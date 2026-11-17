@@ -1566,7 +1566,7 @@ paths:
   /dashboard/stats:
     get:
       tags: [Dashboard]
-      summary: "[Chưa triển khai – tuần 4] Thống kê tổng hợp số lượng vé, vi phạm SLA, hiệu năng (HD14)"
+      summary: "Thống kê tổng hợp số lượng vé, vi phạm SLA, hiệu năng (HD14)"
       description: >
         Trả về thống kê tổng quan: tổng số vé theo trạng thái, số vé vi phạm SLA,
         thời gian xử lý trung bình. Dành riêng cho IT_MANAGER.
@@ -1587,7 +1587,7 @@ paths:
   /dashboard/sla-monitor:
     get:
       tags: [Dashboard]
-      summary: "[Chưa triển khai – tuần 4] Giám sát vé sắp chạm ngưỡng cảnh báo 80% hoặc quá hạn SLA (HD12, HD14)"
+      summary: "Giám sát vé sắp chạm ngưỡng cảnh báo 80% hoặc quá hạn SLA (HD12, HD14)"
       description: >
         Danh sách vé đang tiến gần đến ngưỡng SLA (>= 80% thời gian deadline)
         hoặc đã vi phạm SLA (is_sla_breached = true). Dành riêng cho IT_MANAGER.
@@ -1625,11 +1625,34 @@ components:
   schemas:
     DashboardStatsResponse:
       type: object
-      description: Thống kê tổng hợp cho IT_MANAGER (HD14)
+      description: Thống kê tổng hợp cho Dashboard (HD14)
       properties:
         totalTickets:
           type: integer
           description: Tổng số vé trong hệ thống
+        newTickets:
+          type: integer
+          description: Số lượng vé mới tạo (NEW)
+        inProgressTickets:
+          type: integer
+          description: Số lượng vé đang xử lý (ASSIGNED, IN_PROGRESS, REOPENED, REOPEN_PENDING)
+        resolvedTickets:
+          type: integer
+          description: Số lượng vé đã hoàn tất (RESOLVED, CLOSED)
+        slaBreachedCount:
+          type: integer
+          description: Số vé đã vi phạm SLA
+        slaBreachedPct:
+          type: number
+          format: double
+          description: "% vé vi phạm SLA trên tổng số"
+        nearBreachCount:
+          type: integer
+          description: Số vé sắp vi phạm SLA (>= 80% thời gian)
+        avgResolutionHours:
+          type: number
+          format: double
+          description: Thời gian giải quyết trung bình (giờ)
         byStatus:
           type: object
           description: Số lượng vé theo từng trạng thái
@@ -1641,17 +1664,16 @@ components:
             IN_PROGRESS: 2
             RESOLVED: 8
             CLOSED: 12
-        slaBreachedCount:
-          type: integer
-          description: Số vé đã vi phạm SLA
-        slaBreachedPct:
-          type: number
-          format: double
-          description: "% vé vi phạm SLA trên tổng số"
-        avgResolutionHours:
-          type: number
-          format: double
-          description: Thời gian giải quyết trung bình (giờ)
+        byCategory:
+          type: object
+          description: Số lượng vé phân bổ theo danh mục
+          additionalProperties:
+            type: integer
+        byAssignee:
+          type: object
+          description: Số lượng vé phân bổ theo người xử lý
+          additionalProperties:
+            type: integer
 
     SLAMonitorItem:
       type: object
@@ -1681,6 +1703,15 @@ components:
         assigneeName:
           type: string
           nullable: true
+        currentAssigneeId:
+          type: integer
+          nullable: true
+        slaLabel:
+          type: string
+          enum: [NORMAL, NEAR_BREACH, BREACHED]
+        createdAt:
+          type: string
+          format: date-time
 
     ReopenRequestDTO:
       type: object

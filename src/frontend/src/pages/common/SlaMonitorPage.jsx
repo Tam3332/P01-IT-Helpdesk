@@ -10,18 +10,42 @@ import { SLA } from '@/config/domain'
 import { ROLE_HOME } from '@/config/constants'
 import { findNavItem } from '@/config/nav'
 import { fetchOpenTickets, ticketRef } from '@/services/ticketService'
+import { getSlaMonitor } from '@/services/dashboardService'
 import { fmtDateTime } from '@/utils/format'
 import { dur, slaOf } from '@/utils/sla'
 import { t as tr } from '@/i18n'
 
-// Giám sát SLA: tính từ danh sách ticket đang mở (slaLabel do backend, thiếu thì tính từ hạn).
-// Khi API GET /dashboard/sla-monitor (HD14) sẵn sàng có thể thay nguồn dữ liệu ở đây.
+// Giám sát SLA: gọi API backend GET /dashboard/sla-monitor (HD12, HD14), fallback sang fetchOpenTickets nếu cần
+async function loadSlaData() {
+  try {
+    const items = await getSlaMonitor()
+    if (items && items.length > 0) {
+      return items.map((item) => ({
+        id: item.ticketId,
+        ticketNumber: item.ticketNumber,
+        title: item.title,
+        priority: item.priority,
+        status: item.status,
+        resolutionDeadline: item.resolutionDeadline,
+        assigneeName: item.assigneeName,
+        currentAssigneeId: item.currentAssigneeId,
+        isSlaBreached: item.isSlaBreached,
+        slaLabel: item.slaLabel,
+        createdAt: item.createdAt,
+      }))
+    }
+  } catch (e) {
+    console.warn('Fallback sang fetchOpenTickets:', e)
+  }
+  return fetchOpenTickets()
+}
+
 export default function SlaMonitorPage() {
   const { user } = useAuth()
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const item = findNavItem(user.role, pathname)
-  const open = useAsync(fetchOpenTickets, [])
+  const open = useAsync(loadSlaData, [])
   const [filter, setFilter] = useState('all')
 
   // Backend đã giới hạn: Staff chỉ nhận ticket được giao cho mình
