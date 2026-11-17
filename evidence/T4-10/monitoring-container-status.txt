@@ -1,0 +1,2 @@
+NAMES                      STATUS         IMAGE
+p01-lab-v04-monitoring-1   Up 5 minutes   python:3.12-alpine
