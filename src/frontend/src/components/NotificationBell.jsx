@@ -325,7 +325,7 @@ export default function NotificationBell() {
                       >
                         {item.ticketNumber}
                       </span>
-                      {item.status === 'BREACHED' ? (
+                      {item.status === 'BREACHED' || item.status === 'true' || item.action === 'SLA_BREACH' ? (
                         <span className="badge s-breach">{t('Quá hạn')}</span>
                       ) : item.status === 'CRITICAL' ? (
                         <span className="badge p-critical">{t('Nghiêm trọng')}</span>

@@ -77,6 +77,8 @@ public class NotificationService {
                     status = "REOPEN_REJECTED";
                 } else if ("CREATE".equals(action)) {
                     status = "NEW";
+                } else if ("SLA_BREACH".equals(action)) {
+                    status = "BREACHED";
                 } else {
                     status = (h.getNewValue() != null && !h.getNewValue().isBlank()) ? h.getNewValue() : t.getStatus();
                 }
