@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -91,16 +92,18 @@ class SlaBackgroundWorkerTest {
         assertEquals("is_sla_breached", savedHistory.getFieldChanged());
         assertEquals("true", savedHistory.getNewValue());
 
-        // 3. Kiểm tra ghi Security Audit Log SLA_BREACHED
-        verify(auditLogger, times(1)).log(
+        // 3. Kiểm tra ghi Security Audit Log SLA_BREACHED theo format của Hoà
+        verify(auditLogger, times(1)).logAfterCommit(
                 eq("SLA_BREACHED"),
                 isNull(),
-                eq("SYSTEM"),
+                isNull(),
                 eq("TICKET"),
                 eq("HD-2026-0100"),
-                eq("SLA_MONITOR"),
-                eq("BREACHED"),
-                eq(200)
+                eq("MARK_SLA_BREACHED"),
+                eq("SUCCESS"),
+                isNull(),
+                eq(Map.of("is_sla_breached", false)),
+                eq(Map.of("is_sla_breached", true))
         );
     }
 }
