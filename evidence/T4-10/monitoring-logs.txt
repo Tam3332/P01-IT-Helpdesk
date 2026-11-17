@@ -1,0 +1,1 @@
+[monitor] watch /audit/audit_events.jsonl; append alerts to /alerts/alerts.jsonl
