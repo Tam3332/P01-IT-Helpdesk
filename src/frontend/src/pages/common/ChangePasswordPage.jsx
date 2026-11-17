@@ -96,7 +96,7 @@ export default function ChangePasswordPage() {
       setChangeCount(nextCount)
       try {
         localStorage.setItem(todayKey, String(nextCount))
-      } catch {}
+      } catch { /* không ảnh hưởng luồng chính */ }
       toast(t('Đã đổi mật khẩu.'))
       try {
         await reloadUser() // gỡ yêu cầu bắt buộc đổi mật khẩu nếu có

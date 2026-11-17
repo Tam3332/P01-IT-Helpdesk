@@ -329,7 +329,7 @@ export function FeedbackCard({ ticketRef }) {
               </div>
               {feedback.feedbackComment ? (
                 <p style={{ marginTop: 6, overflowWrap: 'anywhere', color: '#cbd5e1', fontStyle: 'italic' }}>
-                  "{feedback.feedbackComment}"
+                  &quot;{feedback.feedbackComment}&quot;
                 </p>
               ) : (
                 <p className="sm muted" style={{ marginTop: 4 }}>{t('Bạn đã đánh giá {n}/5 sao.', { n: feedback.ratingStars })}</p>

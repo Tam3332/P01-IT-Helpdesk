@@ -65,7 +65,7 @@ export function ReopenDialog({ ticket, ref_, onClose, onDone }) {
         await guard(() => reopenTicket(ref_, reason.trim()), t('Không gửi được yêu cầu.'))
         try {
           window.dispatchEvent(new Event('ticket_updated'))
-        } catch {}
+        } catch { /* không ảnh hưởng luồng chính */ }
         onDone(t('Đã gửi yêu cầu mở lại cho IT Manager.'))
       }}
     >

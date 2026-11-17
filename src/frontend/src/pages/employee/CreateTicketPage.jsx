@@ -71,7 +71,7 @@ export default function CreateTicketPage() {
     try {
       window.dispatchEvent(new Event('ticket_created'))
       window.dispatchEvent(new Event('ticket_updated'))
-    } catch {}
+    } catch { /* không ảnh hưởng luồng chính */ }
     navigate(`/employee/tickets/${encodeURIComponent(ref)}`, { replace: true })
   }
 
