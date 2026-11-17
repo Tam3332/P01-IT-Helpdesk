@@ -30,6 +30,7 @@ sh scripts/gen-self-signed-cert.sh 192.168.x.x   # IP hoặc tên của VM (đ�
 docker compose up -d --build
 docker compose ps                            # postgres, backend, frontend phải (healthy); nginx là Up
 sh scripts/lab-check.sh                      # kiểm tra tự động, chụp màn hình làm bằng chứng
+                                             # mục 2 chỉ xét cổng của project compose này, không tính container khác trên VM
 ```
 Mở `https://<IP-VM>/` (trình duyệt cảnh báo chứng chỉ tự ký, bấm tiếp tục).
 
