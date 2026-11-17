@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""P01 T3-03: IA-HD05 Security Audit Monitoring v1 (stdlib only).
+"""P01 T5-03: IA-HD05 Security Audit Monitoring v2 (stdlib only).
 
 Matches the *current* Cường/Trí Backend contract (cuong/be, 2026-11-05):
-  LOGIN_FAILED: actor_id=<int|null>, target_type=USER_EMAIL, target_id=<email>, http_status=401
+  LOGIN_FAILED: 401 invalid credentials; 429 only when Backend lockout starts/continues
+  ACCOUNT_LOCKED or BRUTE_FORCE_DETECTED: emitted when Backend starts a lockout
   LOGIN_SUCCESS: actor_id=<int>, target_type=USER, target_id=<userId>, http_status=200
   AUTHZ_DENIED: actor_id=<int>, target_type=TICKET or ENDPOINT, http_status=403/404
 All of these carry timestamp UTC, src_ip, outcome, action and correlation_id.
@@ -27,6 +28,7 @@ from typing import Any
 WINDOW = timedelta(minutes=5)
 LOGIN_THRESHOLD = 5   # SRS HD01/UC-01: 5 consecutive failures within 5 min
 AUTHZ_THRESHOLD = 3   # IA-HD05: Proposed; needs team approval
+LOCK_EVENTS = frozenset({"ACCOUNT_LOCKED", "BRUTE_FORCE_DETECTED"})
 TICKET_API = re.compile(r"^(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+/api/v1/tickets(?:/|\?|$)", re.I)
 
 
@@ -103,7 +105,7 @@ class Detector:
     """Stateful sliding-window detector for timestamp-ordered events.
 
     No duplicate alerts while a window stays over threshold. Exact five-minute
-    boundary counts as within the window. Running state is memory-only in v1.
+    boundary counts as within the window. Running state is memory-only in v2.
     """
 
     def __init__(self, login_threshold: int = LOGIN_THRESHOLD, authz_threshold: int = AUTHZ_THRESHOLD):
@@ -120,11 +122,23 @@ class Detector:
         while times and times[0] < now - WINDOW:
             times.popleft()
 
+    def _r1_alert(self, now: datetime, times: deque[datetime],
+                  key_id: str, ip: str, source_type: str) -> dict[str, Any]:
+        """Build one alert without raw email or any authentication secrets."""
+        self.counts["alerts"] += 1
+        return {
+            "rule_id": "R1_BRUTE_FORCE_LOGIN", "severity": "HIGH",
+            "detected_at": iso_z(now), "event_type": "SECURITY_ALERT",
+            "login_ref": key_id, "src_ip": ip, "event_count": len(times),
+            "window_seconds": int(WINDOW.total_seconds()),
+            "first_event_at": iso_z(times[0]), "last_event_at": iso_z(now),
+            "source_event_type": source_type, "status": "DETECTED",
+        }
+
     def process(self, event: dict[str, Any]) -> dict[str, Any] | None:
         self.counts["events"] += 1
         event_type = event.get("event_type")
-        if event_type not in {"LOGIN_SUCCESS", "LOGIN_FAILED", "AUTHZ_DENIED"}:
-            # Backend may add BRUTE_FORCE_DETECTED in week 5. Do not double-alert.
+        if event_type not in {"LOGIN_SUCCESS", "LOGIN_FAILED", "AUTHZ_DENIED"} | LOCK_EVENTS:
             return None
         try:
             now = parse_utc(event.get("timestamp"))
@@ -132,10 +146,34 @@ class Detector:
             self.counts["skipped"] += 1
             return None
 
+        if event_type in LOCK_EVENTS:
+            # Week 5 Backend: LOGIN_FAILED/401 x 4, then LOGIN_FAILED/429
+            # and exactly one ACCOUNT_LOCKED (or BRUTE_FORCE_DETECTED).
+            # 429 itself is NOT counted; repeated 429 while locked does not
+            # trigger a duplicate. A lock event supplies the fifth threshold
+            # signal only when the previous 4 failures are actually visible.
+            if event.get("http_status") not in (None, 429):
+                return None
+            if event.get("outcome") not in (None, "FAILURE"):
+                return None
+            key_id = login_key(event)
+            ip = event.get("src_ip")
+            if key_id is None or not isinstance(ip, str) or not ip.strip():
+                self.counts["skipped"] += 1
+                return None
+            ip = ip.strip()
+            times = self.failed[(key_id, ip)]
+            self._trim(times, now)
+            if len(times) == self.login_threshold - 1:
+                times.append(now)
+                return self._r1_alert(now, times, key_id, ip, event_type)
+            return None
+
         if event_type in {"LOGIN_SUCCESS", "LOGIN_FAILED"}:
             # Backend logs disabled users with LOGIN_FAILED/403: not a bad password.
-            # Only count actual invalid credentials (401); v0 synthetic logs
-            # without http_status are accepted for backward compatibility.
+            # Only count actual invalid credentials (401); the fifth 429
+            # is completed by ACCOUNT_LOCKED/BRUTE_FORCE_DETECTED above.
+            # v0 synthetic logs without http_status remain compatible.
             is_legacy_denied = (
                 isinstance(event.get("login_ref"), str)
                 and event.get("outcome") == "DENIED"
@@ -159,16 +197,7 @@ class Detector:
             prior = len(times)
             times.append(now)
             if prior < self.login_threshold <= len(times):
-                self.counts["alerts"] += 1
-                return {
-                    "rule_id": "R1_BRUTE_FORCE_LOGIN", "severity": "HIGH",
-                    "detected_at": iso_z(now), "event_type": "SECURITY_ALERT",
-                    "login_ref": key_id,  # actor ID or SHA-256, never the raw email
-                    "src_ip": ip.strip(), "event_count": len(times),
-                    "window_seconds": int(WINDOW.total_seconds()),
-                    "first_event_at": iso_z(times[0]), "last_event_at": iso_z(now),
-                    "source_event_type": "LOGIN_FAILED", "status": "DETECTED",
-                }
+                return self._r1_alert(now, times, key_id, ip.strip(), "LOGIN_FAILED")
             return None
 
         if not is_ticket_denial(event):
