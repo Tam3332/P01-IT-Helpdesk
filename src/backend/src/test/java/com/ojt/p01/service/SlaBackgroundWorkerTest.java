@@ -1,4 +1,4 @@
-package com.ojt.p01.worker;
+package com.ojt.p01.service;
 
 import com.ojt.p01.audit.AuditLogger;
 import com.ojt.p01.entity.Role;
@@ -39,7 +39,7 @@ class SlaBackgroundWorkerTest {
 
     @Test
     @DisplayName("SLA Worker phát hiện vé quá hạn: Bật cờ isSlaBreached=true, ghi TicketHistory và Security Audit Log SLA_BREACHED")
-    void scanAndCheckSla_detectsBreach_updatesTicketAndLogs() {
+    void scanAndCheckSlaBreaches_detectsBreach_updatesTicketAndLogs() {
         OffsetDateTime now = OffsetDateTime.now();
 
         Role staffRole = new Role();
@@ -74,9 +74,10 @@ class SlaBackgroundWorkerTest {
         when(ticketRepository.findByStatusIn(anyList())).thenReturn(List.of(overdueTicket, normalTicket));
 
         // Thực thi worker
-        slaBackgroundWorker.scanAndCheckSla();
+        int newlyBreached = slaBackgroundWorker.scanAndCheckSlaBreaches();
 
-        // 1. Kiểm tra cập nhật vé
+        // 1. Kiểm tra kết quả
+        assertEquals(1, newlyBreached);
         assertTrue(overdueTicket.getIsSlaBreached());
         assertFalse(normalTicket.getIsSlaBreached());
         verify(ticketRepository, times(1)).save(overdueTicket);
@@ -93,15 +94,13 @@ class SlaBackgroundWorkerTest {
         // 3. Kiểm tra ghi Security Audit Log SLA_BREACHED
         verify(auditLogger, times(1)).log(
                 eq("SLA_BREACHED"),
-                eq(10L),
-                eq("IT_STAFF"),
+                isNull(),
+                eq("SYSTEM"),
                 eq("TICKET"),
                 eq("HD-2026-0100"),
-                eq("SLA_CHECK"),
+                eq("SLA_MONITOR"),
                 eq("BREACHED"),
-                eq(200),
-                anyMap(),
-                anyMap()
+                eq(200)
         );
     }
 }
