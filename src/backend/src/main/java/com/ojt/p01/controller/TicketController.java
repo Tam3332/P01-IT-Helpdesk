@@ -21,6 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -82,10 +85,14 @@ public class TicketController {
             @RequestParam(required = false) String priority,
             @Parameter(description = "Lọc theo ID danh mục") @RequestParam(required = false) Integer categoryId,
             @Parameter(description = "Lọc theo ID IT Staff đang phụ trách") @RequestParam(required = false) Long assigneeId,
-            @Parameter(description = "Tìm theo tiêu đề hoặc mô tả (không phân biệt hoa thường)") @RequestParam(required = false) String search
+            @Parameter(description = "Tìm theo tiêu đề hoặc mô tả (không phân biệt hoa thường)") @RequestParam(required = false) String search,
+            @Parameter(description = "Lọc từ ngày tạo (yyyy-MM-dd, giờ Việt Nam, gồm ngày này)")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdFrom,
+            @Parameter(description = "Lọc đến ngày tạo (yyyy-MM-dd, giờ Việt Nam, gồm cả ngày này)")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdTo
     ) {
         // Bộ lọc chỉ thu hẹp kết quả trong phạm vi role
-        PageResponse<TicketResponse> response = ticketService.getTickets(page, size, status, priority, categoryId, assigneeId, search);
+        PageResponse<TicketResponse> response = ticketService.getTickets(page, size, status, priority, categoryId, assigneeId, search, createdFrom, createdTo);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
