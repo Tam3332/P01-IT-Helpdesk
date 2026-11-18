@@ -36,7 +36,7 @@ public class AuthController {
 
  /**
  * POST /api/v1/auth/login
- * API public duy nhất (không cần token) theo .
+ * API public duy nhất (không cần token).
  * 200: trả JWT | 400: thiếu/sai định dạng | 401: sai email hoặc mật khẩu | 403: tài khoản bị Admin khóa.
  */
     @Operation(

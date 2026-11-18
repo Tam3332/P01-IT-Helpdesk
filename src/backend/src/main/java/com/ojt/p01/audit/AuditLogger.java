@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -30,7 +32,7 @@ import java.util.concurrent.Executors;
  * Ghi Security Audit Log dạng JSON Lines: mỗi sự kiện là 1 dòng JSON trong audit_events.jsonl.
  *
  * Log riêng với bảng ticket_history.
- * Trường theo : timestamp (UTC), event_type, actor_id, role, target_type, target_id, action, outcome
+ * Các trường ghi nhận: timestamp (UTC), event_type, actor_id, role, target_type, target_id, action, outcome
  * src_ip, correlation_id, http_status.
  * KHÔNG truyền mật khẩu, JWT hay token vào bất kỳ trường nào.
  * Ghi file trên 1 luồng riêng để không chặn request; lỗi ghi log chỉ in ra console, không làm hỏng API.
@@ -69,8 +71,59 @@ public class AuditLogger {
  */
     public void log(String eventType, Long actorId, String role, String targetType, String targetId,
                     String action, String outcome, Integer httpStatus) {
-        HttpServletRequest request = currentRequest();
+        log(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, null, null);
+    }
 
+ /**
+ * Ghi 1 sự kiện kèm lý do (trường reason, tùy chọn), vd FILE_UPLOAD_REJECTED ghi mã lỗi FILE_TOO_LARGE.
+ * Không đưa lý do vào before/after vì hai trường đó chỉ dành cho dữ liệu thay đổi (thống nhất với Hoà 17/11, SDD §7).
+ */
+    public void logWithReason(String eventType, Long actorId, String role, String targetType, String targetId,
+                              String action, String outcome, Integer httpStatus, String reason) {
+        HttpServletRequest request = currentRequest();
+        String srcIp = request != null ? request.getRemoteAddr() : null;
+        logInternal(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus,
+                null, null, reason, srcIp, correlationId(request));
+    }
+
+ /**
+ * Ghi 1 sự kiện có kèm thông tin before và after cho các event thay đổi dữ liệu.
+ */
+    public void log(String eventType, Long actorId, String role, String targetType, String targetId,
+                    String action, String outcome, Integer httpStatus,
+                    Object before, Object after) {
+        HttpServletRequest request = currentRequest();
+        String srcIp = request != null ? request.getRemoteAddr() : null;
+        String corrId = correlationId(request);
+        logInternal(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, before, after, null, srcIp, corrId);
+    }
+
+ /**
+ * Ghi 1 sự kiện sau khi transaction hiện tại commit thành công (an toàn cho môi trường test không có transaction).
+ * Thu thập sẵn IP nguồn và correlation_id trước khi transaction commit.
+ */
+    public void logAfterCommit(String eventType, Long actorId, String role, String targetType, String targetId,
+                               String action, String outcome, Integer httpStatus,
+                               Object before, Object after) {
+        HttpServletRequest request = currentRequest();
+        String srcIp = request != null ? request.getRemoteAddr() : null;
+        String corrId = correlationId(request);
+
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    logInternal(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, before, after, null, srcIp, corrId);
+                }
+            });
+        } else {
+            logInternal(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, before, after, null, srcIp, corrId);
+        }
+    }
+
+    private void logInternal(String eventType, Long actorId, String role, String targetType, String targetId,
+                             String action, String outcome, Integer httpStatus,
+                             Object before, Object after, String reason, String srcIp, String correlationId) {
         // LinkedHashMap để các trường luôn ra đúng thứ tự trong file, dễ đọc khi đối chiếu
         Map<String, Object> event = new LinkedHashMap<>();
         event.put("timestamp", Instant.now().toString());   // ISO-8601 UTC, vd 2026-11-05T05:30:00.123Z
@@ -81,8 +134,18 @@ public class AuditLogger {
         event.put("target_id", targetId);
         event.put("action", action);
         event.put("outcome", outcome);
-        event.put("src_ip", request != null ? request.getRemoteAddr() : null);
-        event.put("correlation_id", correlationId(request));
+        // Lý do (tùy chọn): chỉ ghi khi có, vd mã lỗi của FILE_UPLOAD_REJECTED; không chứa tên hay nội dung tệp
+        if (reason != null) {
+            event.put("reason", reason);
+        }
+        if (before != null) {
+            event.put("before", before);
+        }
+        if (after != null) {
+            event.put("after", after);
+        }
+        event.put("src_ip", srcIp);
+        event.put("correlation_id", correlationId);
         event.put("http_status", httpStatus);
 
         String line;
@@ -101,6 +164,14 @@ public class AuditLogger {
  */
     public void logForCurrentUser(String eventType, String targetType, String targetId,
                                   String action, String outcome, Integer httpStatus) {
+        logForCurrentUser(eventType, targetType, targetId, action, outcome, httpStatus, null);
+    }
+
+ /**
+ * Như trên, kèm lý do (reason, tùy chọn), vd FILE_TOO_LARGE khi multipart vượt giới hạn trước khi vào service.
+ */
+    public void logForCurrentUser(String eventType, String targetType, String targetId,
+                                  String action, String outcome, Integer httpStatus, String reason) {
         Long actorId = null;
         String role = null;
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -111,7 +182,7 @@ public class AuditLogger {
                 role = user.getRole() != null ? user.getRole().getRoleName() : null;
             }
         }
-        log(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus);
+        logWithReason(eventType, actorId, role, targetType, targetId, action, outcome, httpStatus, reason);
     }
 
  /**

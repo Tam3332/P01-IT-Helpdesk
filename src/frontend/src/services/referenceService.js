@@ -13,8 +13,10 @@ export const rejectReopen = async (id, reviewNote) => unwrap(await api.post(`/re
 // ---- Admin ----
 export const adminListUsers = async (params = {}) => normalizePage(unwrap(await api.get('/admin/users', { params })))
 export const adminCreateUser = async (body) => unwrap(await api.post('/admin/users', body))
+export const adminUpdateUser = async (id, body) => unwrap(await api.put(`/admin/users/${id}`, body))
 export const adminSetRole = async (id, role) => unwrap(await api.patch(`/admin/users/${id}/role`, { role }))
 export const adminSetStatus = async (id, isActive) => unwrap(await api.patch(`/admin/users/${id}/status`, { isActive }))
+export const adminResetPassword = async (id, newPassword) => unwrap(await api.post(`/admin/users/${id}/reset-password`, { newPassword }))
 
 export const adminListCategories = async () => unwrap(await api.get('/admin/categories')) || []
 export const adminCreateCategory = async (body) => unwrap(await api.post('/admin/categories', body))

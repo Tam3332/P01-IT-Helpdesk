@@ -5,6 +5,7 @@ import { PriorityBadge, StatusBadge } from '@/components/Badges'
 import { PRIORITY, PRIORITY_KEYS, STATUS_KEYS } from '@/config/domain'
 import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
+import { t } from '@/i18n'
 
 const STATUS_DESC = {
   NEW: 'Ticket vừa được tạo, chờ phân công',
@@ -25,21 +26,21 @@ export default function ReadonlyConfigPage({ kind }) {
   const isPri = kind === 'priorities'
   return (
     <>
-      <PageHeader title={item.label} subtitle={item.subtitle} />
-      <div><button type="button" className="btn ghost sm" onClick={() => navigate('/admin/settings')}><Icon name="back" />Cài đặt hệ thống</button></div>
-      <div className="banner info"><Icon name="lock" /><div className="grow">{isPri ? 'Các mức ưu tiên' : 'Các trạng thái'} là tập giá trị cố định của hệ thống (ràng buộc trong cơ sở dữ liệu) nên không thể thêm, sửa hoặc ẩn từ giao diện.</div></div>
+      <PageHeader title={t(item.label)} subtitle={t(item.subtitle)} />
+      <div><button type="button" className="btn ghost sm" onClick={() => navigate('/admin/settings')}><Icon name="back" />{t('Cài đặt hệ thống')}</button></div>
+      <div className="banner info"><Icon name="lock" /><div className="grow">{isPri ? t('Các mức ưu tiên là tập giá trị cố định của hệ thống (ràng buộc trong cơ sở dữ liệu) nên không thể thêm, sửa hoặc ẩn từ giao diện.') : t('Các trạng thái là tập giá trị cố định của hệ thống (ràng buộc trong cơ sở dữ liệu) nên không thể thêm, sửa hoặc ẩn từ giao diện.')}</div></div>
       <section className="card">
-        <div className="ch"><h2>{isPri ? PRIORITY_KEYS.length : STATUS_KEYS.length} {isPri ? 'mức ưu tiên' : 'trạng thái'}</h2></div>
+        <div className="ch"><h2>{isPri ? t('{n} mức ưu tiên', { n: PRIORITY_KEYS.length }) : t('{n} trạng thái', { n: STATUS_KEYS.length })}</h2></div>
         <div className="tw" style={{ marginTop: 14 }}>
           {isPri ? (
             <table>
-              <thead><tr><th>Tên hiển thị</th><th>Mã</th><th>Cấp độ</th></tr></thead>
+              <thead><tr><th>{t('Tên hiển thị')}</th><th>{t('Mã')}</th><th>{t('Cấp độ')}</th></tr></thead>
               <tbody>{PRIORITY_KEYS.map((p) => <tr key={p}><td><PriorityBadge priority={p} /></td><td><code>{p}</code></td><td className="num">{PRIORITY[p].level}</td></tr>)}</tbody>
             </table>
           ) : (
             <table>
-              <thead><tr><th>Tên hiển thị</th><th>Mã</th><th>Mô tả</th></tr></thead>
-              <tbody>{STATUS_KEYS.map((s) => <tr key={s}><td><StatusBadge status={s} /></td><td><code>{s}</code></td><td>{STATUS_DESC[s]}</td></tr>)}</tbody>
+              <thead><tr><th>{t('Tên hiển thị')}</th><th>{t('Mã')}</th><th>{t('Mô tả')}</th></tr></thead>
+              <tbody>{STATUS_KEYS.map((s) => <tr key={s}><td><StatusBadge status={s} /></td><td><code>{s}</code></td><td>{t(STATUS_DESC[s])}</td></tr>)}</tbody>
             </table>
           )}
         </div>

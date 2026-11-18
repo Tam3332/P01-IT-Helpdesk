@@ -1,0 +1,14 @@
+/* v7: kiểu riêng cho các trang (phần cảm giác tay/mắt cho từng trang nằm ở đây) */
+/* Kiểu riêng cho các trang */
+.colmenu{min-width:200px;padding:8px}.colmenu .chk{height:32px;padding:0 6px;border-radius:6px;cursor:pointer}.colmenu .chk:hover{background:var(--surface2)}
+.bar.clk{cursor:pointer;border-radius:8px;margin:0 -8px;padding:4px 8px;transition:background .15s}.bar.clk:hover{background:var(--surface2)}.bar.clk:active{background:var(--surface3,var(--surface2))}
+.bar i s{transition:width .7s cubic-bezier(.2,.7,.2,1)}
+.errart{margin-bottom:8px}
+mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;border-radius:3px;padding:0 1px}
+.stickbar{position:sticky;top:64px;z-index:15;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-sm,none)}
+.stickbar .sid{font-family:var(--mono);font-weight:600;font-size:13px}.stickbar .acts{margin-left:auto}
+.stickbar .copied{color:var(--ok)}
+.steps b{width:24px;height:24px;font-size:11px}.steps li::before{top:12px}.steps li{gap:4px;font-size:11.5px}.steps li{min-width:88px}
+.av.xs{width:20px;height:20px;font-size:9px;margin-right:6px;display:inline-grid;vertical-align:middle}
+.who{display:inline-flex;align-items:center}
+.notif-day{padding:8px 16px 4px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--faint)}

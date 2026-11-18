@@ -3,6 +3,7 @@ import { ROLES, STORAGE_KEYS } from '@/config/constants'
 import * as authService from '@/services/authService'
 import { onUnauthorized } from '@/services/authEvents'
 import { getTokenExpiryMs } from '@/utils/jwt'
+import { t } from '@/i18n'
 
 const AuthContext = createContext(null)
 const VALID_ROLES = Object.values(ROLES)
@@ -11,12 +12,28 @@ const VALID_ROLES = Object.values(ROLES)
 function normalizeUser(u) {
   if (!u) return null
   const role = typeof u.role === 'string' ? u.role : u.role?.roleName || u.roleName
+  const savedAvatar = (() => {
+    try {
+      return localStorage.getItem(`hd_avatar_${u.id}`) || null
+    } catch {
+      return null
+    }
+  })()
+  const savedProfile = (() => {
+    try {
+      return JSON.parse(localStorage.getItem(`hd_profile_${u.id}`) || '{}')
+    } catch {
+      return {}
+    }
+  })()
   return {
     id: u.id,
     username: u.username,
     email: u.email,
-    fullName: u.fullName || u.username || u.email || '',
-    department: u.department,
+    fullName: savedProfile.fullName || u.fullName || u.username || u.email || '',
+    department: savedProfile.department !== undefined ? savedProfile.department : (u.department || ''),
+    phone: savedProfile.phone !== undefined ? savedProfile.phone : (u.phone || ''),
+    avatarUrl: savedAvatar || u.avatarUrl || u.avatar || null,
     isActive: u.isActive,
     mustChangePassword: u.mustChangePassword === true, // backend chưa gửi; true khi Admin vừa cấp lại mật khẩu
     role,
@@ -28,7 +45,7 @@ const clearSession = () => {
   sessionStorage.removeItem(STORAGE_KEYS.expiresAt)
 }
 
-export const SESSION_EXPIRED_MSG = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'
+const sessionExpiredMsg = () => t('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -50,8 +67,8 @@ export function AuthProvider({ children }) {
       const exp = getTokenExpiryMs(token)
       if (!exp) return
       const wait = exp - Date.now()
-      if (wait <= 0) return endSession(SESSION_EXPIRED_MSG)
-      timer.current = setTimeout(() => endSession(SESSION_EXPIRED_MSG), Math.min(wait, 2 ** 31 - 1))
+      if (wait <= 0) return endSession(sessionExpiredMsg())
+      timer.current = setTimeout(() => endSession(sessionExpiredMsg()), Math.min(wait, 2 ** 31 - 1))
     },
     [endSession],
   )
@@ -83,7 +100,7 @@ export function AuthProvider({ children }) {
   }, [armExpiry])
 
   // API trả 401 ở bất kỳ đâu -> kết thúc phiên
-  useEffect(() => onUnauthorized(() => endSession(SESSION_EXPIRED_MSG)), [endSession])
+  useEffect(() => onUnauthorized(() => endSession(sessionExpiredMsg())), [endSession])
 
   const login = useCallback(
     async (email, password) => {
@@ -92,7 +109,7 @@ export function AuthProvider({ children }) {
       try {
         // Ưu tiên user trong LoginResponse, thiếu thì hỏi /auth/me
         const nu = normalizeUser(res.user) ?? normalizeUser(await authService.fetchMe())
-        if (!VALID_ROLES.includes(nu?.role)) throw new Error('Tài khoản chưa được gán vai trò hợp lệ.')
+        if (!VALID_ROLES.includes(nu?.role)) throw Object.assign(new Error(t('Tài khoản chưa được gán vai trò hợp lệ.')), { local: true })
         setUser(nu)
         setNotice('')
         armExpiry(res.accessToken)
@@ -114,13 +131,40 @@ export function AuthProvider({ children }) {
     endSession('')
   }, [endSession])
 
+  // Cập nhật thông tin người dùng cục bộ và đồng bộ localStorage
+  const updateUser = useCallback((updates) => {
+    setUser((prev) => {
+      if (!prev) return prev
+      const next = { ...prev, ...updates }
+      if (updates.avatarUrl !== undefined) {
+        try {
+          if (updates.avatarUrl) localStorage.setItem(`hd_avatar_${prev.id}`, updates.avatarUrl)
+          else localStorage.removeItem(`hd_avatar_${prev.id}`)
+        } catch { /* ignore */ }
+      }
+      if (updates.fullName !== undefined || updates.department !== undefined || updates.phone !== undefined) {
+        try {
+          const prevSaved = JSON.parse(localStorage.getItem(`hd_profile_${prev.id}`) || '{}')
+          const nextSaved = {
+            ...prevSaved,
+            ...(updates.fullName !== undefined ? { fullName: updates.fullName } : {}),
+            ...(updates.department !== undefined ? { department: updates.department } : {}),
+            ...(updates.phone !== undefined ? { phone: updates.phone } : {}),
+          }
+          localStorage.setItem(`hd_profile_${prev.id}`, JSON.stringify(nextSaved))
+        } catch { /* ignore */ }
+      }
+      return next
+    })
+  }, [])
+
   // Tải lại thông tin tài khoản từ /auth/me (ví dụ sau khi đổi mật khẩu)
   const reloadUser = useCallback(async () => {
     const nu = normalizeUser(await authService.fetchMe())
     if (VALID_ROLES.includes(nu?.role)) setUser(nu)
   }, [])
 
-  const value = useMemo(() => ({ user, ready, notice, login, logout, reloadUser }), [user, ready, notice, login, logout, reloadUser])
+  const value = useMemo(() => ({ user, ready, notice, login, logout, reloadUser, updateUser }), [user, ready, notice, login, logout, reloadUser, updateUser])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

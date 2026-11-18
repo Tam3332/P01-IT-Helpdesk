@@ -41,6 +41,9 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "must_change_password", nullable = false)
+    private Boolean mustChangePassword;
+
     @Column(name = "failed_login_attempts", nullable = false)
     private Integer failedLoginAttempts;
 
@@ -60,6 +63,7 @@ public class User {
         this.updatedAt = now;
         if (this.failedLoginAttempts == null) this.failedLoginAttempts = 0;
         if (this.isActive == null) this.isActive = true;
+        if (this.mustChangePassword == null) this.mustChangePassword = false;
     }
 
     @PreUpdate
@@ -95,6 +99,9 @@ public class User {
 
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    public Boolean getMustChangePassword() { return mustChangePassword != null ? mustChangePassword : false; }
+    public void setMustChangePassword(Boolean mustChangePassword) { this.mustChangePassword = mustChangePassword; }
 
     public Integer getFailedLoginAttempts() { return failedLoginAttempts; }
     public void setFailedLoginAttempts(Integer failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }

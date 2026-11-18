@@ -132,3 +132,22 @@ Phát hiện khi chạy thử lab (nhánh feature/docker-compose): audit log ghi
 |---|---|---|---|---|---|
 | EV-HD-05 | api/EV-HD-05_api_authz_denied_comment_attachment_feedback.png | 2026-11-06 | T3-06; SRS §4 HD05, UC-04; SecRS §5; SDD §5.4 | Staff xem comment/attachment/feedback ticket 4 (không được giao); Manager gửi đánh giá ticket 2; Staff gửi bình luận ticket 4; Admin gửi bình luận ticket 1; login giả lập Nginx | 404, 404, 404; 403; 404; 403; 200 |
 | EV-HD-01 | api/EV-HD-01_api_audit_authz_denied_va_ip_that.png | 2026-11-06 | T3-06; SDD §7 | Audit log sau các lệnh trên | AUTHZ_DENIED: ACCESS_ATTACHMENT, VIEW_FEEDBACK (404), CREATE_FEEDBACK (403), ADD_COMMENT (404 Staff, 403 Admin); LOGIN_SUCCESS có src_ip 1.2.3.4 và correlation_id abc123test lấy từ header |
+
+## Ca tồn tuần 3 (12/11/2026, sau merge tri/be 39f464b, commit b810ee6)
+
+Máy dev; có thêm staff2 (id 7) và employee2 (id 10). Ca API khóa tài khoản / khóa danh mục đổi `is_active` trực tiếp trong DB dev rồi trả lại như cũ.
+
+| EV-ID | File | Mã ca | Kết quả quan sát |
+|---|---|---|---|
+| EV-HD-01 | api/EV-HD-01_api_01.05_tai_khoan_bi_khoa.png | TC-HD-01.05 | Tài khoản khóa: mật khẩu đúng → 403 ACCOUNT_DISABLED; mật khẩu sai → 401 INVALID_CREDENTIALS |
+| EV-HD-03 | api/EV-HD-03_api_03.03_danh_muc_da_tat_400.png | TC-HD-03.03 | Tạo ticket với danh mục đã tắt → 400 CATEGORY_NOT_FOUND |
+| EV-HD-03 | api/EV-HD-03_api_03.04_thieu_tieu_de_400.png | TC-HD-03.04 | Thiếu tiêu đề → 400 VALIDATION_FAILED |
+| EV-HD-03 | api/EV-HD-03_api_03.05_role_khac_tao_ticket_403.png | TC-HD-03.05 | Manager, Staff, Admin tạo ticket → 403 FORBIDDEN |
+| EV-HD-03 | api/EV-HD-03_api_03.06_mass_assignment_bi_bo_qua.png | TC-HD-03.06 | Gửi thêm status/priority/requesterId → 201, status NEW, priority LOW, requester là người gọi |
+| EV-HD-05 | api/EV-HD-05_api_05.02-08.06-10.08_employee_B_404.png | TC-HD-05.02, 08.06, 10.08 | Employee B xem / bình luận / mở lại / xem đính kèm ticket của A → 404 TICKET_NOT_FOUND |
+| EV-HD-01 | db/EV-HD-01_db_seed_employee2.png | — | Bảng users có employee2 (id 10), staff2 (id 7) |
+| EV-HD-01 | ui/A_General/2026-11-12/EV-HD-01_ui_A2_bo_trong_khong_gui_request.png | A2 | Báo lỗi tại ô, Network không có request login |
+| EV-HD-01 | ui/A_General/2026-11-12/EV-HD-01_ui_A5_back_sau_dang_xuat.png, ui/A_General/2026-11-12/EV-HD-01_ui_A5_go_url_sau_dang_xuat.png | A5 | Sau đăng xuất, Back hoặc gõ URL đều về login |
+| EV-HD-03 | ui/B_Employee/2026-11-12/EV-HD-03_ui_B3_gioi_han_200_2000.png | B3 | Bộ đếm 200/200, 2000/2000, không nhập thêm được; lỗi FE "Vui lòng chọn danh mục" còn sót |
+| EV-HD-06 | ui/D_ITManager/2026-11-12/EV-HD-06_ui_D5_hop_phan_cong_lai.png, ui/D_ITManager/2026-11-12/EV-HD-06_ui_D5_sau_phan_cong_lai.png | D5 | Phân công lại sang Hoàng Văn Nam, trạng thái giữ Đã phân công; lỗi FE: lịch sử "Người dùng #2", tiêu đề tràn ngang |
+| EV-UC-10 | ui/E_Admin/2026-11-12/EV-UC-10_ui_E2_trung_ma_network.png, ui/E_Admin/2026-11-12/EV-UC-10_ui_E2_trung_ten_network.png | E2 | 400 CATEGORY_CODE_DUPLICATE / CATEGORY_NAME_DUPLICATE, FE báo đúng |

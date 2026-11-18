@@ -12,6 +12,7 @@ import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
 import { apiError } from '@/services/apiClient'
 import { listSlaConfigs, updateSlaConfig } from '@/services/referenceService'
+import { t } from '@/i18n'
 
 export default function SlaConfigPage() {
   const item = NAV[ROLES.ADMIN].find((i) => i.path === '/admin/sla-config')
@@ -21,33 +22,33 @@ export default function SlaConfigPage() {
   const items = (list.data || []).slice().sort((a, b) => (PRIORITY[b.priorityLevel]?.level || 0) - (PRIORITY[a.priorityLevel]?.level || 0))
   return (
     <>
-      <PageHeader title={item.label} subtitle={item.subtitle} />
-      <div><button type="button" className="btn ghost sm" onClick={() => navigate('/admin/settings')}><Icon name="back" />Cài đặt hệ thống</button></div>
+      <PageHeader title={t(item.label)} subtitle={t(item.subtitle)} />
+      <div><button type="button" className="btn ghost sm" onClick={() => navigate('/admin/settings')}><Icon name="back" />{t('Cài đặt hệ thống')}</button></div>
       <section className="card">
-        <div className="ch"><h2>{items.length} cấu hình SLA</h2></div>
+        <div className="ch"><h2>{t('{n} cấu hình SLA', { n: items.length })}</h2></div>
         <Async state={list}>
           {items.length ? (
             <div className="tw" style={{ marginTop: 14 }}>
               <table>
-                <thead><tr><th>Mức ưu tiên</th><th>Hạn phản hồi (giờ)</th><th>Hạn xử lý (giờ)</th><th /></tr></thead>
+                <thead><tr><th>{t('Mức ưu tiên')}</th><th>{t('Hạn phản hồi (giờ)')}</th><th>{t('Hạn xử lý (giờ)')}</th><th /></tr></thead>
                 <tbody>
                   {items.map((c) => (
                     <tr key={c.priorityLevel}>
                       <td><PriorityBadge priority={c.priorityLevel} /></td>
                       <td><span className="num">{c.responseTimeHours}</span></td>
                       <td><span className="num">{c.resolutionTimeHours}</span></td>
-                      <td><button type="button" className="btn sm" onClick={() => setEdit(c)}><Icon name="edit" />Sửa</button></td>
+                      <td><button type="button" className="btn sm" onClick={() => setEdit(c)}><Icon name="edit" />{t('Sửa')}</button></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
-            <EmptyState icon="clock" title="Chưa có cấu hình SLA" />
+            <EmptyState icon="clock" title={t('Chưa có cấu hình SLA')} />
           )}
         </Async>
       </section>
-      <p className="sm muted">Ticket mới dùng định mức tại thời điểm tạo.</p>
+      <p className="sm muted">{t('Ticket mới dùng định mức tại thời điểm tạo.')}</p>
       {edit && <EditDialog cfg={edit} onClose={() => setEdit(null)} onSaved={() => list.reload()} />}
     </>
   )
@@ -58,12 +59,12 @@ function EditDialog({ cfg, onClose, onSaved }) {
   const [resp, setResp] = useState(String(cfg.responseTimeHours))
   const [res, setRes] = useState(String(cfg.resolutionTimeHours))
   return (
-    <Modal title="Sửa cấu hình SLA" okText="Lưu thay đổi" onClose={onClose} onOk={async () => {
+    <Modal title={t('Sửa cấu hình SLA')} okText={t('Lưu thay đổi')} onClose={onClose} onOk={async () => {
       const rp = Number(resp)
       const rs = Number(res)
-      if (!(rp > 0)) throw new Error('Hạn phản hồi phải lớn hơn 0.')
-      if (!(rs > 0)) throw new Error('Hạn xử lý phải lớn hơn 0.')
-      if (rs < rp) throw new Error('Hạn xử lý không được nhỏ hơn hạn phản hồi.')
+      if (!(rp > 0)) throw new Error(t('Hạn phản hồi phải lớn hơn 0.'))
+      if (!(rs > 0)) throw new Error(t('Hạn xử lý phải lớn hơn 0.'))
+      if (rs < rp) throw new Error(t('Hạn xử lý không được nhỏ hơn hạn phản hồi.'))
       try {
         await updateSlaConfig(cfg.priorityLevel, {
           responseTimeHours: rp,
@@ -72,15 +73,15 @@ function EditDialog({ cfg, onClose, onSaved }) {
           breachThresholdPct: cfg.breachThresholdPct,
         })
       } catch (e) {
-        throw new Error(apiError(e, 'Không lưu được cấu hình.'))
+        throw new Error(apiError(e, t('Không lưu được cấu hình.')))
       }
-      toast('Đã lưu thay đổi.')
+      toast(t('Đã lưu thay đổi.'))
       onSaved()
     }}>
-      <Field label="Mức ưu tiên"><input className="in" value={PRIORITY[cfg.priorityLevel]?.label || cfg.priorityLevel} disabled /></Field>
+      <Field label={t('Mức ưu tiên')}><input className="in" value={t(PRIORITY[cfg.priorityLevel]?.label || cfg.priorityLevel)} disabled /></Field>
       <div className="row2">
-        <Field label="Hạn phản hồi (giờ)" required htmlFor="cf-resp"><input className="in" id="cf-resp" type="number" min="0.1" step="0.05" value={resp} onChange={(e) => setResp(e.target.value)} /></Field>
-        <Field label="Hạn xử lý (giờ)" required htmlFor="cf-res"><input className="in" id="cf-res" type="number" min="0.1" step="0.5" value={res} onChange={(e) => setRes(e.target.value)} /></Field>
+        <Field label={t('Hạn phản hồi (giờ)')} required htmlFor="cf-resp"><input className="in" id="cf-resp" type="number" min="0.1" step="0.05" value={resp} onChange={(e) => setResp(e.target.value)} /></Field>
+        <Field label={t('Hạn xử lý (giờ)')} required htmlFor="cf-res"><input className="in" id="cf-res" type="number" min="0.1" step="0.5" value={res} onChange={(e) => setRes(e.target.value)} /></Field>
       </div>
     </Modal>
   )

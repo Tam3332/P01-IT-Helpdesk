@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     department VARCHAR(100),
     role_id INT NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
     failed_login_attempts INT NOT NULL DEFAULT 0,
     locked_until TIMESTAMPTZ NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

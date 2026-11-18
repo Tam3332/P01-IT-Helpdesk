@@ -6,6 +6,7 @@ import { NAV } from '@/config/nav'
 import { ROLES } from '@/config/constants'
 import { listReopenRequests } from '@/services/referenceService'
 import { fmtDateTime } from '@/utils/format'
+import { t } from '@/i18n'
 
 const load = async () => {
   const [pending, approved, rejected] = await Promise.all(['PENDING', 'APPROVED', 'REJECTED'].map((s) => listReopenRequests(s).catch(() => [])))
@@ -20,46 +21,46 @@ export default function ReopenRequestsPage() {
   const open = (r) => navigate(`/manager/reopen-requests/${r.id}`)
   return (
     <>
-      <PageHeader title={item.label} subtitle={item.subtitle} />
+      <PageHeader title={t(item.label)} subtitle={t(item.subtitle)} />
       <Async state={d}>
         {d.data && (
           <>
             <section className="card">
-              <div className="ch"><h2>Đang chờ xem xét ({d.data.pending.length})</h2></div>
+              <div className="ch"><h2>{t('Đang chờ xem xét ({n})', { n: d.data.pending.length })}</h2></div>
               {d.data.pending.length ? (
                 <div className="tw">
                   <table>
-                    <thead><tr><th>Ticket</th><th>Người yêu cầu</th><th>Lý do</th><th>Gửi lúc</th><th /></tr></thead>
+                    <thead><tr><th>{t('Ticket')}</th><th>{t('Người yêu cầu')}</th><th>{t('Lý do')}</th><th>{t('Gửi lúc')}</th><th /></tr></thead>
                     <tbody>
                       {d.data.pending.map((r) => (
                         <tr key={r.id} tabIndex={0} onClick={() => open(r)} onKeyDown={(e) => e.key === 'Enter' && open(r)}>
                           <td className="nw"><button type="button" className="idlink" onClick={(e) => { e.stopPropagation(); open(r) }}>{r.ticketNumber ?? `#${r.ticketId}`}</button></td>
-                          <td className="nw">{r.requesterName || `Người dùng #${r.requesterId}`}</td>
+                          <td className="nw">{r.requesterName || t('Người dùng #{id}', { id: r.requesterId })}</td>
                           <td className="tt" style={{ fontWeight: 400, color: 'var(--muted)', minWidth: 240 }}>{r.reopenReason}</td>
                           <td className="nw num">{fmtDateTime(r.createdAt)}</td>
-                          <td className="nw"><button type="button" className="btn sm" onClick={(e) => { e.stopPropagation(); open(r) }}>Xem xét</button></td>
+                          <td className="nw"><button type="button" className="btn sm" onClick={(e) => { e.stopPropagation(); open(r) }}>{t('Xem xét')}</button></td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <EmptyState icon="check" title="Không có yêu cầu mở lại nào đang chờ">Yêu cầu mới từ nhân viên sẽ hiện ở đây.</EmptyState>
+                <EmptyState icon="check" title={t('Không có yêu cầu mở lại nào đang chờ')}>{t('Yêu cầu mới từ nhân viên sẽ hiện ở đây.')}</EmptyState>
               )}
             </section>
             {d.data.done.length > 0 && (
               <section className="card">
-                <div className="ch"><h2>Đã xử lý</h2></div>
+                <div className="ch"><h2>{t('Đã xử lý')}</h2></div>
                 <div className="tw">
                   <table>
-                    <thead><tr><th>Ticket</th><th>Người yêu cầu</th><th>Lý do</th><th>Quyết định</th><th>Ghi chú</th></tr></thead>
+                    <thead><tr><th>{t('Ticket')}</th><th>{t('Người yêu cầu')}</th><th>{t('Lý do')}</th><th>{t('Quyết định')}</th><th>{t('Ghi chú')}</th></tr></thead>
                     <tbody>
                       {d.data.done.map((r) => (
                         <tr key={r.id} tabIndex={0} onClick={() => open(r)} onKeyDown={(e) => e.key === 'Enter' && open(r)}>
                           <td className="nw"><b>{r.ticketNumber ?? `#${r.ticketId}`}</b></td>
-                          <td className="nw">{r.requesterName || `Người dùng #${r.requesterId}`}</td>
+                          <td className="nw">{r.requesterName || t('Người dùng #{id}', { id: r.requesterId })}</td>
                           <td className="tt">{r.reopenReason}</td>
-                          <td><span className={`badge ${r.status === 'APPROVED' ? 's-done' : 's-breach'}`}>{r.status === 'APPROVED' ? 'Đã duyệt' : 'Đã từ chối'}</span><div className="sm muted">{fmtDateTime(r.reviewedAt)}</div></td>
+                          <td><span className={`badge ${r.status === 'APPROVED' ? 's-done' : 's-breach'}`}>{r.status === 'APPROVED' ? t('Đã duyệt') : t('Đã từ chối')}</span><div className="sm muted">{fmtDateTime(r.reviewedAt)}</div></td>
                           <td>{r.reviewNote || ''}</td>
                         </tr>
                       ))}

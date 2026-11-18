@@ -35,18 +35,25 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service xử lý nghiệp vụ Ticket.
- * Tuân thủ Access Matrix (02 §5), , Anti-IDOR.
+ * Tuân thủ Access Matrix, kiểm tra quyền và Anti-IDOR.
  */
 @Service
 public class TicketService {
+
+    // Số ticket tối đa mỗi trang; FE listAllTickets gọi size=100 (ticketService.js dòng 12)
+    private static final int MAX_PAGE_SIZE = 100;
 
     private final TicketRepository ticketRepository;
     private final TicketCategoryRepository categoryRepository;
@@ -81,7 +88,7 @@ public class TicketService {
 
  /**
  * Tạo ticket mới.
- * Quy tắc phân quyền: CHỈ EMPLOYEE được tạo ticket (Access Matrix §5).
+ * Quy tắc phân quyền: CHỈ EMPLOYEE được tạo ticket.
  * Role khác gọi đến → 403 FORBIDDEN.
  */
     @Transactional
@@ -108,12 +115,12 @@ public class TicketService {
         TicketCategory category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // 3. : Chặn danh mục đã bị vô hiệu hóa (isActive = false)
+        // 3. Chặn danh mục đã bị vô hiệu hóa (isActive = false)
         if (Boolean.FALSE.equals(category.getIsActive())) {
             throw new AppException(ErrorCode.CATEGORY_NOT_FOUND);
         }
 
-        // 4. Tính priority = impactLevel (quy tắc sơ bộ ở)
+        // 4. Tính priority = impactLevel
         String priority = request.impactLevel();
 
         // 5. Tra SLA config + tính deadline
@@ -165,12 +172,7 @@ public class TicketService {
         Long actorId = requester.getId();
         String actorRole = requester.getRole() != null ? requester.getRole().getRoleName() : null;
         String createdNumber = saved.getTicketNumber();
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                auditLogger.log("TICKET_CREATED", actorId, actorRole, "TICKET", createdNumber, "CREATE", "SUCCESS", 201);
-            }
-        });
+        auditLogger.logAfterCommit("TICKET_CREATED", actorId, actorRole, "TICKET", createdNumber, "CREATE", "SUCCESS", 201, null, null);
 
         return toResponse(saved);
     }
@@ -182,7 +184,7 @@ public class TicketService {
  /**
  * Lấy danh sách ticket có phân quyền và bộ lọc:
  * EMPLOYEE : chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
- * IT_STAFF : xem vé được giao cho mình (currentAssignee) + tất cả vé trạng thái NEW (chờ tiếp nhận).
+ * IT_STAFF : chỉ xem vé được giao cho mình (currentAssignee), theo SRS HD05 sửa 05/11.
  * IT_MANAGER : xem toàn bộ vé trong hệ thống.
  * ADMIN : xem toàn bộ vé (chế độ chỉ đọc).
  *
@@ -194,12 +196,39 @@ public class TicketService {
     @Transactional(readOnly = true)
     public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority,
                                                    Integer categoryId, Long assigneeId, String search) {
+        return getTickets(page, size, status, priority, categoryId, assigneeId, search, null, null);
+    }
+
+    // Ngày lọc tính theo giờ Việt Nam (UTC+7), khớp cách hiển thị thời gian ở SDD §5.5
+    static final ZoneOffset BUSINESS_ZONE = ZoneOffset.ofHours(7);
+
+    /**
+     * Đổi khoảng ngày người dùng chọn thành mốc thời gian để lọc created_at (HD13, SDD §4).
+     * Trả [từ (gồm), đến (không gồm)]; phần tử null nghĩa là không giới hạn phía đó.
+     * createdTo lấy trọn ngày: đến 00:00 ngày hôm sau. Từ ngày sau đến ngày → 400 (SDD SCR-02).
+     */
+    static OffsetDateTime[] createdRange(LocalDate createdFrom, LocalDate createdTo) {
+        if (createdFrom != null && createdTo != null && createdFrom.isAfter(createdTo)) {
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc");
+        }
+        OffsetDateTime from = createdFrom != null ? createdFrom.atStartOfDay().atOffset(BUSINESS_ZONE) : null;
+        OffsetDateTime toExclusive = createdTo != null ? createdTo.plusDays(1).atStartOfDay().atOffset(BUSINESS_ZONE) : null;
+        return new OffsetDateTime[]{from, toExclusive};
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority,
+                                                   Integer categoryId, Long assigneeId, String search,
+                                                   LocalDate createdFrom, LocalDate createdTo) {
+        // Kiểm khoảng ngày trước khi truy vấn (từ ngày sau đến ngày → 400)
+        OffsetDateTime[] range = createdRange(createdFrom, createdTo);
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
         // tham số trang không hợp lệ thì dùng giá trị mặc định (trang 0, 20 dòng –)
         int safePage = page < 0 ? 0 : page;
-        int safeSize = size < 1 ? 20 : size;
+        // size < 1 → mặc định 20 (UC-04 3b); size > 100 → giảm về 100 (chống kéo toàn bộ bảng, T5-06; quyết định 17/11)
+        int safeSize = size < 1 ? 20 : Math.min(size, MAX_PAGE_SIZE);
         PageRequest pageRequest = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Specification<Ticket> spec = (root, query, cb) -> {
@@ -235,12 +264,21 @@ public class TicketService {
                 predicates.add(cb.equal(root.get("currentAssignee").get("id"), assigneeId));
             }
             if (search != null && !search.isBlank()) {
-                // Tìm theo tiêu đề hoặc mô tả, không phân biệt hoa thường. Thoát %, _ để người dùng gõ ký tự này không thành wildcard.
+                // Tìm theo mã ticket (ticketNumber), tiêu đề (title) hoặc mô tả (description), không phân biệt hoa thường. Thoát %, _ để người dùng gõ ký tự này không thành wildcard.
                 String kw = "%" + search.trim().toLowerCase()
                         .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
                 predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("ticketNumber")), kw, '\\'),
                         cb.like(cb.lower(root.get("title")), kw, '\\'),
                         cb.like(cb.lower(root.get("description")), kw, '\\')));
+            }
+
+            // 7. Khoảng ngày tạo (HD13): AND thêm sau phạm vi role, giá trị truyền dạng tham số
+            if (range[0] != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), range[0]));
+            }
+            if (range[1] != null) {
+                predicates.add(cb.lessThan(root.get("createdAt"), range[1]));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -311,7 +349,7 @@ public class TicketService {
  *.
  * Phân công lại sau Reopen: REOPENED → ASSIGNED, IT Staff nhận thì sang IN_PROGRESS;
  * không tính lại SLA vì hạn xử lý mới đã tính lúc duyệt mở lại.
- * Không ghi first_responded_at: P2 "Hạn phản hồi dừng tính ngay khi IT Staff tiếp nhận (In Progress)".
+ * Không ghi first_responded_at: Hạn phản hồi dừng tính ngay khi IT Staff tiếp nhận (In Progress).
  */
     @Transactional
     public TicketDetailResponse assignTicket(String idOrNumber, AssignTicketRequest request, String ipAddress) {
@@ -358,7 +396,7 @@ public class TicketService {
             throw new AppException(ErrorCode.ASSIGNEE_UNCHANGED);
         }
 
-        // / : kết thúc phân công cũ TRƯỚC (flush ngay), rồi mới thêm dòng mới
+        // Kết thúc phân công cũ trước (flush ngay), rồi mới thêm dòng mới
         // để không vi phạm unique index "mỗi ticket 1 dòng is_current = true"
         assignmentRepository.findByTicket_IdAndIsCurrentTrue(ticket.getId()).ifPresent(old -> {
             old.end(now);
@@ -396,7 +434,21 @@ public class TicketService {
                     oldPriority, newPriority, null, ipAddress, now));
         }
 
-        // Chưa làm: audit TICKET_ASSIGNED; gửi thông báo IT Staff
+        // Audit log: TICKET_ASSIGNED kèm before/after của assignee_id
+        Long managerId = manager.getId();
+        String ticketNumber = ticket.getTicketNumber();
+        Long oldAssigneeId = oldAssignee != null ? oldAssignee.getId() : null;
+        Long newAssigneeId = assignee.getId();
+
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("assignee_id", oldAssigneeId);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("assignee_id", newAssigneeId);
+
+        auditLogger.logAfterCommit("TICKET_ASSIGNED", managerId, roleName, "TICKET", ticketNumber,
+                action, "SUCCESS", 200, before, after);
+
         return toDetailResponse(ticket);
     }
 
@@ -504,6 +556,15 @@ public class TicketService {
             ));
         }
 
+        // Audit log: TICKET_STATUS_CHANGED kèm before/after của status
+        Long actorId = currentUser.getId();
+        String ticketNumber = ticket.getTicketNumber();
+        Map<String, Object> before = Map.of("status", currentStatus.name());
+        Map<String, Object> after = Map.of("status", targetStatus.name());
+
+        auditLogger.logAfterCommit("TICKET_STATUS_CHANGED", actorId, roleName, "TICKET", ticketNumber,
+                "STATUS_CHANGE", "SUCCESS", 200, before, after);
+
         return toDetailResponse(ticket);
     }
 
@@ -565,6 +626,15 @@ public class TicketService {
                 now
         ));
 
+        // Audit log: TICKET_CLOSED kèm trạng thái trước khi đóng và CLOSED
+        Long actorId = currentUser.getId();
+        String ticketNumber = ticket.getTicketNumber();
+        Map<String, Object> before = Map.of("status", currentStatus.name());
+        Map<String, Object> after = Map.of("status", "CLOSED");
+
+        auditLogger.logAfterCommit("TICKET_CLOSED", actorId, roleName, "TICKET", ticketNumber,
+                "CLOSE", "SUCCESS", 200, before, after);
+
         return toDetailResponse(ticket);
     }
 
@@ -597,7 +667,23 @@ public class TicketService {
             }
         }
 
-        return historyRepository.findByTicket_IdOrderByTimestampAsc(ticket.getId())
+        List<TicketHistory> histories = historyRepository.findByTicket_IdOrderByTimestampAsc(ticket.getId());
+
+        // Dòng phân công lưu id người xử lý (current_assignee_id). Tra tên 1 lần cho mọi id để giao diện
+        // hiện đúng tên cả người xử lý cũ, không chỉ người đang phụ trách
+        java.util.Set<Long> userIds = new java.util.HashSet<>();
+        for (TicketHistory h : histories) {
+            if ("current_assignee_id".equals(h.getFieldChanged())) {
+                addUserId(userIds, h.getOldValue());
+                addUserId(userIds, h.getNewValue());
+            }
+        }
+        java.util.Map<Long, String> userNames = new java.util.HashMap<>();
+        if (!userIds.isEmpty()) {
+            userRepository.findAllById(userIds).forEach(u -> userNames.put(u.getId(), u.getFullName()));
+        }
+
+        return histories
                 .stream()
                 .map(h -> new TicketHistoryResponse(
                         h.getId(),
@@ -609,9 +695,34 @@ public class TicketService {
                         h.getOldValue(),
                         h.getNewValue(),
                         h.getReasonOrNote(),
-                        h.getTimestamp()
+                        h.getTimestamp(),
+                        userLabel(h, h.getOldValue(), userNames),
+                        userLabel(h, h.getNewValue(), userNames)
                 ))
                 .toList();
+    }
+
+    private static void addUserId(java.util.Set<Long> ids, String value) {
+        if (value == null || value.isBlank()) {
+            return;
+        }
+        try {
+            ids.add(Long.parseLong(value.trim()));
+        } catch (NumberFormatException ignored) {
+            // Giá trị không phải id thì bỏ qua
+        }
+    }
+
+    /** Tên người dùng cho old/newValue của dòng phân công; field khác trả null. */
+    private static String userLabel(TicketHistory h, String value, java.util.Map<Long, String> names) {
+        if (!"current_assignee_id".equals(h.getFieldChanged()) || value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return names.get(Long.parseLong(value.trim()));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     // -------------------------------------------------------------------------

@@ -1,30 +1,40 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import Loading from '@/components/Loading'
 import MainLayout from '@/layouts/MainLayout'
 import LoginPage from '@/pages/auth/LoginPage'
-import NotFoundPage from '@/pages/common/NotFoundPage'
-import ProfilePage from '@/pages/common/ProfilePage'
-import ChangePasswordPage from '@/pages/common/ChangePasswordPage'
-import TicketsPage from '@/pages/common/TicketsPage'
-import SlaMonitorPage from '@/pages/common/SlaMonitorPage'
-import TicketDetailPage from '@/pages/tickets/TicketDetailPage'
-import EmployeeOverview from '@/pages/employee/EmployeeOverview'
-import CreateTicketPage from '@/pages/employee/CreateTicketPage'
-import StaffOverview from '@/pages/staff/StaffOverview'
-import ManagerOverview from '@/pages/manager/ManagerOverview'
-import ReopenRequestsPage from '@/pages/manager/ReopenRequestsPage'
-import ReopenReviewPage from '@/pages/manager/ReopenReviewPage'
-import AdminOverview from '@/pages/admin/AdminOverview'
-import UsersPage from '@/pages/admin/UsersPage'
-import SettingsPage from '@/pages/admin/SettingsPage'
-import CategoriesPage from '@/pages/admin/CategoriesPage'
-import SlaConfigPage from '@/pages/admin/SlaConfigPage'
-import ReadonlyConfigPage from '@/pages/admin/ReadonlyConfigPage'
-import AuditLogsPage from '@/pages/admin/AuditLogsPage'
 import { HomeRedirect, RedirectIfAuthed, RequireAuth, RequireRole } from './ProtectedRoute'
 import { ROLES } from '@/config/constants'
+import { useLang } from '@/context/LangContext'
+import useDocTitle from '@/hooks/useDocTitle'
+import { t } from '@/i18n'
+
+const NotFoundPage = lazy(() => import('@/pages/common/NotFoundPage'))
+const ProfilePage = lazy(() => import('@/pages/common/ProfilePage'))
+const ChangePasswordPage = lazy(() => import('@/pages/common/ChangePasswordPage'))
+const TicketsPage = lazy(() => import('@/pages/common/TicketsPage'))
+const SlaMonitorPage = lazy(() => import('@/pages/common/SlaMonitorPage'))
+const TicketDetailPage = lazy(() => import('@/pages/tickets/TicketDetailPage'))
+const EmployeeOverview = lazy(() => import('@/pages/employee/EmployeeOverview'))
+const CreateTicketPage = lazy(() => import('@/pages/employee/CreateTicketPage'))
+const StaffOverview = lazy(() => import('@/pages/staff/StaffOverview'))
+const ManagerOverview = lazy(() => import('@/pages/manager/ManagerOverview'))
+const ReopenRequestsPage = lazy(() => import('@/pages/manager/ReopenRequestsPage'))
+const ReopenReviewPage = lazy(() => import('@/pages/manager/ReopenReviewPage'))
+const AdminOverview = lazy(() => import('@/pages/admin/AdminOverview'))
+const UsersPage = lazy(() => import('@/pages/admin/UsersPage'))
+const SettingsPage = lazy(() => import('@/pages/admin/SettingsPage'))
+const CategoriesPage = lazy(() => import('@/pages/admin/CategoriesPage'))
+const SlaConfigPage = lazy(() => import('@/pages/admin/SlaConfigPage'))
+const ReadonlyConfigPage = lazy(() => import('@/pages/admin/ReadonlyConfigPage'))
+const AuditLogsPage = lazy(() => import('@/pages/admin/AuditLogsPage'))
 
 export default function AppRoutes() {
+  useLang() // đổi ngôn ngữ thì tạo lại các element bên dưới để t() đọc lại, state giữ nguyên
+  const { pathname } = useLocation()
+  useDocTitle(pathname === '/login' ? t('Đăng nhập') : undefined)
   return (
+    <Suspense fallback={<Loading />}>
     <Routes>
       <Route path="/login" element={<RedirectIfAuthed><LoginPage /></RedirectIfAuthed>} />
       <Route element={<RequireAuth />}>
@@ -84,5 +94,6 @@ export default function AppRoutes() {
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
+    </Suspense>
   )
 }

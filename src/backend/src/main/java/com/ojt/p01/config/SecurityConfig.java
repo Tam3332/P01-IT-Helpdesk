@@ -102,14 +102,16 @@ public class SecurityConfig {
 
                 // -- Chỉ IT_MANAGER ---
                 .requestMatchers(HttpMethod.PUT, "/api/v1/tickets/*/assign").hasRole("IT_MANAGER")
-                // Gửi yêu cầu mở lại: chỉ EMPLOYEE").
+                // Gửi yêu cầu mở lại: chỉ EMPLOYEE.
                 // Kiểm chủ ticket (404 + AUTHZ_DENIED) nằm trong ReopenService
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/reopen").hasRole("EMPLOYEE")
+                // Tạo ticket: chỉ EMPLOYEE; role khác bị chặn 403 ở tầng Security và tự ghi AUTHZ_DENIED
+                .requestMatchers(HttpMethod.POST, "/api/v1/tickets").hasRole("EMPLOYEE")
                 // Upload tệp: Admin bị từ chối 403; 403 tự ghi AUTHZ_DENIED
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets/*/attachments")
                     .hasAnyRole("EMPLOYEE", "IT_STAFF", "IT_MANAGER")
-                .requestMatchers("/api/v1/users/it-staff", "/api/v1/reopen-requests/**",
-                                 "/api/v1/dashboard/stats", "/api/v1/dashboard/sla-monitor").hasRole("IT_MANAGER")
+                .requestMatchers("/api/v1/users/it-staff", "/api/v1/reopen-requests/**").hasRole("IT_MANAGER")
+                .requestMatchers("/api/v1/dashboard/**").hasAnyRole("EMPLOYEE", "IT_STAFF", "IT_MANAGER", "ADMIN")
 
                 // -- Authenticated endpoints ---
                 .requestMatchers("/api/v1/categories/**").authenticated()

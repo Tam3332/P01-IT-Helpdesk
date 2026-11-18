@@ -7,6 +7,7 @@ import { ROLES } from '@/config/constants'
 import { findNavItem } from '@/config/nav'
 import { STATUS_KEYS } from '@/config/domain'
 import { useLocation } from 'react-router-dom'
+import { t } from '@/i18n'
 
 // Danh sách ticket cho Employee / Staff / Manager. Backend tự giới hạn theo quyền (HD05, IA-HD02).
 export default function TicketsPage() {
@@ -16,15 +17,15 @@ export default function TicketsPage() {
   const item = findNavItem(user.role, pathname)
   return (
     <>
-      <PageHeader title={item.label} subtitle={item.subtitle}>
+      <PageHeader title={t(item.label)} subtitle={t(item.subtitle)}>
         {user.role === ROLES.EMPLOYEE && (
           <button type="button" className="btn pri" onClick={() => navigate('/employee/tickets/new')}>
-            <Icon name="plus" />Tạo ticket
+            <Icon name="plus" />{t('Tạo ticket')}
           </button>
         )}
       </PageHeader>
       <TicketListCard
-        title={user.role === ROLES.MANAGER || user.role === ROLES.ADMIN ? 'Tất cả ticket' : 'Danh sách ticket'}
+        title={user.role === ROLES.MANAGER || user.role === ROLES.ADMIN ? t('Tất cả ticket') : t('Danh sách ticket')}
         fixed={user.role === ROLES.STAFF ? { assigneeId: user.id } : undefined}
         statuses={user.role === ROLES.STAFF ? STATUS_KEYS.filter((s) => s !== 'NEW') : undefined}
       />

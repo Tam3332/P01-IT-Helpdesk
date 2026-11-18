@@ -1,6 +1,7 @@
 import Icon from './Icon'
+import { t } from '@/i18n'
 
-export const Spinner = ({ text = 'Đang tải...' }) => (
+export const Spinner = ({ text = t('Đang tải...') }) => (
   <div className="empty" role="status">
     <span className="spin" aria-hidden="true" />
     <span>{text}</span>
@@ -26,12 +27,12 @@ export function ErrorState({ message, status, onRetry, notReadyText }) {
       <div className="ico">
         <Icon name={notReady ? 'info' : 'alert'} />
       </div>
-      <b>{notReady ? 'API chưa sẵn sàng' : 'Không tải được dữ liệu'}</b>
+      <b>{notReady ? t('API chưa sẵn sàng') : t('Không tải được dữ liệu')}</b>
       <span>{notReady ? notReadyText : message}</span>
       {onRetry && (
         <button type="button" className="btn sm" onClick={onRetry}>
           <Icon name="refresh" />
-          Thử lại
+          {t('Thử lại')}
         </button>
       )}
     </div>
