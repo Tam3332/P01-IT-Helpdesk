@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>P01 – Monitoring Alert Dashboard</title>
+<style>
+:root {color-scheme: light; font-family: system-ui, sans-serif}
+body {max-width: 1250px; margin: 2rem auto; padding: 0 1.2rem; background:#f8fafc; color:#0f172a}
+header {border-left: 5px solid #2563eb; padding: 1rem; background:white}
+h1 {font-size:1.5rem; margin:.3rem 0} .meta {color:#475569; margin:0.5rem 0}
+table {border-collapse: collapse; width:100%; background:white; margin:1.3rem 0}
+th,td {padding:.7rem; border-bottom:1px solid #cbd5e1; text-align:left; font-size:.9rem; overflow-wrap:anywhere}
+th {background:#dbeafe} tr:nth-child(even) {background:#f1f5f9}
+small {display:block; color:#475569; line-height:1.6} .wrap {overflow:auto}
+</style></head><body>
+<header><strong>DEMO — DỮ LIỆU GIẢ LẬP</strong><h1>P01 — Security Alert Dashboard</h1>
+<p class="meta">T5-03 · IA-HD05 · EV-HD-22/24 · 2 cảnh báo hiển thị · 0 dòng bỏ qua</p>
+<p class="meta">R1_BRUTE_FORCE_LOGIN: 1 · R2_UNAUTHORIZED_TICKET_ACCESS: 1</p></header>
+<div class="wrap"><table><thead><tr><th>Thời gian (UTC)</th><th>Rule</th><th>Mức</th><th>Actor</th><th>IP</th><th>Số sự kiện</th><th>Trạng thái</th><th>Nguồn</th></tr></thead>
+<tbody><tr><td>2026-11-17T03:00:40Z</td><td>R1_BRUTE_FORCE_LOGIN</td><td>HIGH</td><td>actor#bb14309f</td><td>ip#7b434e35</td><td>5</td><td>DETECTED</td><td>ACCOUNT_LOCKED</td></tr><tr><td>2026-11-17T03:00:55Z</td><td>R2_UNAUTHORIZED_TICKET_ACCESS</td><td>MEDIUM</td><td>actor#e4af76ea</td><td>ip#7b434e35</td><td>3</td><td>DETECTED</td><td>AUTHZ_DENIED</td></tr></tbody></table></div>
+<small>Xuất báo cáo cục bộ từ alerts.jsonl, không kết nối VM và không tự cập nhật theo thời gian thực.<br>
+Actor/IP dùng mã HMAC ngẫu nhiên riêng cho lần xuất này; không hiện email/IP gốc, mật khẩu hay token.<br>
+Bảng dùng dữ liệu đã cung cấp, không chứng minh alerts.jsonl được ghi bởi sidecar trên VM.</small>
+</body></html>

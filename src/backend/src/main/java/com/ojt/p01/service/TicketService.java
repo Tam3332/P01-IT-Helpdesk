@@ -35,7 +35,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -182,7 +184,7 @@ public class TicketService {
  /**
  * Lấy danh sách ticket có phân quyền và bộ lọc:
  * EMPLOYEE : chỉ xem được vé do chính mình tạo (requester_id = currentUser.id).
- * IT_STAFF : xem vé được giao cho mình (currentAssignee) + tất cả vé trạng thái NEW (chờ tiếp nhận).
+ * IT_STAFF : chỉ xem vé được giao cho mình (currentAssignee), theo SRS HD05 sửa 05/11.
  * IT_MANAGER : xem toàn bộ vé trong hệ thống.
  * ADMIN : xem toàn bộ vé (chế độ chỉ đọc).
  *
@@ -194,6 +196,32 @@ public class TicketService {
     @Transactional(readOnly = true)
     public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority,
                                                    Integer categoryId, Long assigneeId, String search) {
+        return getTickets(page, size, status, priority, categoryId, assigneeId, search, null, null);
+    }
+
+    // Ngày lọc tính theo giờ Việt Nam (UTC+7), khớp cách hiển thị thời gian ở SDD §5.5
+    static final ZoneOffset BUSINESS_ZONE = ZoneOffset.ofHours(7);
+
+    /**
+     * Đổi khoảng ngày người dùng chọn thành mốc thời gian để lọc created_at (HD13, SDD §4).
+     * Trả [từ (gồm), đến (không gồm)]; phần tử null nghĩa là không giới hạn phía đó.
+     * createdTo lấy trọn ngày: đến 00:00 ngày hôm sau. Từ ngày sau đến ngày → 400 (SDD SCR-02).
+     */
+    static OffsetDateTime[] createdRange(LocalDate createdFrom, LocalDate createdTo) {
+        if (createdFrom != null && createdTo != null && createdFrom.isAfter(createdTo)) {
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc");
+        }
+        OffsetDateTime from = createdFrom != null ? createdFrom.atStartOfDay().atOffset(BUSINESS_ZONE) : null;
+        OffsetDateTime toExclusive = createdTo != null ? createdTo.plusDays(1).atStartOfDay().atOffset(BUSINESS_ZONE) : null;
+        return new OffsetDateTime[]{from, toExclusive};
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<TicketResponse> getTickets(int page, int size, String status, String priority,
+                                                   Integer categoryId, Long assigneeId, String search,
+                                                   LocalDate createdFrom, LocalDate createdTo) {
+        // Kiểm khoảng ngày trước khi truy vấn (từ ngày sau đến ngày → 400)
+        OffsetDateTime[] range = createdRange(createdFrom, createdTo);
         User currentUser = getCurrentUser();
         String roleName = currentUser.getRole() != null ? currentUser.getRole().getRoleName() : "EMPLOYEE";
 
@@ -243,6 +271,14 @@ public class TicketService {
                         cb.like(cb.lower(root.get("ticketNumber")), kw, '\\'),
                         cb.like(cb.lower(root.get("title")), kw, '\\'),
                         cb.like(cb.lower(root.get("description")), kw, '\\')));
+            }
+
+            // 7. Khoảng ngày tạo (HD13): AND thêm sau phạm vi role, giá trị truyền dạng tham số
+            if (range[0] != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), range[0]));
+            }
+            if (range[1] != null) {
+                predicates.add(cb.lessThan(root.get("createdAt"), range[1]));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

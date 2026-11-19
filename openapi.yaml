@@ -200,9 +200,11 @@ paths:
             default: 0
         - name: size
           in: query
+          description: Số ticket mỗi trang. Nhỏ hơn 1 thì dùng 20; lớn hơn 100 thì backend tự giảm về 100 (T5-06)
           schema:
             type: integer
             default: 20
+            maximum: 100
       responses:
         '200':
           description: Danh sách ticket theo quyền (Employee xem vé của mình, IT Staff chỉ xem vé được giao cho mình – SRS §4 HD05 sửa 05/11, Manager/Admin xem hết)
@@ -810,6 +812,8 @@ paths:
           description: Tải tệp thành công qua byte stream
         '401':
           $ref: '#/components/responses/401Unauthorized'
+        '403':
+          description: Admin không được tải nội dung tệp (SRS UC-03 5a), chỉ xem metadata
         '404':
           $ref: '#/components/responses/404NotFound'
 

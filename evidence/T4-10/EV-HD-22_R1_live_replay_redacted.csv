@@ -1,0 +1,2 @@
+﻿rule_id,severity,detected_at,event_count,window_seconds,first_event_at,last_event_at,source_event_type,status
+R1_BRUTE_FORCE_LOGIN,HIGH,2026-11-14T15:32:15Z,5,300,2026-11-14T15:31:45Z,2026-11-14T15:32:15Z,LOGIN_FAILED,DETECTED
