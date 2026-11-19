@@ -20,7 +20,7 @@ Quy ước tên: `EV-HD-<số FR>_<api|db|fe|ui>_<mô tả>.png`. Số FR theo S
 | EV-HD-01 | api/EV-HD-01_login_401_sai_mat_khau.png | 2026-11-03 | T3-06, TC-HD-01 (dự kiến), SRS UC-01 2a | Đăng nhập sai mật khẩu | 401, `error.code: INVALID_CREDENTIALS`, thông báo chung "Email hoặc mật khẩu không đúng" |
 | EV-HD-01 | api/EV-HD-01_login_400_validation.png | 2026-11-03 | T3-06, TC-HD-01 (dự kiến) | Bỏ trống email và mật khẩu | 400, `error.code: VALIDATION_FAILED`, details liệt kê từng trường |
 | EV-HD-03 | api/EV-HD-03_ticket_400_danh_muc_khong_hop_le.png | 2026-11-03 | T3-06, TC-HD-03 (dự kiến), SRS UC-02 5a | POST /api/v1/tickets với categoryId không tồn tại | 400, `error.code: CATEGORY_NOT_FOUND` |
-| (không có EV-ID) | api/T3-06_categories_200_dinh_dang_moi.png | 2026-11-03 | T3-06, kiểm tra định dạng phản hồi SDD §4.2a | GET /api/v1/categories sau khi đổi ApiResponse | 200, `success: true`, 5 danh mục |
+| EV-HD-02 | api/EV-HD-02_api_categories_200_dinh_dang_moi.png | 2026-11-03 | T3-06, kiểm tra định dạng phản hồi SDD §4.2a | GET /api/v1/categories sau khi đổi ApiResponse | 200, `success: true`, 5 danh mục |
 
 **Ghi chú về 5 ảnh trên (ngày 03/11):** chụp từ code chạy trên máy với bản sửa định dạng response chưa push (sau đó thay bằng bản của Trí trên `tri/be`). Định dạng lỗi hiện tại có thêm trường `message` ở ngoài cùng, nên ảnh 400/401 có thể cần chụp lại sau khi chốt SDD §4.2.
 
@@ -85,14 +85,14 @@ Theo `test_giao_dien.md`. Backend `cuong/be` sau commit `05cc318` + sửa cột 
 | EV-HD-06 | ui/D_ITManager/2026-11-04/EV-HD-06_ui_D3_sau_phan_cong.png | D3 | HD-2026-0002: Đã phân công, ưu tiên Cao, hạn xử lý = tạo + 8 giờ, toast thành công |
 | EV-HD-06 | ui/D_ITManager/2026-11-04/EV-HD-06_ui_D4_giao_lai_nguoi_cu.png | D4 | Giao lại đúng người cũ, không đổi ưu tiên → FE chặn, báo "Ticket đang giao cho người này…" |
 | EV-HD-05 | ui/D_ITManager/2026-11-04/EV-HD-05_ui_D7_staff_sau_phan_cong.png | D7 | Staff thấy ticket vừa được giao, cột Người xử lý đúng |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E1_tao_danh_muc.png | E1 | Admin tạo danh mục TESTUI, toast thành công |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E1_employee_thay_danh_muc_moi.png | E1 | Employee thấy danh mục mới trong dropdown |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E2_trung_ma.png | E2 | Tạo trùng mã → "Mã danh mục đã tồn tại" |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E3_tat_danh_muc.png | E3 | Tắt TESTUI → trạng thái Tạm ẩn |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E3_employee_khong_con_danh_muc.png | E3 | Employee không còn thấy danh mục đã tắt |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E5_sla_bang_0.png | E5 | SLA = 0 → "Hạn xử lý phải lớn hơn 0." |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E5_sla_am.png | E5 | SLA = -1 → bị chặn |
-| EV-UC-10 | ui/E_Admin/2026-11-04/EV-UC-10_ui_E6_admin_tong_quan_khong_co_menu_ticket.png | E6 | Menu Admin không có trang ticket chỉ đọc (lỗi FE) |
+| EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E1_tao_danh_muc.png | E1 | Admin tạo danh mục TESTUI, toast thành công |
+| EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E1_employee_thay_danh_muc_moi.png | E1 | Employee thấy danh mục mới trong dropdown |
+| EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E2_trung_ma.png | E2 | Tạo trùng mã → "Mã danh mục đã tồn tại" |
+| EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E3_tat_danh_muc.png | E3 | Tắt TESTUI → trạng thái Tạm ẩn |
+| EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E3_employee_khong_con_danh_muc.png | E3 | Employee không còn thấy danh mục đã tắt |
+| EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E5_sla_bang_0.png | E5 | SLA = 0 → "Hạn xử lý phải lớn hơn 0." |
+| EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E5_sla_am.png | E5 | SLA = -1 → bị chặn |
+| EV-HD-05 | ui/E_Admin/2026-11-04/EV-HD-05_ui_E6_admin_tong_quan_khong_co_menu_ticket.png | E6 | Menu Admin không có trang ticket chỉ đọc (lỗi FE) |
 
 ## Audit log JSONL (05/11/2026)
 
@@ -108,8 +108,8 @@ Backend ghi `src/backend/logs/audit_events.jsonl` theo SDD §7 (11 trường; kh
 | EV-ID | File | Ngày | Task / test | Mô tả | Kết quả quan sát |
 |---|---|---|---|---|---|
 | EV-HD-05 | api/EV-HD-05_api_staff_thay_ve_new.png | 2026-11-05 | T3-06, SRS §4 HD05, SecRS IA-HD02 | IT Staff GET /tickets | Thấy vé được giao + vé NEW chưa giao (HD-2026-0003). **Phạm vi cũ**, đã đổi ngay sau đó theo SRS §4 HD05 sửa 05/11 |
-| EV-HD-03 | api/EV-HD-03_api_upload_doi_duoi_bi_chan_400.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload tệp chữ đổi đuôi thành .png | 400 FILE_TYPE_NOT_ALLOWED (sai chữ ký nội dung) |
-| EV-HD-03 | api/EV-HD-03_api_upload_png_hop_le_200.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload ảnh PNG thật | 200, mimeType image/png do server xác định |
+| EV-HD-04 | api/EV-HD-04_api_upload_doi_duoi_bi_chan_400.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload tệp chữ đổi đuôi thành .png | 400 FILE_TYPE_NOT_ALLOWED (sai chữ ký nội dung) |
+| EV-HD-04 | api/EV-HD-04_api_upload_png_hop_le_200.png | 2026-11-05 | SRS §4 HD04, SecRS IA-HD03 | Upload ảnh PNG thật | 200, mimeType image/png do server xác định |
 
 ## Sau khi đổi phạm vi IT Staff (05/11/2026)
 
@@ -150,4 +150,4 @@ Máy dev; có thêm staff2 (id 7) và employee2 (id 10). Ca API khóa tài kho�
 | EV-HD-01 | ui/A_General/2026-11-12/EV-HD-01_ui_A5_back_sau_dang_xuat.png, ui/A_General/2026-11-12/EV-HD-01_ui_A5_go_url_sau_dang_xuat.png | A5 | Sau đăng xuất, Back hoặc gõ URL đều về login |
 | EV-HD-03 | ui/B_Employee/2026-11-12/EV-HD-03_ui_B3_gioi_han_200_2000.png | B3 | Bộ đếm 200/200, 2000/2000, không nhập thêm được; lỗi FE "Vui lòng chọn danh mục" còn sót |
 | EV-HD-06 | ui/D_ITManager/2026-11-12/EV-HD-06_ui_D5_hop_phan_cong_lai.png, ui/D_ITManager/2026-11-12/EV-HD-06_ui_D5_sau_phan_cong_lai.png | D5 | Phân công lại sang Hoàng Văn Nam, trạng thái giữ Đã phân công; lỗi FE: lịch sử "Người dùng #2", tiêu đề tràn ngang |
-| EV-UC-10 | ui/E_Admin/2026-11-12/EV-UC-10_ui_E2_trung_ma_network.png, ui/E_Admin/2026-11-12/EV-UC-10_ui_E2_trung_ten_network.png | E2 | 400 CATEGORY_CODE_DUPLICATE / CATEGORY_NAME_DUPLICATE, FE báo đúng |
+| EV-HD-02 | ui/E_Admin/2026-11-12/EV-HD-02_ui_E2_trung_ma_network.png, ui/E_Admin/2026-11-12/EV-HD-02_ui_E2_trung_ten_network.png | E2 | 400 CATEGORY_CODE_DUPLICATE / CATEGORY_NAME_DUPLICATE, FE báo đúng |
