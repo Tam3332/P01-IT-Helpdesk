@@ -33,4 +33,4 @@ Mã EV đặt theo TC tương ứng (EV-HD-xx ↔ TC-HD-xx). Quy ước mã evid
 Ghi chú:
 - Tệp từ 10 MB đến 11 MB bị Spring chặn khi đọc multipart (`max-file-size: 10MB`), trước khi vào controller/service, nên chưa tra được mã ticket và chưa kiểm quyền; audit ghi theo đường dẫn request. Tệp lớn hơn 11 MB bị Nginx trả 413, không tới backend nên không có audit.
 - Ảnh chụp PowerShell có một số ký tự lẫn (`\x0a…189feb17…`) do lỗi dán nhiều dòng vào terminal; không ảnh hưởng kết quả.
-- Unit test: xem `evidence/T5-06/unit_test_78_pass.png` (tổng 78/78 gồm cả `AuditLoggerTest` với 2 ca mới về `reason`; phần đầu danh sách test nằm ngoài khung ảnh).
+- Unit test: `EV-HD-04_unit_upload_AttachmentServiceTest_100_pass.png` (`mvnw test` 17/11 sau `400dbdf`…`2db6812`: `Tests run: 100, Failures: 0`; `AttachmentServiceTest` 9/9 gồm đổi đuôi, sai magic bytes, MIME lệch, >10 MB, tệp thứ 6, tệp rỗng, ticket Closed, Employee khác, tên `../`). Ca `reason` của `AuditLoggerTest` (2 ca): xem `evidence/T5-06/EV-HD-01_unit_lockout_78_pass.png` (tổng 78/78).
