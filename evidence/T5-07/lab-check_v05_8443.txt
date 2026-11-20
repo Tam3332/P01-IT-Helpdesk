@@ -1,0 +1,48 @@
+1) Trạng thái container (cần 5 dòng: db, backend, frontend, gateway đều Up; db/backend/frontend healthy)
+NAME           IMAGE                 COMMAND                  SERVICE    CREATED          STATUS                    PORTS
+p01-backend    p01-backend:latest    "java -XX:+UseContai…"   backend    10 minutes ago   Up 10 minutes (healthy)   8080/tcp
+p01-db         postgres:18-alpine    "docker-entrypoint.s…"   postgres   10 minutes ago   Up 10 minutes (healthy)   5432/tcp
+p01-frontend   p01-frontend:latest   "/docker-entrypoint.…"   frontend   10 minutes ago   Up 10 minutes (healthy)   80/tcp
+p01-gateway    nginx:1.27-alpine     "/docker-entrypoint.…"   nginx      10 minutes ago   Up 10 minutes             80/tcp, 0.0.0.0:8443->443/tcp, [::]:8443->443/tcp
+
+2) Cổng dự án mở ra ngoài (chỉ 8443; db và backend không được publish)
+  [ OK ] postgres (cổng 5432) không publish ra máy chủ
+  [ OK ] backend (cổng 8080) không publish ra máy chủ
+  [ OK ] gateway publish HTTPS: 0.0.0.0:8443
+  (tham khảo) cổng đang nghe trên cả VM:
+    LISTEN 0      4096                                127.0.0.1:8080       0.0.0.0:*   
+    LISTEN 0      4096                                  0.0.0.0:8443       0.0.0.0:*   
+    LISTEN 0      4096                                     [::]:8443          [::]:*   
+
+3) HTTPS và header bảo mật
+HTTP/1.1 200 OK
+Strict-Transport-Security: max-age=31536000
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+4) Swagger bị chặn ở gateway (mong đợi 404)
+  [ OK ] swagger-ui: 404
+
+5) API cần đăng nhập (mong đợi 401 khi không có token)
+  [ OK ] GET /tickets không token: 401
+
+6) Đăng nhập 4 vai trò (mật khẩu demo)
+  [ OK ] employee@helpdesk.local đăng nhập được (vai trò: EMPLOYEE); token không in ra
+  [ OK ] staff@helpdesk.local đăng nhập được (vai trò: IT_STAFF); token không in ra
+  [ OK ] manager@helpdesk.local đăng nhập được (vai trò: IT_MANAGER); token không in ra
+  [ OK ] admin@helpdesk.local đăng nhập được (vai trò: ADMIN); token không in ra
+
+7) Volume ghi được (audit log của backend)
+/app/logs:
+total 12
+drwxr-xr-x 2 p01 p01 4096 Nov 20 12:46 .
+drwxr-xr-x 1 p01 p01 4096 Nov 20 12:45 ..
+-rw-r--r-- 1 p01 p01 2182 Nov 20 12:56 audit_events.jsonl
+
+/app/uploads:
+total 8
+drwxr-xr-x 2 p01 p01 4096 Nov 12 07:47 .
+drwxr-xr-x 1 p01 p01 4096 Nov 20 12:45 ..
+
+KẾT QUẢ: đạt
