@@ -17,10 +17,17 @@ echo; echo "2) Cổng dự án mở ra ngoài (chỉ ${PORT}; db và backend kh�
 for sp in "postgres 5432" "backend 8080"; do
   set -- $sp
   pub=$(docker compose port "$1" "$2" 2>/dev/null)
-  [ -z "$pub" ] && ok "$1 (cổng $2) không publish ra máy chủ" || bad "$1 (cổng $2) đang publish: $pub"
+  # Compose mới in ":0" (không phải chuỗi rỗng) khi cổng không được publish
+  case "$pub" in
+    ""|*:0) ok "$1 (cổng $2) không publish ra máy chủ" ;;
+    *) bad "$1 (cổng $2) đang publish: $pub" ;;
+  esac
 done
 pub=$(docker compose port nginx 443 2>/dev/null)
-[ -n "$pub" ] && ok "gateway publish HTTPS: $pub" || bad "gateway không publish cổng 443"
+case "$pub" in
+  ""|*:0) bad "gateway không publish cổng 443" ;;
+  *) ok "gateway publish HTTPS: $pub" ;;
+esac
 if command -v ss >/dev/null 2>&1; then echo "  (tham khảo) cổng đang nghe trên cả VM:"; ss -tln | grep -E ":(${PORT}|5432|8080|80)\b" | sed 's/^/    /' || true; fi
 
 echo; echo "3) HTTPS và header bảo mật"
@@ -46,6 +53,6 @@ for u in employee staff manager admin; do
 done
 
 echo; echo "7) Volume ghi được (audit log của backend)"
-docker compose exec -T backend sh -c 'ls -la /app/logs /app/uploads' 2>&1 | head -12
+docker compose exec -T backend sh -c 'ls -la /app/logs /app/uploads' </dev/null 2>&1 | head -12
 
 echo; [ "$FAIL" = 0 ] && echo "KẾT QUẢ: đạt" || { echo "KẾT QUẢ: có mục lỗi, xem các dòng [LỖI] ở trên"; exit 1; }
