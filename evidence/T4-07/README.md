@@ -15,7 +15,7 @@ Không có mật khẩu, token hay nội dung `.env` trong các tệp này.
 | Volume giữ dữ liệu sau restart và `down`/`up` (không `-v`) | Đạt: tệp dấu vết giữ nguyên, audit 8 dòng trước và sau, tài khoản DB còn | `volume-persist.txt` |
 | Upload 10 MB qua Nginx | HTTP 201, `fileSize` 10485760 | `upload-limits.txt` |
 | Tệp 11 MB | HTTP 413 do Nginx chặn | `upload-limits.txt` |
-| Giao diện web trên lab | Mở `https://100.124.80.30:8443/` qua Tailscale, đăng nhập `employee2@` thành công, thấy trang Tổng quan vai trò Nhân viên | `ui-employee2-dashboard.png` |
+| Giao diện web trên lab | Mở `https://<IP-VM>:8443/` qua Tailscale, đăng nhập `employee2@` thành công, thấy trang Tổng quan vai trò Nhân viên | `ui-employee2-dashboard.png` |
 | Cổng mở ra ngoài của dự án | Chỉ `0.0.0.0:8443`; Postgres 5432 và backend 8080 chỉ trong mạng Docker | `lab-check_8443.txt` mục 2 và phần đối chiếu |
 
 ## Kết quả script lab-check: vẫn ghi "có mục lỗi" (mục 2)
@@ -34,4 +34,4 @@ Không có mật khẩu, token hay nội dung `.env` trong các tệp này.
 
 ## Cách truy cập lab
 
-VM chạy trên VirtualBox của Nhi (Adapter 1 NAT, Adapter 2 Internal Network `helpdesk-lab`, Ubuntu Server `192.168.50.10`). Để cả nhóm vào từ máy riêng, nhóm dùng Tailscale trên VM Server: `https://100.124.80.30:8443/` (chứng chỉ tự ký, trình duyệt sẽ cảnh báo). Mỗi thành viên cần được Nhi mời vào mạng Tailscale. VM phải đang bật mới truy cập được.
+VM chạy trên VirtualBox của Nhi (Adapter 1 NAT, Adapter 2 Internal Network `helpdesk-lab`, Ubuntu Server `<IP-LAN-VM>`). Để cả nhóm vào từ máy riêng, nhóm dùng Tailscale trên VM Server: `https://<IP-VM>:8443/` (chứng chỉ tự ký, trình duyệt sẽ cảnh báo). Mỗi thành viên cần được Nhi mời vào mạng Tailscale. VM phải đang bật mới truy cập được.
