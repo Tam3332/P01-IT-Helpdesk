@@ -30,6 +30,7 @@ sh scripts/gen-self-signed-cert.sh 192.168.x.x   # IP hoặc tên của VM (đ�
 docker compose up -d --build
 docker compose ps                            # postgres, backend, frontend phải (healthy); nginx là Up
 sh scripts/lab-check.sh                      # kiểm tra tự động, chụp màn hình làm bằng chứng
+                                             # mục 2 chỉ xét cổng của project compose này, không tính container khác trên VM
 ```
 Mở `https://<IP-VM>/` (trình duyệt cảnh báo chứng chỉ tự ký, bấm tiếp tục).
 
@@ -60,6 +61,35 @@ cp docker-compose.override.yml.example docker-compose.override.yml   # không co
 docker compose up -d --build postgres frontend
 ```
 Mở http://localhost:8081 (dòng `ports` này chỉ để thử, không có trong cấu hình thật).
+
+## Bản triển khai tuần 5 (T5-07)
+
+| Mục | Giá trị |
+|---|---|
+| Ngày triển khai | 20/11/2026 |
+| Mã nguồn ứng dụng | tag `v0.5-mvp` = commit `35c573d` (nhánh `frontend`: toàn bộ `main` @`671d43a` cộng thay đổi mã evidence, không đổi code ứng dụng). Bỏ qua mốc `v0.5-rc1`, triển khai thẳng bản MVP |
+| Script kiểm tra | `scripts/lab-check.sh` ở commit `a44208a` (sửa mục 2 và mục 7), chép riêng một tệp lên VM khi chạy; phần còn lại của thư mục đúng tag `v0.5-mvp` |
+| VM lab | Ubuntu 26.04.1 LTS, Docker 29.1.3, Docker Compose 2.40.3 (VirtualBox của Nhi, như bản v0.4) |
+| Cổng và địa chỉ | HTTPS cổng `8443`. Truy cập qua Tailscale `https://100.124.80.30:8443/`; trong mạng nội bộ của VM là `https://192.168.50.10:8443/`. Cách truy cập chung cho cả nhóm đang chờ Nhi chốt |
+| Dựng từ đầu | Thư mục `~/P01-lab-v05`, project compose `p01-lab-v05` (volume mới, cơ sở dữ liệu rỗng). `.env` và chứng chỉ TLS chép từ `~/P01-lab-v04`. Bản v0.4 dừng bằng `docker compose down` (**không** `-v`), 5 volume `p01-lab-v04_*` còn nguyên |
+| Image thực tế | `postgres:18-alpine`, `nginx:1.27-alpine`, `p01-backend`, `p01-frontend` (build từ tag). Lưu ý: hai image `p01-*` dùng tên cố định, nên muốn chạy lại v0.4 phải `up -d --build` trong thư mục v0.4 |
+
+### Kết quả kiểm tra
+| Kiểm tra | Kết quả | Evidence |
+|---|---|---|
+| `scripts/lab-check.sh 8443` | Mục 1 đến 7 đều đạt, kết thúc `KẾT QUẢ: đạt`. Mục 2 không còn báo nhầm | `evidence/T5-07/lab-check_v05_8443.txt` |
+| 4 container | `p01-db`, `p01-backend`, `p01-frontend` healthy; `p01-gateway` Up, chỉ mở `0.0.0.0:8443` | cùng tệp, mục 1 và 2 |
+| Giao diện 4 vai trò trên lab | Employee, IT Staff, IT Manager, Admin: 11 màn hình (Tổng quan, SLA, ticket, yêu cầu mở lại, người dùng, cài đặt hệ thống, nhật ký) | `evidence/T5-07/ui/` |
+| Dữ liệu thử | 3 ticket (`HD-2026-0001` đến `0003`), 1 yêu cầu mở lại của `HD-2026-0002` đang chờ duyệt; nhật ký hệ thống có 38 bản ghi | ảnh `manager_yeu_cau_mo_lai.png`, `admin_nhat_ky.png` |
+
+Chạy script bằng `sudo` vì tài khoản `nhi` không thuộc nhóm `docker`.
+
+### Hạn chế đã biết (sẽ sửa ở commit riêng)
+- Chế độ English còn vài chuỗi tiếng Việt: trang Giám sát SLA của Manager (tiêu đề, dòng phụ, nhãn "Bình thường"), mô tả trong Cài đặt hệ thống của Admin, các nhãn hành động trong Nhật ký hệ thống.
+- Dòng phụ trang Yêu cầu mở lại ghi "ticket đã đóng", trong khi quy tắc BR-HD-04 chỉ cho mở lại ticket ở trạng thái Resolved.
+- Trang Tổng quan của Employee hiện "—" ở ô "Đã giải quyết" và "Đã đóng" khi chưa có ticket; cần xác nhận với Trí API thống kê có trả hai trường này không.
+- Container giám sát của v0.4 (`p01-lab-v04-monitoring-1`) vẫn chạy và đọc volume v0.4, chưa được nối sang v0.5.
+- Chứng chỉ TLS tự ký; VM chạy trên máy cá nhân nên có thể tắt hoặc ngủ.
 
 ## Bản triển khai tuần 4 (T4-14)
 

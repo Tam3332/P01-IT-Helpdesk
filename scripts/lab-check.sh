@@ -12,9 +12,23 @@ FAIL=0
 echo "1) Trạng thái container (cần 5 dòng: db, backend, frontend, gateway đều Up; db/backend/frontend healthy)"
 docker compose ps
 
-echo; echo "2) Cổng mở ra ngoài máy (chỉ nên có ${PORT}; không có 5432, 8080)"
-if command -v ss >/dev/null 2>&1; then ss -tln | grep -E ":(${PORT}|5432|8080|80)\b" || true; fi
-ss -tln 2>/dev/null | grep -qE ':(5432|8080)\b' && bad "5432/8080 đang mở ra máy chủ" || ok "5432 và 8080 không mở ra máy chủ"
+echo; echo "2) Cổng dự án mở ra ngoài (chỉ ${PORT}; db và backend không được publish)"
+# Chỉ xét container của project compose này. Container khác trên VM (ví dụ helpdesk-web bind 127.0.0.1:8080) không tính.
+for sp in "postgres 5432" "backend 8080"; do
+  set -- $sp
+  pub=$(docker compose port "$1" "$2" 2>/dev/null)
+  # Compose mới in ":0" (không phải chuỗi rỗng) khi cổng không được publish
+  case "$pub" in
+    ""|*:0) ok "$1 (cổng $2) không publish ra máy chủ" ;;
+    *) bad "$1 (cổng $2) đang publish: $pub" ;;
+  esac
+done
+pub=$(docker compose port nginx 443 2>/dev/null)
+case "$pub" in
+  ""|*:0) bad "gateway không publish cổng 443" ;;
+  *) ok "gateway publish HTTPS: $pub" ;;
+esac
+if command -v ss >/dev/null 2>&1; then echo "  (tham khảo) cổng đang nghe trên cả VM:"; ss -tln | grep -E ":(${PORT}|5432|8080|80)\b" | sed 's/^/    /' || true; fi
 
 echo; echo "3) HTTPS và header bảo mật"
 curl -ksI "$BASE/" | grep -iE '^HTTP|strict-transport|x-content-type|x-frame|content-security' || bad "không gọi được $BASE"
@@ -39,6 +53,6 @@ for u in employee staff manager admin; do
 done
 
 echo; echo "7) Volume ghi được (audit log của backend)"
-docker compose exec -T backend sh -c 'ls -la /app/logs /app/uploads' 2>&1 | head -12
+docker compose exec -T backend sh -c 'ls -la /app/logs /app/uploads' </dev/null 2>&1 | head -12
 
 echo; [ "$FAIL" = 0 ] && echo "KẾT QUẢ: đạt" || { echo "KẾT QUẢ: có mục lỗi, xem các dòng [LỖI] ở trên"; exit 1; }
