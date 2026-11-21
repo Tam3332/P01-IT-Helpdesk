@@ -1,7 +1,7 @@
 # Evidence T5-07: lab v0.5-mvp
 
 Ngày kiểm: 20/11/2026. Người thực hiện: Nguyễn Nhật Chính (SE196524). Kết quả lấy từ VM Ubuntu lab, không chỉnh sửa.
-Ảnh chụp bằng trình duyệt ẩn danh, đã cắt bỏ thanh dấu trang cá nhân; thanh địa chỉ vẫn hiện `https://100.124.80.30:8443/`.
+Ảnh chụp bằng trình duyệt ẩn danh, đã cắt bỏ thanh dấu trang cá nhân; địa chỉ IP của VM lab trong thanh địa chỉ đã được che (ô đen), phần cổng `8443` và đường dẫn trang vẫn giữ. Trong tài liệu, IP của VM ghi là `<IP-VM>`.
 Không có mật khẩu, token hay nội dung `.env` trong các tệp này.
 
 Mã nguồn: tag `v0.5-mvp` = commit `35c573d`. Script kiểm tra: `scripts/lab-check.sh` ở commit `a44208a`. Chi tiết dựng lab xem `DEPLOY_NOTES.md`, mục "Bản triển khai tuần 5 (T5-07)".

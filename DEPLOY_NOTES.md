@@ -70,7 +70,7 @@ Mở http://localhost:8081 (dòng `ports` này chỉ để thử, không có tro
 | Mã nguồn ứng dụng | tag `v0.5-mvp` = commit `35c573d` (nhánh `frontend`: toàn bộ `main` @`671d43a` cộng thay đổi mã evidence, không đổi code ứng dụng). Bỏ qua mốc `v0.5-rc1`, triển khai thẳng bản MVP |
 | Script kiểm tra | `scripts/lab-check.sh` ở commit `a44208a` (sửa mục 2 và mục 7), chép riêng một tệp lên VM khi chạy; phần còn lại của thư mục đúng tag `v0.5-mvp` |
 | VM lab | Ubuntu 26.04.1 LTS, Docker 29.1.3, Docker Compose 2.40.3 (VirtualBox của Nhi, như bản v0.4) |
-| Cổng và địa chỉ | HTTPS cổng `8443`. Truy cập qua Tailscale `https://100.124.80.30:8443/`; trong mạng nội bộ của VM là `https://192.168.50.10:8443/`. Cách truy cập chung cho cả nhóm đang chờ Nhi chốt |
+| Cổng và địa chỉ | HTTPS cổng `8443`. Truy cập qua Tailscale `https://<IP-VM>:8443/`; trong mạng nội bộ của VM là `https://<IP-LAN-VM>:8443/`. IP thật của VM do Nhi giữ, không ghi trong repo (`<IP-VM>` là địa chỉ Tailscale, `<IP-LAN-VM>` là địa chỉ mạng nội bộ). Cách truy cập chung cho cả nhóm đang chờ Nhi chốt |
 | Dựng từ đầu | Thư mục `~/P01-lab-v05`, project compose `p01-lab-v05` (volume mới, cơ sở dữ liệu rỗng). `.env` và chứng chỉ TLS chép từ `~/P01-lab-v04`. Bản v0.4 dừng bằng `docker compose down` (**không** `-v`), 5 volume `p01-lab-v04_*` còn nguyên |
 | Image thực tế | `postgres:18-alpine`, `nginx:1.27-alpine`, `p01-backend`, `p01-frontend` (build từ tag). Lưu ý: hai image `p01-*` dùng tên cố định, nên muốn chạy lại v0.4 phải `up -d --build` trong thư mục v0.4 |
 
@@ -98,8 +98,8 @@ Chạy script bằng `sudo` vì tài khoản `nhi` không thuộc nhóm `docker`
 | Ngày triển khai | 12/11/2026 |
 | Mã nguồn | tag `v0.4-week4` = commit `a378fdb` (Merge pull request #18, trùng `main` lúc triển khai) |
 | VM lab | Ubuntu 26.04.1 LTS, Docker 29.1.3, Docker Compose 2.40.3 (VirtualBox của Nhi) |
-| Cổng và địa chỉ | HTTPS cổng `8443` (`HTTPS_PORT=8443` trong `.env`); VM Server `192.168.50.10` (Internal Network `helpdesk-lab`) |
-| Cách truy cập của nhóm | Tailscale trên VM Server, URL `https://100.124.80.30:8443/`; Nhi mời từng thành viên vào mạng Tailscale. Chứng chỉ tự ký nên trình duyệt cảnh báo. VM cần đang bật |
+| Cổng và địa chỉ | HTTPS cổng `8443` (`HTTPS_PORT=8443` trong `.env`); VM Server `<IP-LAN-VM>` (Internal Network `helpdesk-lab`) |
+| Cách truy cập của nhóm | Tailscale trên VM Server, URL `https://<IP-VM>:8443/`; Nhi mời từng thành viên vào mạng Tailscale. Chứng chỉ tự ký nên trình duyệt cảnh báo. VM cần đang bật |
 | Dựng từ đầu | `docker compose down -v` rồi `docker compose up -d --build` trong thư mục clone riêng (`~/P01-lab-v04`) để nạp schema có REOPEN_PENDING; dữ liệu của project compose trước đó bị xóa |
 | Image thực tế | `postgres:18-alpine`, `nginx:1.27-alpine`, `p01-backend`, `p01-frontend` (build từ tag) |
 
@@ -110,7 +110,7 @@ Chạy script bằng `sudo` vì tài khoản `nhi` không thuộc nhóm `docker`
 | Volume `uploads_data`, `audit_logs`, `pgdata` giữ dữ liệu sau `restart` và `down`/`up` (không `-v`) | Đạt | `evidence/T4-14/volume-persist.txt` |
 | Upload 10 MB qua Nginx (`client_max_body_size 11m`) | HTTP 201 | `evidence/T4-14/upload-limits.txt` |
 | Tệp 11 MB | HTTP 413, Nginx chặn | `evidence/T4-14/upload-limits.txt` |
-| Giao diện web trên lab | Đăng nhập `employee2@` thành công qua `https://100.124.80.30:8443/` | `evidence/T4-14/ui-employee2-dashboard.png` |
+| Giao diện web trên lab | Đăng nhập `employee2@` thành công qua `https://<IP-VM>:8443/` | `evidence/T4-14/ui-employee2-dashboard.png` |
 
 ### Tài khoản demo trên lab
 `employee@`, `employee2@`, `staff@`, `manager@`, `admin@` + `helpdesk.local` (mật khẩu demo xem phần "Chạy trên Ubuntu" phía trên, không ghi lại ở đây). `employee2@` (id 6, `Lê Thị Cúc`) được thêm bằng SQL sau khi dựng, nên sẽ mất khi chạy `down -v`. Muốn có sẵn lâu dài thì thêm dòng tương ứng vào `database/init_demo_users.sql` (bản có `employee2` hiện chưa được đưa lên GitHub). Lab còn một ticket thử `HD-2026-0001` của `employee@` kèm tệp `test_10mb.txt`.
