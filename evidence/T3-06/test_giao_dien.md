@@ -46,7 +46,7 @@ evidence/T3-06/
 
 Tên ảnh giao diện: `<mã EV>_ui_<mã ca>_<mô tả ngắn>.png`, ví dụ `ui/D_ITManager/2026-11-04/EV-HD-06_ui_D3_sau_phan_cong.png` là ca D3, chụp ngày 04/11, minh chứng cho EV-HD-06.
 - `EV-HD-01/03/05/06`: đăng nhập / tạo ticket / xem ticket / phân công (theo SRS HD01, HD03, HD05, HD06).
-- `EV-UC-10`: quản lý danh mục, SLA của Admin (SRS UC-10).
+- `EV-HD-02`: quản lý danh mục, SLA của Admin (SRS HD02, UC-10). Ảnh E6 (menu Admin không có trang ticket chỉ đọc) mang mã `EV-HD-05` (HD05, Admin xem ticket chỉ đọc). Đổi mã theo quy ước T5-09 ngày 19/11.
 
 Tìm ảnh của một ca: mở `README.md`, mục "Kiểm thử giao diện theo checklist", tìm theo mã ca (A1, D3, E5…).
 
