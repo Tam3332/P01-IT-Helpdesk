@@ -1,0 +1,3 @@
+staff POST /tickets: 403
+manager POST /tickets: 403
+admin POST /tickets: 403

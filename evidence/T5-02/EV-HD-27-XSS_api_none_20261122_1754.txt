@@ -1,0 +1,34 @@
+Build: v0.5-mvp  WAF=none  BASE=https://<IP-VM>:8443  ngay=2026-11-22 17:54:58  ticketB=HD-2026-0004  A_total=4  Staff_total=1  Global_total=5  assign=200
+== 07.4 IDOR qua search ==
+07.4a   Employee A tìm chuỗi đánh dấu ticket của B        expected=0      actual=0      PASS
+07.4b   Employee A tìm theo mã ticket của B (HD-2026-0004)     expected=0      actual=0      PASS
+07.4c   IT Staff (không được giao) tìm ticket của B        expected=0      actual=0      PASS
+07.4d   IT Manager tìm ticket của B (đối chứng)            expected=1      actual=1      PASS
+== 07.3 SQLi qua tham số tìm kiếm/lọc ==
+07.3a   search=' OR '1'='1 → không lỗi 500                    expected=!500   actual=200    PASS
+07.3b   search=' OR '1'='1 → không lộ ticket (0 kết quả)  expected=0      actual=0      PASS
+07.3a   search=1) OR (1=1 → không lỗi 500                     expected=!500   actual=200    PASS
+07.3b   search=1) OR (1=1 → không lộ ticket (0 kết quả)   expected=0      actual=0      PASS
+07.3a   search=' UNION SELECT NULL-- → không lỗi 500          expected=!500   actual=200    PASS
+07.3b   search=' UNION SELECT NULL-- → không lộ ticket (0 kết quả) expected=0      actual=0      PASS
+07.3a   search=\' OR 1=1-- → không lỗi 500                    expected=!500   actual=200    PASS
+07.3b   search=\' OR 1=1-- → không lộ ticket (0 kết quả)  expected=0      actual=0      PASS
+07.3c   pg_sleep(5) qua search → phản hồi < 3s (thực: 0.077569s) expected=yes    actual=yes    PASS
+07.3d   size=100000 → pageSize bị giới hạn 100             expected=100    actual=100    PASS
+07.3e   page=-1 → không lỗi 500                               expected=!500   actual=200    PASS
+07.3f   sort=createdAt;SELECT 1 → không lỗi 500               expected=!500   actual=200    PASS
+07.3g   status=NEW' OR '1'='1 → không lỗi 500                 expected=!500   actual=200    PASS
+07.3h   createdFrom chứa SQLi → 400                            expected=400    actual=400    PASS
+07.3i   categoryId=1 OR 1=1 → không lỗi 500                   expected=!500   actual=400    PASS
+== 07.5 Leo quyền dọc qua endpoint mới ==
+07.5a   Employee GET /admin/users                                  expected=403    actual=403    PASS
+07.5b   IT Staff GET /admin/users                                  expected=403    actual=403    PASS
+07.5c   IT Manager GET /admin/users                                expected=403    actual=403    PASS
+07.5d   Admin GET /admin/users (đối chứng)                    expected=200    actual=200    PASS
+07.5e   Employee PATCH /admin/users/{id}/role                      expected=403    actual=403    PASS
+07.5f   IT Manager PATCH /admin/users/{id}/role                    expected=403    actual=403    PASS
+07.5g   Employee GET /admin/audit-logs                             expected=403    actual=403    PASS
+07.5h   Employee /dashboard/stats chỉ đếm ticket của mình  expected=4      actual=4      PASS
+07.5i   IT Staff /dashboard/stats chỉ đếm vé được giao   expected=1      actual=1      PASS
+Ghi chú 07.5h/i: dashboard trả 200 cho Employee/IT Staff (lọc theo role). Khác openapi (chỉ IT_MANAGER) → hỏi Trí/Khiêm chốt expected.
+Tổng: PASS=28 FAIL=0 -> evidence/T5-02/EV-HD-27-XSS_api_none_20261122_1754.txt
