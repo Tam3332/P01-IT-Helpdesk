@@ -35,7 +35,7 @@ STAFF_ID=$(call "$T_STAFF" GET /auth/me | jq -r '.data.id')
 AID=$(call "$T_EMP1" POST /tickets "{\"title\":\"AOWN-$(date +%s) ticket rieng cua A\",\"description\":\"du lieu nen SEC-TC-HD-07\",\"categoryId\":$CAT,\"impactLevel\":\"LOW\"}" | jq -r '.data.id')
 ASG=$(code "$T_MGR" PUT "/tickets/$AID/assign" "{\"assigneeId\":$STAFF_ID}")
 A_TOTAL=$(total "$T_EMP1" ""); S_TOTAL=$(total "$T_STAFF" ""); G_TOTAL=$(total "$T_MGR" "")
-echo "Build: ${BUILD_TAG:-chua ghi}  WAF=$WAF_MODE  BASE=$BASE  ngay=$(date '+%F %T')  ticketB=$BNUM  A_total=$A_TOTAL  Staff_total=$S_TOTAL  Global_total=$G_TOTAL  assign=$ASG" | tee -a "$LOG"
+echo "Build: ${BUILD_TAG:-chua ghi}  WAF=$WAF_MODE  BASE=$(echo "$BASE" | sed -E 's#//[0-9]+(\.[0-9]+){3}#//<IP-VM>#')  ngay=$(date '+%F %T')  ticketB=$BNUM  A_total=$A_TOTAL  Staff_total=$S_TOTAL  Global_total=$G_TOTAL  assign=$ASG" | tee -a "$LOG"
 if [ "$A_TOTAL" -lt 1 ] || [ "$S_TOTAL" -lt 1 ] || [ "$G_TOTAL" -le "$A_TOTAL" ] || [ "$G_TOTAL" -le "$S_TOTAL" ]; then
   echo "CẢNH BÁO: dữ liệu nền chưa đủ (A, Staff phải >= 1 và nhỏ hơn Global) – kết quả 07.3b/07.5h/07.5i không có giá trị" | tee -a "$LOG"
 fi
