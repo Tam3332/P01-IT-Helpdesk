@@ -63,3 +63,11 @@ BUG-HD-008 chạy trên lab local để không đổi mật khẩu tài khoản 
 ## Ghi chú
 - IP thật của VM đã thay bằng `<IP-VM>` trong file kết quả; ảnh đã cắt thanh địa chỉ (theo PR #35).
 - Kết quả hai lượt chạy thử trên lab local (00:14, 00:23 ngày 22/11) không commit.
+
+## 5. Rate limit (Nginx)
+
+| Zone | Cấu hình | Kiểm tra | Kết quả |
+|---|---|---|---|
+| `login` | 10r/m, burst 5 | Đã kiểm ở T4-11 (Nhi), T4-07 (Chính) | — |
+| `api` | 20r/s, burst 40 | 100 request `GET /api/v1/categories` song song | **PASS**: 74 × 200, 26 × 429 (`EV-HD-28-RL_api_429_lab_*.txt`) |
+| Upload | Dùng chung zone `api`, chưa có giới hạn riêng | — | **Đề xuất** gửi Nhi/Chính: zone `upload` 10r/m, burst 5 cho `POST /api/v1/tickets/{id}/attachments` |

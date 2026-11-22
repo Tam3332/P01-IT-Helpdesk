@@ -1,0 +1,5 @@
+Rate limit zone api (20r/s, burst 40) - GET /api/v1/categories x100 song song, 1 token Employee
+Build v0.5-mvp, lab nhom https://<IP-VM>:8443, 2026-11-22 19:05, WAF none
+So luong | HTTP code
+     74 200
+     26 429
