@@ -26,3 +26,14 @@ Mốc before là `v0.5-mvp` (`35c573d20d4244985e617e8a056f880faaadf1db`). T5-07 
 | VA-ZAP-01 | Theo alert | Giao diện và API | Chờ báo cáo HTML/JSON của ZAP Baseline/API, phân loại alert và context đã bỏ token | — | — |
 
 Khiêm phụ trách bảng VA. Giữ mã BUG-HD-008 hiện có. Kết quả T5-02 dùng làm tham chiếu EV-HD-27 cho đúng ca của T5-02. Khi bổ sung bằng chứng T5-16, ghi rõ build, thời điểm, WAF, kết quả, nguồn và BUG-ID liên quan.
+
+## Bàn giao Tuần 6
+
+Đối chiếu kế hoạch 7 tuần trong repo, sheet `Phân công chi tiết`, dòng 37–43. Đây là phân công dự kiến trong workbook. Sheet phân công trực tuyến hiện có Tuần 1–5. [Kế hoạch 7 tuần](https://github.com/Tam3332/P01-IT-Helpdesk/blob/49038407477dc1871966bf4ba9986aee3c40c816/docs/P01_Phan_cong_7_tuan.xlsx)
+
+- **T6-01 · Khiêm.** Tổng hợp Before/After Vulnerability Report, liên kết BUG → commit sửa → kết quả retest, cập nhật 04 §4–5 và nháp SecRS §9. Bản before ở hồ sơ này còn chờ kết quả chạy T5-16.
+- **T6-02 · Khánh.** Bàn giao báo cáo đánh giá after, retest quyền, Access Matrix final và Evidence Index. Khi đối chiếu với before, ghi commit triển khai và trạng thái WAF của mỗi lượt.
+- **Nguồn mới đang review.** PR #40 đồng bộ OpenAPI và event audit `ROLE_CHANGED`, `ACCOUNT_LOCKED`. PR này còn mở tại lần đối chiếu. Baseline before của hồ sơ vẫn là `35c573d`. Khi bản sửa được triển khai, kết quả after cần gắn đúng commit và bộ đặc tả tương ứng. [PR #40](https://github.com/Tam3332/P01-IT-Helpdesk/pull/40)
+- **WAF.** PR #38 đang Draft, chờ review và kết quả trên VM nhóm. Lượt triển khai WAF cần được ghi lại riêng để biết trước và sau đã thay đổi cấu hình gì. [PR #38](https://github.com/Tam3332/P01-IT-Helpdesk/pull/38)
+
+Các kết quả chạy lab bổ sung cần có VA-ID, build, thời điểm, môi trường, trạng thái WAF, kết quả thực tế, evidence và BUG-ID liên quan. T5-16 tiếp tục ở trạng thái In progress.
