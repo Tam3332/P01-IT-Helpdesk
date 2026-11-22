@@ -176,19 +176,19 @@ paths:
             type: integer
         - name: createdFrom
           in: query
-          description: Ngày tạo từ (HD13). Chưa triển khai, backend hiện bỏ qua tham số này
+          description: Ngày tạo từ (HD13), định dạng yyyy-MM-dd, tính từ 00:00 giờ Việt Nam (UTC+7). Ngày từ sau ngày đến → 400 VALIDATION_FAILED (commit 367adcb)
           schema:
             type: string
             format: date
         - name: createdTo
           in: query
-          description: Ngày tạo đến (HD13). Chưa triển khai, backend hiện bỏ qua tham số này
+          description: Ngày tạo đến (HD13), định dạng yyyy-MM-dd, tính trọn ngày theo giờ Việt Nam (UTC+7) (commit 367adcb)
           schema:
             type: string
             format: date
         - name: sort
           in: query
-          description: Sắp xếp (UC-04 bước 3, HD13). Chưa triển khai, backend luôn sắp ngày tạo giảm dần
+          description: Sắp xếp (UC-04 bước 3, HD13). Backend không nhận sắp xếp từ client (không cần allowlist trường sort, T5-06), danh sách luôn sắp theo ngày tạo giảm dần
           schema:
             type: string
             default: createdAt,desc
@@ -404,7 +404,7 @@ paths:
       tags: [Tickets]
       summary: Cập nhật trạng thái xử lý ticket (HD07, UC-07, BR-HD-01)
       description: >
-        Chỉ IT_STAFF đang được giao ticket (role khác nhận 403; IT Staff không được giao nhận 404).
+        IT_STAFF đang được giao ticket hoặc IT_MANAGER (PC-03, chốt 09/11). Employee, Admin nhận 403; IT Staff không được giao nhận 404 (Anti-IDOR); cả hai trường hợp ghi audit AUTHZ_DENIED.
         Luồng hợp lệ: ASSIGNED -> IN_PROGRESS, IN_PROGRESS -> RESOLVED, REOPENED -> IN_PROGRESS.
         Chuyển sang RESOLVED bắt buộc ghi chú giải pháp >= 20 ký tự (BR-HD-01).
         Ticket đang REOPEN_PENDING (chờ IT Manager duyệt) hoặc CLOSED trả 422.
@@ -822,7 +822,7 @@ paths:
     get:
       tags: [Feedback]
       summary: Xem đánh giá CSAT của ticket ở chế độ chỉ đọc (HD15)
-      description: Chỉ Employee chủ ticket xem được (SRS HD15, cột Actor ghi Employee). Ticket chưa có đánh giá trả 200 với data = null để giao diện hiện form đánh giá (HD15). 404 chỉ dùng khi ticket không tồn tại hoặc không có quyền (Anti-IDOR).
+      description: Employee chủ ticket, IT Staff đang được giao, IT Manager và Admin (chỉ đọc) xem được (PC-03, retest PC03.3 ngày 12/11). Employee khác hoặc IT Staff không được giao nhận 404 + audit AUTHZ_DENIED. Ticket chưa có đánh giá trả 200 với data = null để giao diện hiện form đánh giá (HD15). 404 chỉ dùng khi ticket không tồn tại hoặc không có quyền (Anti-IDOR).
       security:
         - BearerAuth: []
       parameters:
@@ -1200,7 +1200,7 @@ paths:
   /admin/users:
     get:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Danh sách tài khoản người dùng (ADMIN) (SRS §2 System Admin, IA-HD01)"
+      summary: "Danh sách tài khoản người dùng (ADMIN) (SRS §2 System Admin, IA-HD01)"
       security:
         - BearerAuth: []
       parameters:
@@ -1228,7 +1228,7 @@ paths:
 
     post:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Tạo tài khoản mới (ADMIN) (SRS §2 System Admin)"
+      summary: "Tạo tài khoản mới (ADMIN) (SRS §2 System Admin)"
       description: Trùng username hoặc email → 400 (cùng quy ước lỗi trùng dữ liệu của SRS UC-10 3a).
       security:
         - BearerAuth: []
@@ -1277,7 +1277,7 @@ paths:
   /admin/users/{userId}/role:
     patch:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Gán lại vai trò cho tài khoản (ADMIN) (IA-HD01)"
+      summary: "Gán lại vai trò cho tài khoản (ADMIN) (IA-HD01)"
       description: Chỉ Admin được đổi role; người dùng không tự nâng quyền; mọi lần đổi role đều ghi audit (IA-HD01).
       security:
         - BearerAuth: []
@@ -1317,7 +1317,7 @@ paths:
   /admin/users/{userId}/status:
     patch:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Kích hoạt hoặc khóa tài khoản (ADMIN) (SRS §2 System Admin, UC-01 2c)"
+      summary: "Kích hoạt hoặc khóa tài khoản (ADMIN) (SRS §2 System Admin, UC-01 2c)"
       description: Tài khoản bị khóa (isActive=false) không đăng nhập được (UC-01 2c).
       security:
         - BearerAuth: []
@@ -1573,7 +1573,9 @@ paths:
       summary: "Thống kê tổng hợp số lượng vé, vi phạm SLA, hiệu năng (HD14)"
       description: >
         Trả về thống kê tổng quan: tổng số vé theo trạng thái, số vé vi phạm SLA,
-        thời gian xử lý trung bình. Dành riêng cho IT_MANAGER.
+        thời gian xử lý trung bình. Mọi role đã đăng nhập gọi được, số liệu lọc theo phạm vi của role:
+        Employee – ticket mình tạo; IT Staff – ticket được giao cho mình; IT Manager và Admin – toàn hệ thống
+        (nhóm chốt, Access Matrix v1.2; SecurityConfig /dashboard/**, DashboardService).
       security:
         - BearerAuth: []
       responses:
@@ -1585,8 +1587,6 @@ paths:
                 $ref: '#/components/schemas/DashboardStatsResponse'
         '401':
           $ref: '#/components/responses/401Unauthorized'
-        '403':
-          $ref: '#/components/responses/403Forbidden'
 
   /dashboard/sla-monitor:
     get:
@@ -1594,7 +1594,8 @@ paths:
       summary: "Giám sát vé sắp chạm ngưỡng cảnh báo 80% hoặc quá hạn SLA (HD12, HD14)"
       description: >
         Danh sách vé đang tiến gần đến ngưỡng SLA (>= 80% thời gian deadline)
-        hoặc đã vi phạm SLA (is_sla_breached = true). Dành riêng cho IT_MANAGER.
+        hoặc đã vi phạm SLA (is_sla_breached = true). Mọi role đã đăng nhập gọi được, danh sách lọc theo
+        phạm vi của role như /dashboard/stats.
       security:
         - BearerAuth: []
       parameters:
@@ -1616,8 +1617,6 @@ paths:
                   $ref: '#/components/schemas/SLAMonitorItem'
         '401':
           $ref: '#/components/responses/401Unauthorized'
-        '403':
-          $ref: '#/components/responses/403Forbidden'
 
 components:
   securitySchemes:
