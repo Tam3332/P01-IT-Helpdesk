@@ -119,7 +119,7 @@ class JwtAuthenticationFilterTest {
                 eq("AUTHENTICATE"),
                 eq("FAILURE"),
                 eq(401),
-                eq("TOKEN_EXPIRED_BY_PASSWORD_CHANGE")
+                eq("TOKEN_EXPIRED_BY_CREDENTIALS_UPDATE")
         );
     }
 
@@ -210,5 +210,34 @@ class JwtAuthenticationFilterTest {
 
         assertNull(SecurityContextHolder.getContext().getAuthentication());
         verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    @DisplayName("Ca 6: Hạ quyền IT_MANAGER xuống EMPLOYEE (SEC-TC-HD-05) -> Token cũ mang role IT_MANAGER bị từ chối (401)")
+    void demotedUserOldToken_rejected() throws Exception {
+        // User vốn là IT_MANAGER có token cũ cấp lúc 10:00:00
+        Instant tokenIssuedAt = Instant.parse("2026-11-23T10:00:00Z");
+        when(claims.getIssuedAt()).thenReturn(Date.from(tokenIssuedAt));
+
+        // Lúc 10:05:00 Admin hạ role xuống EMPLOYEE, mốc credentialsUpdatedAt được cập nhật
+        Instant demotedAt = Instant.parse("2026-11-23T10:05:00Z");
+        testUser.setCredentialsUpdatedAt(demotedAt.atOffset(ZoneOffset.UTC));
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication(),
+                "Token cũ của tài khoản bị hạ quyền phải bị từ chối 401 ngay lập tức");
+        verify(filterChain).doFilter(request, response);
+        verify(auditLogger).logWithReason(
+                eq("TOKEN_REVOKED"),
+                eq(10L),
+                eq("EMPLOYEE"),
+                eq("USER"),
+                eq("10"),
+                eq("AUTHENTICATE"),
+                eq("FAILURE"),
+                eq(401),
+                eq("TOKEN_EXPIRED_BY_CREDENTIALS_UPDATE")
+        );
     }
 }

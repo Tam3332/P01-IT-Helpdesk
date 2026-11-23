@@ -135,7 +135,7 @@ public class UserService {
 
         String oldRole = user.getRole() != null ? user.getRole().getRoleName() : "NONE";
         user.setRole(newRole);
-        user.setPasswordChangedAt(OffsetDateTime.now());
+        user.setCredentialsUpdatedAt(OffsetDateTime.now());
         User updated = userRepository.save(user);
 
         // Audit ROLE_CHANGED kèm role trước/sau, ghi sau commit (SDD §7, IA-HD01, IA-HD04; sheet T5-06)
@@ -159,6 +159,7 @@ public class UserService {
 
         Boolean oldActive = user.getIsActive();
         user.setIsActive(isActive);
+        user.setCredentialsUpdatedAt(OffsetDateTime.now());
         User updated = userRepository.save(user);
 
         // Audit khóa/mở tài khoản kèm is_active trước/sau, ghi sau commit (sheet T5-06)
@@ -187,7 +188,7 @@ public class UserService {
 
         user.setPasswordHash(passwordEncoder.encode(passToSet));
         user.setMustChangePassword(true);
-        user.setPasswordChangedAt(OffsetDateTime.now());
+        user.setCredentialsUpdatedAt(OffsetDateTime.now());
         User updated = userRepository.save(user);
 
         // Giải phóng giới hạn đổi mật khẩu trong ngày cho user
@@ -231,7 +232,7 @@ public class UserService {
                 Role role = roleRepository.findByRoleName(request.role().trim().toUpperCase())
                         .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
                 user.setRole(role);
-                user.setPasswordChangedAt(OffsetDateTime.now());
+                user.setCredentialsUpdatedAt(OffsetDateTime.now());
             }
             if (request.isActive() != null) {
                 // Admin tự khóa mình: 400 giống PATCH /status
@@ -239,6 +240,7 @@ public class UserService {
                     throw new AppException(ErrorCode.CANNOT_LOCK_OWN_ACCOUNT);
                 }
                 user.setIsActive(request.isActive());
+                user.setCredentialsUpdatedAt(OffsetDateTime.now());
             }
         }
 

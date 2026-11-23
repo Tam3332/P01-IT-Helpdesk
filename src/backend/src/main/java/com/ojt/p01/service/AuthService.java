@@ -299,7 +299,7 @@ public class AuthService {
         // 3. Cập nhật mật khẩu mới băm BCrypt, cập nhật mốc password_changed_at và tắt cờ yêu cầu đổi mật khẩu
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         user.setMustChangePassword(false);
-        user.setPasswordChangedAt(now);
+        user.setCredentialsUpdatedAt(now);
         userRepository.save(user);
 
         // Ghi nhận lần đổi mật khẩu thành công vào tracker trong ngày

@@ -76,9 +76,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         if (user != null && Boolean.TRUE.equals(user.getIsActive())) {
                             boolean validToken = true;
 
-                            // 2. Kiểm tra mốc đổi mật khẩu / đổi vai trò (BUG-HD-008)
-                            OffsetDateTime passwordChangedAt = user.getPasswordChangedAt();
-                            if (passwordChangedAt != null) {
+                            // 2. Kiểm tra mốc đổi mật khẩu / đổi vai trò / khóa tài khoản (BUG-HD-008, IA-HD01, ADR-02)
+                            OffsetDateTime credentialsUpdatedAt = user.getCredentialsUpdatedAt();
+                            if (credentialsUpdatedAt != null) {
                                 Date iatDate = claims.getIssuedAt();
                                 if (iatDate == null) {
                                     // Fail closed nếu token không có claim iat
@@ -87,13 +87,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                             user.getRole() != null ? user.getRole().getRoleName() : null,
                                             "USER", String.valueOf(user.getId()), "AUTHENTICATE", "FAILURE", 401, "MISSING_IAT");
                                 } else {
-                                    // Cắt mốc về giây để tránh lệch ms giữa thời điểm lưu DB và iat của token
-                                    Instant changedSec = passwordChangedAt.toInstant().truncatedTo(ChronoUnit.SECONDS);
+                                    // Cắt mốc về giây: iat < credentials_updated_at.truncatedTo(SECONDS) -> 401
+                                    Instant changedSec = credentialsUpdatedAt.toInstant().truncatedTo(ChronoUnit.SECONDS);
                                     if (iatDate.toInstant().isBefore(changedSec)) {
                                         validToken = false;
                                         auditLogger.logWithReason("TOKEN_REVOKED", user.getId(),
                                                 user.getRole() != null ? user.getRole().getRoleName() : null,
-                                                "USER", String.valueOf(user.getId()), "AUTHENTICATE", "FAILURE", 401, "TOKEN_EXPIRED_BY_PASSWORD_CHANGE");
+                                                "USER", String.valueOf(user.getId()), "AUTHENTICATE", "FAILURE", 401, "TOKEN_EXPIRED_BY_CREDENTIALS_UPDATE");
                                     }
                                 }
                             }
