@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
     must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
     failed_login_attempts INT NOT NULL DEFAULT 0,
     locked_until TIMESTAMPTZ NULL,
+    password_changed_at TIMESTAMPTZ NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

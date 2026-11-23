@@ -50,6 +50,9 @@ public class User {
     @Column(name = "locked_until")
     private OffsetDateTime lockedUntil;
 
+    @Column(name = "password_changed_at")
+    private OffsetDateTime passwordChangedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -108,6 +111,9 @@ public class User {
 
     public OffsetDateTime getLockedUntil() { return lockedUntil; }
     public void setLockedUntil(OffsetDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
+
+    public OffsetDateTime getPasswordChangedAt() { return passwordChangedAt; }
+    public void setPasswordChangedAt(OffsetDateTime passwordChangedAt) { this.passwordChangedAt = passwordChangedAt; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
