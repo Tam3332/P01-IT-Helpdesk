@@ -29,11 +29,11 @@ Khiêm phụ trách bảng VA. Giữ mã BUG-HD-008 hiện có. Kết quả T5-0
 
 ## Bàn giao Tuần 6
 
-Đối chiếu kế hoạch 7 tuần trong repo, sheet `Phân công chi tiết`, dòng 37–43. Đây là phân công dự kiến trong workbook. Sheet phân công trực tuyến hiện có Tuần 1–5. [Kế hoạch 7 tuần](https://github.com/Tam3332/P01-IT-Helpdesk/blob/49038407477dc1871966bf4ba9986aee3c40c816/docs/P01_Phan_cong_7_tuan.xlsx)
+Phân công hiện hành đã có tab Tuần 6. Khiêm phụ trách T6-01, T6-08, T6-15 và T6-16; T6-16 hoàn thiện bản before để T6-01 tổng hợp và T6-02 chạy after. [Sheet Tuần 6](https://docs.google.com/spreadsheets/d/18NX_o1GiopEFlLNYtmjXm7pl4dlEY1cn7u21AKC8k7U/edit?gid=923885192)
 
 - **T6-01 · Khiêm.** Tổng hợp Before/After Vulnerability Report, liên kết BUG → commit sửa → kết quả retest, cập nhật 04 §4–5 và nháp SecRS §9. Bản before ở hồ sơ này còn chờ kết quả chạy T5-16.
 - **T6-02 · Khánh.** Bàn giao báo cáo đánh giá after, retest quyền, Access Matrix final và Evidence Index. Khi đối chiếu với before, ghi commit triển khai và trạng thái WAF của mỗi lượt.
-- **Nguồn mới đang review.** PR #40 đồng bộ OpenAPI và event audit `ROLE_CHANGED`, `ACCOUNT_LOCKED`. PR này còn mở tại lần đối chiếu. Baseline before của hồ sơ vẫn là `35c573d`. Khi bản sửa được triển khai, kết quả after cần gắn đúng commit và bộ đặc tả tương ứng. [PR #40](https://github.com/Tam3332/P01-IT-Helpdesk/pull/40)
+- **Bản sửa đã vào main.** PR #40 đã merge ngày 23/11/2026, fix commit `f1b4abe`, merge commit `9f273bb`. Bản sửa thống nhất OpenAPI, `ROLE_CHANGED` với before/after và `ACCOUNT_LOCKED`. BUG-HD-003 ở mức đã sửa trên main, chờ triển khai và retest audit trên VM nhóm. Baseline before vẫn là `35c573d`; kết quả after cần ghi commit triển khai thực tế. [PR #40](https://github.com/Tam3332/P01-IT-Helpdesk/pull/40)
 - **WAF.** PR #38 đang Draft, chờ review và kết quả trên VM nhóm. Lượt triển khai WAF cần được ghi lại riêng để biết trước và sau đã thay đổi cấu hình gì. [PR #38](https://github.com/Tam3332/P01-IT-Helpdesk/pull/38)
 
 Các kết quả chạy lab bổ sung cần có VA-ID, build, thời điểm, môi trường, trạng thái WAF, kết quả thực tế, evidence và BUG-ID liên quan. T5-16 tiếp tục ở trạng thái In progress.
