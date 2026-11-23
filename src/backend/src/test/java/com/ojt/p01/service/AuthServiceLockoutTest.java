@@ -99,7 +99,7 @@ class AuthServiceLockoutTest {
     }
 
     @Test
-    @DisplayName("Sai 4 lần → 401; lần 5 → 429 và ghi BRUTE_FORCE_DETECTED đúng 1 lần")
+    @DisplayName("Sai 4 lần → 401; lần 5 → 429 và ghi ACCOUNT_LOCKED đúng 1 lần")
     void fifthFailure_locksAndReturns429() {
         for (int i = 1; i <= 4; i++) {
             assertEquals(ErrorCode.INVALID_CREDENTIALS, attempt(EMAIL, WRONG), "lần " + i);

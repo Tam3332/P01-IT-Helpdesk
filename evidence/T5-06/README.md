@@ -20,5 +20,5 @@ Mã EV đặt theo TC tương ứng (EV-HD-xx ↔ TC-HD-xx). Quy ước mã evid
 Ghi chú thiết kế lockout (theo quyết định nhóm 17/11):
 - Bộ đếm lưu trong bộ nhớ backend theo cặp email + IP; restart backend thì mất bộ đếm.
 - Lần sai thứ 5 trong 5 phút trả 429 và khóa 15 phút; hết 15 phút tự mở; đăng nhập đúng xóa bộ đếm.
-- Tên event khi khóa: `BRUTE_FORCE_DETECTED` theo SDD §7 (sheet T5-06 ghi `ACCOUNT_LOCKED`, đang chờ Hoà chốt).
+- Tên event khi khóa: `ACCOUNT_LOCKED` theo sheet T5-06 (Hoà chốt 17/11, đổi trong code 22/11). Ảnh và file `.jsonl` ngày 17/11 ở thư mục này chụp trước khi đổi nên còn ghi tên cũ `BRUTE_FORCE_DETECTED`; ý nghĩa và thời điểm ghi không đổi (chỉ ghi 1 lần lúc bắt đầu khóa, cùng `correlation_id` với `LOGIN_FAILED` 429).
 - Ảnh chụp PowerShell có một số ký tự lẫn (`\x0a…189feb17…`) do lỗi dán nhiều dòng vào terminal; không ảnh hưởng kết quả.

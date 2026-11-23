@@ -137,8 +137,8 @@ public class UserService {
         user.setRole(newRole);
         User updated = userRepository.save(user);
 
-        auditLogger.log("CHANGE_ROLE", currentUser.getId(), "ADMIN", "USER",
-                String.valueOf(user.getId()), "CHANGE_ROLE: " + oldRole + " -> " + newRole.getRoleName(), "SUCCESS", 200);
+        // Audit ROLE_CHANGED kèm role trước/sau, ghi sau commit (SDD §7, IA-HD01, IA-HD04; sheet T5-06)
+        logRoleChanged(currentUser, user.getId(), oldRole, newRole.getRoleName());
 
         return UserResponse.from(updated);
     }
@@ -156,12 +156,12 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        Boolean oldActive = user.getIsActive();
         user.setIsActive(isActive);
         User updated = userRepository.save(user);
 
-        String action = Boolean.TRUE.equals(isActive) ? "ACTIVATE_USER" : "LOCK_USER";
-        auditLogger.log(action, currentUser.getId(), "ADMIN", "USER",
-                String.valueOf(user.getId()), action, "SUCCESS", 200);
+        // Audit khóa/mở tài khoản kèm is_active trước/sau, ghi sau commit (sheet T5-06)
+        logActiveChanged(currentUser, user.getId(), oldActive, isActive);
 
         return UserResponse.from(updated);
     }
@@ -206,6 +206,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
+        // Giữ giá trị cũ để ghi before/after nếu PUT đổi role hoặc trạng thái
+        String oldRole = user.getRole() != null ? user.getRole().getRoleName() : "NONE";
+        Boolean oldActive = user.getIsActive();
+        boolean isSelf = currentUser != null && currentUser.getId().equals(userId);
+
         if (request != null) {
             if (request.fullName() != null && !request.fullName().trim().isBlank()) {
                 user.setFullName(request.fullName().trim());
@@ -217,16 +222,18 @@ public class UserService {
                 user.setDepartment(request.department().trim());
             }
             if (request.role() != null && !request.role().trim().isBlank()) {
-                if (currentUser != null && currentUser.getId().equals(userId) && !request.role().trim().equalsIgnoreCase(user.getRole().getRoleName())) {
-                    throw new AppException(ErrorCode.FORBIDDEN, "Không thể tự thay đổi vai trò của chính mình");
+                // Admin tự đổi role của mình: 400 giống PATCH /role (thống nhất mã lỗi)
+                if (isSelf && !request.role().trim().equalsIgnoreCase(oldRole)) {
+                    throw new AppException(ErrorCode.CANNOT_CHANGE_OWN_ROLE);
                 }
                 Role role = roleRepository.findByRoleName(request.role().trim().toUpperCase())
                         .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
                 user.setRole(role);
             }
             if (request.isActive() != null) {
-                if (currentUser != null && currentUser.getId().equals(userId) && Boolean.FALSE.equals(request.isActive())) {
-                    throw new AppException(ErrorCode.FORBIDDEN, "Không thể tự khóa tài khoản của chính mình");
+                // Admin tự khóa mình: 400 giống PATCH /status
+                if (isSelf && Boolean.FALSE.equals(request.isActive())) {
+                    throw new AppException(ErrorCode.CANNOT_LOCK_OWN_ACCOUNT);
                 }
                 user.setIsActive(request.isActive());
             }
@@ -238,7 +245,34 @@ public class UserService {
         auditLogger.log("USER_UPDATED", currentUser != null ? currentUser.getId() : null, "ADMIN", "USER",
                 String.valueOf(user.getId()), "UPDATE", "SUCCESS", 200);
 
+        // PUT có đổi role hoặc trạng thái → ghi thêm event riêng kèm before/after như PATCH
+        String newRole = updated.getRole() != null ? updated.getRole().getRoleName() : "NONE";
+        if (!newRole.equals(oldRole)) {
+            logRoleChanged(currentUser, user.getId(), oldRole, newRole);
+        }
+        if (request != null && request.isActive() != null && !request.isActive().equals(oldActive)) {
+            logActiveChanged(currentUser, user.getId(), oldActive, request.isActive());
+        }
+
         return UserResponse.from(updated);
+    }
+
+    /** ROLE_CHANGED: before/after là role cũ/mới (SDD §7 v2). */
+    private void logRoleChanged(User admin, Long targetUserId, String oldRole, String newRole) {
+        auditLogger.logAfterCommit("ROLE_CHANGED", admin != null ? admin.getId() : null, "ADMIN", "USER",
+                String.valueOf(targetUserId), "ROLE_CHANGE", "SUCCESS", 200,
+                java.util.Map.of("role", oldRole), java.util.Map.of("role", newRole));
+    }
+
+    /** LOCK_USER / ACTIVATE_USER: before/after là is_active cũ/mới. */
+    private void logActiveChanged(User admin, Long targetUserId, Boolean oldActive, Boolean newActive) {
+        String action = Boolean.TRUE.equals(newActive) ? "ACTIVATE_USER" : "LOCK_USER";
+        java.util.Map<String, Object> before = new java.util.HashMap<>();
+        before.put("is_active", oldActive);
+        java.util.Map<String, Object> after = new java.util.HashMap<>();
+        after.put("is_active", newActive);
+        auditLogger.logAfterCommit(action, admin != null ? admin.getId() : null, "ADMIN", "USER",
+                String.valueOf(targetUserId), action, "SUCCESS", 200, before, after);
     }
 
     private User getCurrentUser() {
