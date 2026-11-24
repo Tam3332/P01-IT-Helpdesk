@@ -70,7 +70,7 @@ Mở http://localhost:8081 (dòng `ports` này chỉ để thử, không có tro
 | Mã nguồn ứng dụng | tag `v0.5-mvp` = commit `35c573d` (nhánh `frontend`: toàn bộ `main` @`671d43a` cộng thay đổi mã evidence, không đổi code ứng dụng). Bỏ qua mốc `v0.5-rc1`, triển khai thẳng bản MVP |
 | Script kiểm tra | `scripts/lab-check.sh` ở commit `a44208a` (sửa mục 2 và mục 7), chép riêng một tệp lên VM khi chạy; phần còn lại của thư mục đúng tag `v0.5-mvp` |
 | VM lab | Ubuntu 26.04.1 LTS, Docker 29.1.3, Docker Compose 2.40.3 (VirtualBox của Nhi, như bản v0.4) |
-| Cổng và địa chỉ | HTTPS cổng `8443`. Truy cập qua Tailscale `https://<IP-VM>:8443/`; trong mạng nội bộ của VM là `https://<IP-LAN-VM>:8443/`. IP thật của VM do Nhi giữ, không ghi trong repo (`<IP-VM>` là địa chỉ Tailscale, `<IP-LAN-VM>` là địa chỉ mạng nội bộ). Cách truy cập chung cho cả nhóm đang chờ Nhi chốt |
+| Cổng và địa chỉ | HTTPS cổng `8443`. Truy cập qua Tailscale `https://<IP-VM>:8443/`; trong mạng nội bộ của VM là `https://<IP-LAN-VM>:8443/`. IP thật của VM do Nhi giữ, không ghi trong repo (`<IP-VM>` là địa chỉ Tailscale, `<IP-LAN-VM>` là địa chỉ mạng nội bộ). Cả nhóm truy cập qua Tailscale (Nhi mời từng thành viên); VM cần đang bật |
 | Dựng từ đầu | Thư mục `~/P01-lab-v05`, project compose `p01-lab-v05` (volume mới, cơ sở dữ liệu rỗng). `.env` và chứng chỉ TLS chép từ `~/P01-lab-v04`. Bản v0.4 dừng bằng `docker compose down` (**không** `-v`), 5 volume `p01-lab-v04_*` còn nguyên |
 | Image thực tế | `postgres:18-alpine`, `nginx:1.27-alpine`, `p01-backend`, `p01-frontend` (build từ tag). Lưu ý: hai image `p01-*` dùng tên cố định, nên muốn chạy lại v0.4 phải `up -d --build` trong thư mục v0.4 |
 
