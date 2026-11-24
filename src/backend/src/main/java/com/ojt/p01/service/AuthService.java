@@ -281,8 +281,7 @@ public class AuthService {
         long countToday = history.stream().filter(t -> !t.isBefore(startOfDay)).count();
         if (countToday >= MAX_PASSWORD_CHANGES_PER_DAY) {
             auditLogger.log("PASSWORD_CHANGE_LIMIT_EXCEEDED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "FAILURE", 429);
-            throw new AppException(ErrorCode.VALIDATION_FAILED,
-                    "Bạn đã đổi mật khẩu 3 lần trong ngày hôm nay. Nếu muốn đổi lại, vui lòng liên hệ Quản trị viên (Admin) để được hỗ trợ cấp lại.");
+            throw new AppException(ErrorCode.PASSWORD_CHANGE_LIMIT_EXCEEDED);
         }
 
         // 1. So khớp mật khẩu hiện tại
@@ -297,9 +296,10 @@ public class AuthService {
             throw new AppException(ErrorCode.PASSWORD_SAME_AS_CURRENT);
         }
 
-        // 3. Cập nhật mật khẩu mới băm BCrypt và tắt cờ yêu cầu đổi mật khẩu
+        // 3. Cập nhật mật khẩu mới băm BCrypt, cập nhật mốc password_changed_at và tắt cờ yêu cầu đổi mật khẩu
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         user.setMustChangePassword(false);
+        user.setCredentialsUpdatedAt(now);
         userRepository.save(user);
 
         // Ghi nhận lần đổi mật khẩu thành công vào tracker trong ngày
