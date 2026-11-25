@@ -56,7 +56,7 @@ Các ca sau **chưa chạy trong lượt triage này**.
 ## Phân công và điều kiện đóng
 
 - Trí phụ trách bản sửa; Khánh phụ trách retest; Khiêm ghi triage/Defect Log. Chính xác nhận commit/tag và thời gian deploy VM nhóm trước lượt AFTER.
-- **Quyết định: Fix trong v0.6-rc1**. PR #44 đã merge ngày 24/11/2026, fix `590ec58`, merge `96a2eb1`; có trong tag rc1 `ed229a3`. PR báo cáo 113/113 unit tests pass. Chưa có AFTER VM trong lượt cập nhật này.
+- **Quyết định: Fix trong v0.6-rc1** (merge `main` trước ngày 25/11/2026). PR #44 đã merge ngày 24/11, fix `590ec58`, merge `96a2eb1`; có trong rc1 `ed229a3`. PR báo cáo 113/113 unit tests pass; AFTER VM còn chờ.
 - Severity gốc của lỗi đổi mật khẩu là Low. Phần role/khóa chờ xác minh tác động và thống nhất severity; không mặc định coi cả phạm vi mở rộng là Low.
 - PR sửa cần ghi rõ BUG-HD-008, phạm vi xử lý và test tái hiện. Việc ghi BUG-ID không thay thế review và kiểm thử.
 - Chỉ đóng khi có PR/commit sửa, build/tag VM đã triển khai, ngày/người retest và evidence kết quả cho từng phạm vi. Phần chưa kiểm hoặc còn lỗi tiếp tục ghi Open/Partial; Accepted phải có lý do và người duyệt.

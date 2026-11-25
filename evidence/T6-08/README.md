@@ -7,7 +7,7 @@ Nguyễn Trọng Khiêm · P01 Group2 · 25/11/2026 · **In progress**
 - SDD v2.2 Draft: mapping WAF/lockout/P3/audit theo đúng PR và evidence; giữ phần kiến trúc/ADR của SE. WAF là Proposed qua PR38, chưa mô tả đã chạy trên VM nhóm.
 - 02 v1.9 Draft, 04 v2.4 Draft và báo cáo T6-01 phân biệt bản sửa đã merge với AFTER chưa có.
 - 08 v1.9 Draft: RACI, Sprint, contribution của Khiêm, Risk log và §5.1 bàn giao tuần6.
-- [Sổ chuyển việc](Task_Transfer_Register.md): đối chiếu39 dòng tuần1–5 và task kế thừa tuần6. Done ở dòng chuyển tiếp là hoàn tất bàn giao, không thay PASS kiểm thử.
+- [Sổ chuyển việc](Task_Transfer_Register.md): đối chiếu41 dòng tuần1–5 và task kế thừa tuần6. Done ở dòng chuyển tiếp là hoàn tất bàn giao, không thay PASS kiểm thử.
 - File [7 tuần](../../docs/P01_Phan_cong_7_tuan.xlsx): bổ sung các task tuần6 hiện có trong Sheet, giữ kế hoạch tuần7. Sheet live là nguồn trạng thái khi có thay đổi tiếp theo.
 
 ## Biên bản và xác nhận phạm vi
