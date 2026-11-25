@@ -141,6 +141,12 @@ paths:
           $ref: '#/components/responses/400BadRequest'
         '401':
           $ref: '#/components/responses/401Unauthorized'
+        '429':
+          description: Đã đổi mật khẩu 3 lần trong ngày, trả PASSWORD_CHANGE_LIMIT_EXCEEDED; liên hệ Admin để được cấp lại (BUG-HD-008, commit 5d91c56)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ================= TICKETS =================
   /tickets:
