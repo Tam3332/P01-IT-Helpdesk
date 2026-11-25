@@ -564,7 +564,7 @@ paths:
         '403':
           $ref: '#/components/responses/403Forbidden'
 
-  /reopen-requests/{requestId}/approve:
+  /reopen-requests/{id}/approve:
     post:
       tags: [Tickets]
       summary: "IT Manager duyệt yêu cầu mở lại ticket (HD10, UC-08, BR-HD-03, BR-HD-04, BPMN P3)"
@@ -574,7 +574,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: requestId
+        - name: id
           in: path
           required: true
           schema:
@@ -595,7 +595,7 @@ paths:
         '422':
           description: Yêu cầu không còn ở trạng thái PENDING
 
-  /reopen-requests/{requestId}/reject:
+  /reopen-requests/{id}/reject:
     post:
       tags: [Tickets]
       summary: "IT Manager từ chối yêu cầu mở lại ticket (HD10, UC-08, BR-HD-04, BPMN P3)"
@@ -605,7 +605,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: requestId
+        - name: id
           in: path
           required: true
           schema:
