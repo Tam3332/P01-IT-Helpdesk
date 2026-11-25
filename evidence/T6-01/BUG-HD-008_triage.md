@@ -2,16 +2,24 @@
 
 Ngày triage: 23/11/2026. T6-01, IA-HD01, SEC-TC-HD-02 và SEC-TC-HD-05.
 
-Giữ mã BUG-HD-008 và bổ sung phạm vi đổi vai trò, khóa hoặc vô hiệu hóa tài khoản theo phương án Trí và Khánh đã trao đổi, được Khiêm xác nhận. Trạng thái: **Mở, đã chốt phương án, chờ PR fix và retest**. Không đánh Closed hoặc PASS khi chưa có bằng chứng AFTER trên build triển khai.
+Giữ mã BUG-HD-008 và bổ sung phạm vi đổi vai trò, khóa hoặc vô hiệu hóa tài khoản theo phương án Trí và Khánh đã trao đổi, được Khiêm xác nhận. Trạng thái ngày 25/11: **Đã sửa trên main qua PR #44, chờ triển khai và retest VM nhóm**. Không đánh Closed hoặc PASS khi chưa có bằng chứng AFTER trên build triển khai.
 
-## Bằng chứng hiện có
+
+## Cập nhật bản sửa ngày 25/11/2026
+
+- [PR #44](https://github.com/Tam3332/P01-IT-Helpdesk/pull/44) đã merge: fix `590ec58`, merge `96a2eb1ca7367232180e15e38f311784e4425019`; có trong tag [v0.6-rc1](https://github.com/Tam3332/P01-IT-Helpdesk/tree/v0.6-rc1) (`ed229a3e1362333416822b2866ae7597a15ce917`).
+- PR báo cáo 113/113 unit test; đây là kết quả do PR cung cấp, không phải lượt test VM mới.
+- Mã đã bổ sung mốc user và kiểm trạng thái/iat, nhưng phép so sánh nhỏ hơn sau khi cắt về giây vẫn cần retest biên cùng giây; thiếu iat khi mốc chưa khởi tạo cũng cần xác minh theo contract. Không kết luận “thu hồi tức thì mọi phiên” từ việc merge.
+- Chính xác nhận commit và thời điểm deploy; Khánh retest HTTP; Hoà đối chiếu audit. Giữ AFTER trống có lý do, chưa Closed/PASS.
+
+## Bằng chứng BEFORE và triage ngày 23/11
 
 - Khánh retest ngày 22/11 trên lab local, code v0.5-mvp: đổi mật khẩu trả 200, token cũ gọi /auth/me vẫn trả 200, mật khẩu cũ đăng nhập trả 401. Lỗi còn. Lab local được dùng để tránh đổi mật khẩu tài khoản demo dùng chung. Nguồn: [kết quả T5-02](https://github.com/Tam3332/P01-IT-Helpdesk/blob/afbe94921ad1cb1bb31977777ef09133cef0ec19/evidence/T5-02/README.md#L54-L61), [ảnh gốc](https://github.com/Tam3332/P01-IT-Helpdesk/blob/afbe94921ad1cb1bb31977777ef09133cef0ec19/evidence/T5-02/EV-HD-01_api_BUG-HD-008_retest_local.png).
 - Rà mã tại main afbe94921ad1cb1bb31977777ef09133cef0ec19: [JwtAuthenticationFilter.java, dòng 46–63](https://github.com/Tam3332/P01-IT-Helpdesk/blob/afbe94921ad1cb1bb31977777ef09133cef0ec19/src/backend/src/main/java/com/ojt/p01/security/JwtAuthenticationFilter.java#L46-L63) lấy username/role từ claims và kiểm tra JTI blacklist. Đoạn lọc này chưa đối chiếu mốc thay đổi thông tin xác thực hoặc trạng thái user trong DB.
 - [AuthService.java, dòng 267–309](https://github.com/Tam3332/P01-IT-Helpdesk/blob/afbe94921ad1cb1bb31977777ef09133cef0ec19/src/backend/src/main/java/com/ojt/p01/service/AuthService.java#L267-L309) cập nhật mật khẩu và ghi PASSWORD_CHANGED; chưa cập nhật mốc thu hồi phiên.
 - [UserService.java, dòng 124–164](https://github.com/Tam3332/P01-IT-Helpdesk/blob/afbe94921ad1cb1bb31977777ef09133cef0ec19/src/backend/src/main/java/com/ojt/p01/service/UserService.java#L124-L164) xử lý đổi role/trạng thái và giữ audit. [Đường cập nhật user chung, dòng 209–255](https://github.com/Tam3332/P01-IT-Helpdesk/blob/afbe94921ad1cb1bb31977777ef09133cef0ec19/src/backend/src/main/java/com/ojt/p01/service/UserService.java#L209-L255) cũng cần được người sửa đối chiếu để tránh bỏ sót endpoint.
 
-Hai trường hợp đổi role và vô hiệu hóa tài khoản mới được bổ sung vào phạm vi xử lý. Rà mã là căn cứ cần kiểm tra tiếp; chưa có kết quả HTTP thực tế của hai trường hợp này. Các yêu cầu kỹ thuật dưới đây là phương án chờ triển khai, không phải xác nhận đã có trên main.
+Hai trường hợp đổi role và vô hiệu hóa tài khoản mới được bổ sung vào phạm vi xử lý. Rà mã là căn cứ cần kiểm tra tiếp; chưa có kết quả HTTP thực tế của hai trường hợp này. PR #44 đã merge ngày 24/11; các ca HTTP role/khóa và AFTER VM chưa có bằng chứng trong lượt cập nhật này. Giữ các tiêu chí retest bên dưới để đánh giá bản sửa.
 
 ## Phạm vi và phương án xử lý
 
@@ -20,8 +28,8 @@ Tên dùng trong Defect Log: **BUG-HD-008 / IA-HD01 – Thu hồi phiên xác th
 | Trường hợp | Yêu cầu xử lý | Phạm vi bằng chứng |
 |---|---|---|
 | User đổi mật khẩu | Cập nhật mốc credentials_updated_at của user đổi mật khẩu; từ chối token phiên cũ | Lỗi đã được xác nhận trên lab local |
-| Admin đổi role của user khác | Cập nhật mốc của user bị đổi role; giữ ROLE_CHANGED với before/after | Chờ triển khai và xác minh |
-| Admin khóa/vô hiệu hóa user | Cập nhật mốc của user bị tác động; chặn token cũ và tài khoản đang bị vô hiệu hóa | Chờ triển khai và xác minh |
+| Admin đổi role của user khác | Cập nhật mốc của user bị đổi role; giữ ROLE_CHANGED với before/after | Đã có mã sửa; chờ AFTER VM |
+| Admin khóa/vô hiệu hóa user | Cập nhật mốc của user bị tác động; chặn token cũ và tài khoản đang bị vô hiệu hóa | Đã có mã sửa; chờ AFTER VM |
 
 - Mốc phải gắn với user bị thay đổi. Không cập nhật nhầm mốc của Admin thực hiện thao tác trên user khác.
 - Phương án Trí/Khánh: lưu credentials_updated_at trên users, đối chiếu iat trong JwtAuthenticationFilter. Token thiếu iat phải bị từ chối 401.
@@ -48,11 +56,12 @@ Các ca sau **chưa chạy trong lượt triage này**.
 ## Phân công và điều kiện đóng
 
 - Trí phụ trách bản sửa; Khánh phụ trách retest; Khiêm ghi triage/Defect Log. Chính xác nhận commit/tag và thời gian deploy VM nhóm trước lượt AFTER.
-- **Quyết định: Fix trong v0.6-rc1** (merge `main` trước ngày 25/11/2026). Bản sửa kỹ thuật đã hoàn tất tại commit `590ec58` trên nhánh `tri/be` (kèm PR fix có mã `BUG-HD-008` mở vào `main`), 113/113 unit tests pass.
+- **Quyết định: Fix trong v0.6-rc1**. PR #44 đã merge ngày 24/11/2026, fix `590ec58`, merge `96a2eb1`; có trong tag rc1 `ed229a3`. PR báo cáo 113/113 unit tests pass. Chưa có AFTER VM trong lượt cập nhật này.
 - Severity gốc của lỗi đổi mật khẩu là Low. Phần role/khóa chờ xác minh tác động và thống nhất severity; không mặc định coi cả phạm vi mở rộng là Low.
 - PR sửa cần ghi rõ BUG-HD-008, phạm vi xử lý và test tái hiện. Việc ghi BUG-ID không thay thế review và kiểm thử.
 - Chỉ đóng khi có PR/commit sửa, build/tag VM đã triển khai, ngày/người retest và evidence kết quả cho từng phạm vi. Phần chưa kiểm hoặc còn lỗi tiếp tục ghi Open/Partial; Accepted phải có lý do và người duyệt.
 - Không thay baseline BEFORE v0.5-mvp (35c573d) bằng commit rà mã hiện tại. Báo cáo AFTER dùng đúng commit/tag đã triển khai.
 
 Theo dõi trong [04 §4](https://docs.google.com/document/d/1wscWfGVqg3JJutzH7SuciQb5Z9rbhr-aqeeFmcirY9U/edit) và [Sheet Tuần 6, T6-01](https://docs.google.com/spreadsheets/d/18NX_o1GiopEFlLNYtmjXm7pl4dlEY1cn7u21AKC8k7U/edit#gid=923885192&range=K2:R2).
+
 
