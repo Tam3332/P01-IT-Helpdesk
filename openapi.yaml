@@ -936,14 +936,13 @@ paths:
         - BearerAuth: []
       responses:
         '200':
-          description: Danh sách danh mục
-
+          description: Danh sách danh mục (bản rút gọn cho dropdown tạo ticket)
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CategoryDTO'
+                  $ref: '#/components/schemas/CategorySummaryDTO'
         '401':
           $ref: '#/components/responses/401Unauthorized'
 
@@ -2163,6 +2162,15 @@ components:
         createdAt:
           type: string
           format: date-time
+    CategorySummaryDTO:
+      type: object
+      description: Danh mục rút gọn trả cho GET /categories (CategoryResponse), chỉ gồm danh mục đang hoạt động
+      properties:
+        id: { type: integer }
+        categoryCode: { type: string }
+        categoryName: { type: string }
+        description: { type: string, nullable: true }
+        defaultPriority: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
     CategoryDTO:
       type: object
       description: Danh mục, tương ứng bảng ticket_categories
