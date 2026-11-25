@@ -22,3 +22,11 @@ f) Token thiếu iat → 401 (đối chiếu unit test PR #47 nếu không ký �
 - SEC-TC-HD-05: leo thang dọc theo các ô Deny của Access Matrix v1.2
 - SEC-TC-HD-06: 8 ca workflow bypass / mass assignment (T4-02)
 - SEC-TC-HD-07: XSS/SQLi, chạy 2 chế độ WAF (DetectionOnly / chặn)
+
+## Ca bổ sung SEC-TC-HD-06 (P3 / reopen, theo code ReopenController)
+- Reopen ticket CLOSED → 422, không đổi trạng thái
+- Reopen ticket RESOLVED quá 168h → 422 REOPEN_WINDOW_EXPIRED
+- Gửi reopen lần 2 khi đang REOPEN_PENDING → 422 REOPEN_ALREADY_PENDING
+- Employee B reopen ticket của A → 403 + AUTHZ_DENIED
+- IT Staff / Employee tự gọi API approve → 403 + AUTHZ_DENIED
+- Lý do < 20 ký tự → 422
