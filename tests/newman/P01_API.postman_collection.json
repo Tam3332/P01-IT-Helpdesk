@@ -1,0 +1,2952 @@
+{
+  "info": {
+    "_postman_id": "3b0eeed9-cd0d-4927-a63d-865306db56c1",
+    "name": "P01 IT Helpdesk – API (T6-06)",
+    "description": "Kiểm thử API P01 theo luồng P1, P3, phân quyền và mã lỗi. Mỗi request kiểm mã HTTP, error.code và thời gian phản hồi (< maxMs). Mật khẩu demo đưa vào khi chạy (--env-var demoPassword=...), không lưu trong file.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('runId')) { pm.collectionVariables.set('runId', Date.now()); }"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "ticketId",
+      "value": ""
+    },
+    {
+      "key": "ticketNo",
+      "value": ""
+    },
+    {
+      "key": "ticket2Id",
+      "value": ""
+    },
+    {
+      "key": "reopenId",
+      "value": ""
+    },
+    {
+      "key": "staffId",
+      "value": ""
+    },
+    {
+      "key": "tokenEmployee",
+      "value": ""
+    },
+    {
+      "key": "tokenEmployee2",
+      "value": ""
+    },
+    {
+      "key": "tokenStaff",
+      "value": ""
+    },
+    {
+      "key": "tokenStaff2",
+      "value": ""
+    },
+    {
+      "key": "tokenManager",
+      "value": ""
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Đăng nhập và phiên",
+      "description": "UC-01, HD01, IA-HD01. Đăng nhập 6 tài khoản demo, lưu token vào biến collection.",
+      "item": [
+        {
+          "name": "Đăng nhập employee",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('tokenEmployee', pm.response.json().data.accessToken); }",
+                  "pm.test('role = EMPLOYEE', () => pm.expect(pm.response.json().data.user.role).to.eql('EMPLOYEE'));",
+                  "pm.test('Token hết hạn sau 900 giây', () => pm.expect(pm.response.json().data.expiresIn).to.eql(900));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employee@helpdesk.local\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập employee2",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('tokenEmployee2', pm.response.json().data.accessToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employee2@helpdesk.local\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập IT Staff",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('tokenStaff', pm.response.json().data.accessToken); }",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('staffId', pm.response.json().data.user.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"staff@helpdesk.local\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập IT Staff 2",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('tokenStaff2', pm.response.json().data.accessToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"staff2@helpdesk.local\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập IT Manager",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('tokenManager', pm.response.json().data.accessToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@helpdesk.local\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập Admin",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "if (pm.response.code === 200) { pm.collectionVariables.set('tokenAdmin', pm.response.json().data.accessToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@helpdesk.local\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Sai mật khẩu → 401",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = INVALID_CREDENTIALS', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"INVALID_CREDENTIALS\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employee2@helpdesk.local\",\n  \"password\": \"Sai@mat-khau-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Thiếu email, mật khẩu → 400",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const ms = Number(pm.variables.get('loginDelayMs') || 0); if (ms > 0) { setTimeout(() => {}, ms); }  // tránh giới hạn 10 request/phút của Nginx khi chạy trên lab"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = VALIDATION_FAILED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"VALIDATION_FAILED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Xem thông tin chính mình",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Đúng người dùng', () => pm.expect(pm.response.json().data.email).to.eql('employee@helpdesk.local'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Không gửi token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = UNAUTHORIZED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"UNAUTHORIZED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Token giả → 401",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.request.headers.upsert({key: 'Authorization', value: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.chu-ky-gia'});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = UNAUTHORIZED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"UNAUTHORIZED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Luồng P1: tạo, phân công, xử lý, đóng",
+      "description": "HD03–HD09, HD15; BR-HD-01/02/04; Anti-IDOR PC-03.",
+      "item": [
+        {
+          "name": "Lấy danh mục đang hoạt động",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "const c = pm.response.json().data; pm.test('Có ít nhất 1 danh mục', () => pm.expect(c.length).to.be.above(0)); if (c.length) { pm.collectionVariables.set('categoryId', c[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee tạo ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "const t = pm.response.json().data; pm.collectionVariables.set('ticketId', t.id); pm.collectionVariables.set('ticketNo', t.ticketNumber);",
+                  "pm.test('Trạng thái NEW, priority = impact (HIGH), có hạn SLA', () => { pm.expect(t.status).to.eql('NEW'); pm.expect(t.priority).to.eql('HIGH'); pm.expect(t.responseDeadline).to.be.a('string'); pm.expect(t.resolutionDeadline).to.be.a('string'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"[Newman {{runId}}] Máy in tầng 3 không in được\",\n  \"description\": \"Máy in báo kẹt giấy liên tục dù đã lấy giấy ra.\",\n  \"categoryId\": {{categoryId}},\n  \"impactLevel\": \"HIGH\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "IT Manager tạo ticket → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Thử tạo\",\n  \"description\": \"Không được phép\",\n  \"categoryId\": {{categoryId}},\n  \"impactLevel\": \"LOW\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Tạo ticket sai dữ liệu → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = VALIDATION_FAILED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"VALIDATION_FAILED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"  \",\n  \"description\": \"Thiếu tiêu đề\",\n  \"categoryId\": {{categoryId}},\n  \"impactLevel\": \"URGENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Employee tìm theo mã ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Kết quả có đúng ticket vừa tạo', () => pm.expect(pm.response.json().data.content.map(x => x.ticketNumber)).to.include(pm.collectionVariables.get('ticketNo')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets?search={{ticketNo}}&size=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{ticketNo}}"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "size > 100 bị giới hạn về 100",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('pageSize = 100', () => pm.expect(pm.response.json().data.pageSize).to.eql(100));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets?size=500",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "500"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee khác xem ticket → 404 (Anti-IDOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = TICKET_NOT_FOUND', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"TICKET_NOT_FOUND\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Manager lấy danh sách IT Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "const s = pm.response.json().data.find(u => u.email === 'staff@helpdesk.local'); pm.test('Có IT Staff staff@helpdesk.local', () => pm.expect(s).to.be.an('object')); if (s) { pm.collectionVariables.set('staffId', s.id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/it-staff",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "it-staff"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Staff phân công → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigneeId\": {{staffId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "IT Manager phân công, nâng CRITICAL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "const t = pm.response.json().data; pm.test('ASSIGNED, CRITICAL, đúng người', () => { pm.expect(t.status).to.eql('ASSIGNED'); pm.expect(t.priority).to.eql('CRITICAL'); pm.expect(String(t.assigneeId)).to.eql(String(pm.collectionVariables.get('staffId'))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigneeId\": {{staffId}},\n  \"priority\": \"CRITICAL\",\n  \"assignmentNote\": \"Ưu tiên xử lý trong sáng nay\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "IT Staff khác xem ticket → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = TICKET_NOT_FOUND', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"TICKET_NOT_FOUND\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Staff được giao xem ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Staff nhận xử lý (IN_PROGRESS)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('IN_PROGRESS', () => pm.expect(pm.response.json().data.status).to.eql('IN_PROGRESS'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "IT Staff ghi chú nội bộ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('isInternal = true', () => pm.expect(pm.response.json().data.isInternal).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentText\": \"Đã kiểm tra, cần thay trục cuốn giấy.\",\n  \"isInternal\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Employee bình luận",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Employee gửi isInternal = true vẫn lưu công khai', () => pm.expect(pm.response.json().data.isInternal).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentText\": \"Máy vẫn báo kẹt giấy sáng nay.\",\n  \"isInternal\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Employee khác bình luận → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = TICKET_NOT_FOUND', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"TICKET_NOT_FOUND\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee2}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentText\": \"Thử bình luận ticket người khác\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Admin bình luận → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentText\": \"Admin chỉ đọc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Employee không thấy ghi chú nội bộ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Không có bình luận nội bộ', () => pm.expect(pm.response.json().data.filter(c => c.isInternal).length).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "comments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee tải ảnh PNG",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Lưu đúng MIME', () => pm.expect(pm.response.json().data.mimeType).to.eql('image/png'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/attachments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "files/sample.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Tải tệp .exe → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FILE_TYPE_NOT_ALLOWED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FILE_TYPE_NOT_ALLOWED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/attachments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "files/fake.exe"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin tải tệp → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/attachments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "attachments"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "files/sample.png"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Hoàn tất thiếu giải pháp → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = RESOLUTION_NOTE_REQUIRED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"RESOLUTION_NOTE_REQUIRED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\",\n  \"resolutionNote\": \"Đã sửa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "IT Staff hoàn tất (RESOLVED)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('RESOLVED', () => pm.expect(pm.response.json().data.status).to.eql('RESOLVED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\",\n  \"resolutionNote\": \"Đã thay trục cuốn giấy và vệ sinh khay, in thử 10 trang không lỗi.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Employee khác đóng ticket → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = TICKET_NOT_FOUND', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"TICKET_NOT_FOUND\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "close"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Employee đóng ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('CLOSED', () => pm.expect(pm.response.json().data.status).to.eql('CLOSED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "close"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Bình luận ticket đã đóng → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = TICKET_CLOSED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"TICKET_CLOSED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "comments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"commentText\": \"Bổ sung sau khi đóng\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Employee đánh giá 5 sao",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/feedback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "feedback"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ratingStars\": 5,\n  \"feedbackComment\": \"Xử lý nhanh\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đánh giá lần 2 → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FEEDBACK_ALREADY_SUBMITTED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FEEDBACK_ALREADY_SUBMITTED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/feedback",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "feedback"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ratingStars\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Lịch sử ticket đủ vòng đời",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Có ít nhất 5 dòng lịch sử (tạo, phân công, xử lý, hoàn tất, đóng)', () => pm.expect(pm.response.json().data.length).to.be.at.least(5));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticketId}}/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticketId}}",
+                "history"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Luồng P3: yêu cầu mở lại và duyệt",
+      "description": "HD10, UC-07/UC-08, BR-HD-04.",
+      "item": [
+        {
+          "name": "Employee tạo ticket 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.collectionVariables.set('ticket2Id', pm.response.json().data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"[Newman {{runId}}] Không vào được VPN\",\n  \"description\": \"VPN báo sai chứng chỉ từ hôm qua.\",\n  \"categoryId\": {{categoryId}},\n  \"impactLevel\": \"LOW\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Phân công ticket 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}",
+                "assign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigneeId\": {{staffId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Nhận xử lý ticket 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Hoàn tất ticket 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}",
+                "status"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\",\n  \"resolutionNote\": \"Đã cấp lại chứng chỉ VPN và hướng dẫn cài đặt lại client.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Lý do mở lại quá ngắn → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = VALIDATION_FAILED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"VALIDATION_FAILED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}/reopen",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}",
+                "reopen"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reopenReason\": \"Vẫn lỗi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Employee yêu cầu mở lại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "const r = pm.response.json().data; pm.collectionVariables.set('reopenId', r.id); pm.test('Yêu cầu PENDING', () => pm.expect(r.status).to.eql('PENDING'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}/reopen",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}",
+                "reopen"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reopenReason\": \"Sau khi cài lại client VPN vẫn báo sai chứng chỉ như cũ.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Gửi lại khi đang chờ duyệt → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = REOPEN_ALREADY_PENDING | INVALID_STATUS_TRANSITION', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"REOPEN_ALREADY_PENDING\", \"INVALID_STATUS_TRANSITION\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}/reopen",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}",
+                "reopen"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reopenReason\": \"Gửi lần hai trong khi đang chờ duyệt yêu cầu trước.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Đóng ticket đang chờ duyệt → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = TICKET_NOT_RESOLVED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"TICKET_NOT_RESOLVED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}",
+                "close"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Staff xem yêu cầu mở lại → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reopen-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reopen-requests"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Manager xem yêu cầu chờ duyệt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Có yêu cầu vừa gửi', () => pm.expect(pm.response.json().data.map(x => String(x.id))).to.include(String(pm.collectionVariables.get('reopenId'))));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reopen-requests?status=PENDING",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reopen-requests"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Manager duyệt mở lại",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('APPROVED', () => pm.expect(pm.response.json().data.status).to.eql('APPROVED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reopen-requests/{{reopenId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reopen-requests",
+                "{{reopenId}}",
+                "approve"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reviewNote\": \"Đồng ý, kiểm tra lại cấu hình VPN.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Ticket 2 ở trạng thái REOPENED",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('REOPENED', () => pm.expect(pm.response.json().data.status).to.eql('REOPENED'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tickets/{{ticket2Id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tickets",
+                "{{ticket2Id}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Quản trị, SLA, dashboard",
+      "description": "HD02, HD09, HD11, HD14; Access Matrix v1.2.",
+      "item": [
+        {
+          "name": "Employee vào /admin/users → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Staff lấy danh sách IT Staff → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/it-staff",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "it-staff"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Manager xem cấu hình SLA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));",
+                  "pm.test('Đủ 4 mức', () => pm.expect(pm.response.json().data.length).to.eql(4));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/sla-configs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "sla-configs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "IT Manager sửa SLA → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = FORBIDDEN', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"FORBIDDEN\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/sla-configs/HIGH",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "sla-configs",
+                "HIGH"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responseTimeHours\": 0.5,\n  \"resolutionTimeHours\": 8,\n  \"warningThresholdPct\": 80,\n  \"breachThresholdPct\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Admin đặt SLA = 0 giờ → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = VALIDATION_FAILED | SLA_INVALID_HOURS', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"VALIDATION_FAILED\", \"SLA_INVALID_HOURS\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/sla-configs/HIGH",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "sla-configs",
+                "HIGH"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responseTimeHours\": 0,\n  \"resolutionTimeHours\": 8,\n  \"warningThresholdPct\": 80,\n  \"breachThresholdPct\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Admin xem mức SLA không tồn tại → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = SLA_CONFIG_NOT_FOUND', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"SLA_CONFIG_NOT_FOUND\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/sla-configs/URGENT",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "sla-configs",
+                "URGENT"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin xem audit log",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "audit-logs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard: Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "stats"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard: IT Staff",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenStaff}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "stats"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard: IT Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenManager}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "stats"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Dashboard: Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "stats"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Đăng xuất",
+      "description": "HD01: token bị thu hồi sau logout.",
+      "item": [
+        {
+          "name": "employee2 đăng xuất",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('success = true', () => pm.expect(pm.response.json().success).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Token đã đăng xuất → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Thời gian phản hồi < ' + pm.variables.get('maxMs') + ' ms (NFR-02, sheet ghi NFR04)', () => pm.expect(pm.response.responseTime).to.be.below(Number(pm.variables.get('maxMs'))));",
+                  "pm.test('error.code = UNAUTHORIZED', () => { const j = pm.response.json(); pm.expect(j.success).to.eql(false); pm.expect([\"UNAUTHORIZED\"]).to.include(j.error.code); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEmployee2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
