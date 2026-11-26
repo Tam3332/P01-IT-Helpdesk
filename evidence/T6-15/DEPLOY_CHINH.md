@@ -87,7 +87,12 @@ python3 scripts/waf/smoke.py --base-url "$LAB_ORIGIN" --mode DetectionOnly --sha
 export COMPOSE_PROJECT_NAME="$PROJECT"
 # Nếu có nhiều compose file, nối đường dẫn bằng dấu : trên Linux.
 export COMPOSE_FILE="$LIVE/docker-compose.yml"
+# Khối này chạy trong Bash; read -s/-p không dùng được với sh/dash.
+read -r -s -p 'Mật khẩu lab (nhóm cung cấp riêng): ' DEMO_PASSWORD
+printf '\n'
+export DEMO_PASSWORD
 sh scripts/lab-check.sh CONG_HTTPS_CUA_VM >"$PRIVATE/lab-check.private.txt" 2>&1
+unset DEMO_PASSWORD
 ```
 
 Khánh/SE chạy P1/P3 approve/reject, upload gần 10 MB, nội dung tiếng Việt/ký tự/code hợp lệ và JSON theo [TEST_GUIDE.md](TEST_GUIDE.md). Điền Actual/EV vào checklist. Với luồng hợp lệ, giữ đúng status nghiệp vụ (200/201...), không chấp nhận WAF403. Exclusion chỉ thêm khi có rule/route/parameter/evidence/lý do và Nhi review; giữ bảng trống nếu chưa có ca nhầm đã xác minh.
@@ -145,3 +150,9 @@ Không xóa image cũ/TLS gốc/snapshot trước nghiệm thu. Cấu hình roll
 ## Kết thúc bàn giao
 
 Chính trả manifest trước/sau, nginx-t, mode render, smoke, lab-check, stats, log privacy đã rà và ảnh thật. Khánh trả 15 dòng Actual/EV; Hoà trả R3; Nhi ký review/ngưỡng; Trí gộp ADR và SDD. Khi đủ mới cập nhật T6-15 Done và Approved. Hiện trạng chuẩn bị là chờ review/deploy.
+
+## Bổ sung theo rà soát tuần 5 và 6
+
+Nhánh đang review: khiem/t6-15-chinh-deploy, PR #52 thay PR #51 do đổi tên nhánh; commit giữ nguyên 2ca3143. Gói bổ sung sau đó vẫn chờ Khiêm duyệt, chưa được đưa vào PR. Access log đề xuất thêm `$uri` (đường dẫn chuẩn hóa, không query) để truy vết route; URI vẫn có thể chứa mã đối tượng/PII nên phải rà trước chia sẻ. Mật khẩu lab-check chỉ nhận từ DEMO_PASSWORD; không có fallback plaintext.
+
+Ngoại lệ đóng băng WAF vẫn cần quyết định nhóm/GV theo T6-08. Trí đối chiếu ba DOCX với bản đang gộp trước merge; không áp đè bản của người khác. TLS key root 0600 FAIL/PASS trong evidence là bản follow-up cá nhân có hash b99e9a4, không phải chứng nhận nguyên cấu hình main. Image user không đọc được key là rủi ro có điều kiện trên VM nhóm; #52 tự nó không sửa quyền key host. Phải kiểm quyền thực, chuẩn bị bản sao TLS và chạy nginx-t trên đúng source SHA/digest trước deploy.

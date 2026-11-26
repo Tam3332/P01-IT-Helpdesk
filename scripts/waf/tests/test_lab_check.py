@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @unittest.skipUnless(shutil.which('sh'), 'Requires POSIX sh; run in Ubuntu')
 class LabCheckTests(unittest.TestCase):
-    def run_script(self, port='8443', login_fail=False):
+    def run_script(self, port='8443', login_fail=False, missing_password=False):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             docker = root/'docker'
@@ -42,13 +42,16 @@ esac
             curl.chmod(0o755)
             capture = root/'port.txt'
             env = os.environ | {'PATH': str(root)+os.pathsep+os.environ['PATH'], 'PORT_CAPTURE': str(capture),
-                'EXPECTED_PORT': port, 'LOGIN_FAIL': '1' if login_fail else '0'}
+                'EXPECTED_PORT': port, 'LOGIN_FAIL': '1' if login_fail else '0',
+                'DEMO_PASSWORD': 'DISPOSABLE_TEST_PASSWORD'}
+            if missing_password:
+                env.pop('DEMO_PASSWORD', None)
             env.pop('GATEWAY_CONTAINER_PORT', None)
             if port != '8443':
                 env['GATEWAY_CONTAINER_PORT'] = port
             result = subprocess.run(['sh', str(ROOT/'lab-check.sh'), '8443'], env=env,
                 text=True, capture_output=True, timeout=30)
-            return result, capture.read_text()
+            return result, capture.read_text() if capture.exists() else None
 
     def test_waf_container_port_is_8443(self):
         result, port = self.run_script()
@@ -65,6 +68,12 @@ esac
         self.assertNotEqual(result.returncode, 0)
         self.assertNotIn('PRIVATE_LOGIN_SENTINEL_12345', result.stdout+result.stderr)
         self.assertNotIn('DISPOSABLE_NOT_A_REAL_TOKEN', result.stdout+result.stderr)
+
+    def test_missing_lab_password_stops_before_docker(self):
+        result, port = self.run_script(missing_password=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIsNone(port)
+        self.assertIn('DEMO_PASSWORD', result.stderr)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -22,3 +22,9 @@ sh -n scripts/lab-check.sh
 Máy Windows/WSL hiện không có Docker để chạy image WAF của bản mới. nginx-t trong ảnh Ubuntu cá nhân buổi trước thuộc hash cấu hình cũ `b99e9a409f71762a432804af4d4d3d1875bd784c913f2a2d40569a61c0b33b33`; không dùng để chứng nhận bản bổ sung access-log/X-Request-Id/Actuator này.
 
 Chính cần chạy nginx-t trước/sau deploy, HTTP hai chế độ, luồng P1/P3/upload/UI, audit privacy/R3, stats và rollback theo DEPLOY_CHINH.md. Những ca đó vẫn NOT RUN, chưa có biên nhận triển khai VM nhóm. ADR/SecRS chưa Approved; T6-15 chưa đủ điều kiện Done.
+
+## Bổ sung sau review ngày 26/11
+
+Access log thêm `$uri` để xác định route, không ghi query; vẫn cần rà PII trong path. `lab-check.sh` bắt buộc DEMO_PASSWORD, không còn mật khẩu fallback. Nhập bằng `read -r -s -p` trong Bash, export rồi chạy script bằng sh; unset sau khi dùng. Cú pháp read -s/-p không dùng với sh/dash. DEPLOY_NOTES và DEPLOY_CHINH đã cập nhật cùng yêu cầu.
+
+Đã chạy lại 15/15 kiểm tra tooling bằng fixtures/stubs và sh -n sau sửa. Bộ 37 source/14 tooling ở trên là kết quả lịch sử của 2ca3143, không phải số kiểm tra mới. Bản cấu hình mới chưa chạy nginx -t/HTTP hoặc VM nhóm. DOCX và Excel được tách khỏi PR #52 sang PR tài liệu riêng để Trí review; Nhi/Chính vẫn phải chọn đúng SHA cuối cùng và kiểm TLS/runtime trước triển khai. BUG-HD-012 về credential trong ứng dụng được theo dõi ở PR tài liệu, chưa được sửa bằng thay đổi lab-check này.

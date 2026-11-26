@@ -4,7 +4,11 @@
 # Chụp màn hình kết quả làm bằng chứng (EV) cho T3-14. Script chỉ đọc, không sửa dữ liệu.
 PORT="${1:-443}"
 BASE="https://localhost:${PORT}"
-PASS="${DEMO_PASSWORD:-Demo@12345}"
+PASS="${DEMO_PASSWORD:-}"
+if [ -z "$PASS" ]; then
+  printf '%s\n' 'Thiếu DEMO_PASSWORD: cung cấp mật khẩu lab qua biến môi trường, không ghi vào repo hoặc ảnh.' >&2
+  exit 2
+fi
 ok() { printf '  [ OK ] %s\n' "$1"; }
 bad() { printf '  [LỖI] %s\n' "$1"; FAIL=1; }
 FAIL=0
