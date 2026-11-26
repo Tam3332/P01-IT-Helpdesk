@@ -9,4 +9,4 @@ TRIAGE,COMPLETE,ZAP_Triage.csv; Defect_Log.csv,Khiêm
 SEED-RESTORE,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/cleanup-manifest.json,Khiêm; isolated personal project only
 AFTER-HANDOFF,ARTIFACT READY; ACKNOWLEDGEMENT NOT CLAIMED,Handoff.md; Coverage.md,Khánh
 CONSOLE-SCREENSHOTS,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/screenshots/README.md,Khiêm
-DETAIL-SCREENSHOTS,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/Screenshot_Index.md; EV-HD-27_VA_before_ubuntu_20261126/Screenshot_Gallery.html; EV-HD-27_VA_before_ubuntu_20261126/capture-manifest-detail.json,Khiêm
+DETAIL-SCREENSHOTS,COMPLETE,README.md; EV-HD-27_VA_before_ubuntu_20261126/Screenshot_Gallery.html; EV-HD-27_VA_before_ubuntu_20261126/capture-manifest-detail.json,Khiêm
