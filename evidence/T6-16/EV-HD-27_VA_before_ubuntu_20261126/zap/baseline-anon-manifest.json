@@ -1,0 +1,33 @@
+{
+  "started_utc": "2026-11-26T04:46:51.381528+00:00",
+  "role": "ANON",
+  "type": "traditional spider + passive Baseline; no AJAX browser",
+  "version": {
+    "version": "2.17.0"
+  },
+  "build": "35c573d20d4244985e617e8a056f880faaadf1db",
+  "target": "https://127.0.0.1:28443",
+  "waf": "Absent",
+  "spider_status": "100",
+  "scope_context": "2",
+  "completed_utc": "2026-11-26T04:47:21.409525+00:00",
+  "urls": [
+    "https://127.0.0.1:28443",
+    "https://127.0.0.1:28443/",
+    "https://127.0.0.1:28443/assets",
+    "https://127.0.0.1:28443/assets/constants-BKs4-PTL.js",
+    "https://127.0.0.1:28443/assets/index-BG6MJ4Sw.js",
+    "https://127.0.0.1:28443/assets/index-COP-mB6e.css",
+    "https://127.0.0.1:28443/robots.txt",
+    "https://127.0.0.1:28443/sitemap.xml"
+  ],
+  "message_count": 8,
+  "outside_origin": [],
+  "alerts": 13,
+  "passive_remaining": 0,
+  "report_files": [
+    "baseline-anon.json",
+    "baseline-anon.html",
+    "baseline-anon.context"
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "date": "2026-11-26",
+  "main": "38a5a29400feeb4ba164b85448e920e140a19a5b",
+  "before": "35c573d20d4244985e617e8a056f880faaadf1db",
+  "pr39_head": "cccb6bd645786260ac316a5bf1456e6a3c094a23",
+  "status": "STATIC_PASS",
+  "runtime": "NOT_RUN",
+  "checks": [
+    {
+      "name": "Compose YAML không trùng key",
+      "status": "PASS",
+      "source": "T6-15/candidate/docker-compose.yml"
+    },
+    {
+      "name": "Service postgres giữ nguyên",
+      "status": "PASS",
+      "source": "docker-compose.yml/services/postgres"
+    },
+    {
+      "name": "Service backend giữ nguyên",
+      "status": "PASS",
+      "source": "docker-compose.yml/services/backend"
+    },
+    {
+      "name": "Service frontend giữ nguyên",
+      "status": "PASS",
+      "source": "docker-compose.yml/services/frontend"
+    },
+    {
+      "name": "Network và volume giữ nguyên",
+      "status": "PASS",
+      "source": "docker-compose.yml"
+    },
+    {
+      "name": "Gateway chỉ thêm hai biến ngưỡng",
+      "status": "PASS",
+      "source": "docker-compose.yml/services/nginx"
+    },
+    {
+      "name": "DetectionOnly mặc định; PL1 và ngưỡng tường minh",
+      "status": "PASS",
+      "source": "docker-compose.yml/environment"
+    },
+    {
+      "name": "Giữ digest, template read-only, HTTPS8443 và audit riêng",
+      "status": "PASS",
+      "source": "docker-compose.yml/nginx"
+    },
+    {
+      "name": "Audit RelevantOnly/Serial/JSON/AZ",
+      "status": "PASS",
+      "source": "docker-compose.yml/environment"
+    },
+    {
+      "name": "Env mẫu khớp ngưỡng và DetectionOnly",
+      "status": "PASS",
+      "source": ".env.example"
+    },
+    {
+      "name": "Giữ nguyên location ~ ^/(v3/api-docs|swagger-ui)",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf"
+    },
+    {
+      "name": "Giữ nguyên location = /api/v1/auth/login",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf"
+    },
+    {
+      "name": "Giữ nguyên location /api/",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf"
+    },
+    {
+      "name": "Giữ nguyên location / {",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf"
+    },
+    {
+      "name": "Giữ toàn bộ TLS/header/limit/module/transaction ID",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf"
+    },
+    {
+      "name": "Handler 403 nội bộ không proxy/root/alias",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf/@gateway_forbidden"
+    },
+    {
+      "name": "Tắt ModSecurity chỉ trong handler kết thúc",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf"
+    },
+    {
+      "name": "Giữ lỗi upstream; error_page riêng",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf"
+    },
+    {
+      "name": "JSON403 có message và ID/time gateway, không phản chiếu input",
+      "status": "PASS",
+      "source": "nginx/nginx-waf.conf/return403"
+    },
+    {
+      "name": "15 ca WAF không điền Actual/EV/build hoặc PASS giả",
+      "status": "PASS",
+      "source": "evidence/T6-15/checklist.csv"
+    },
+    {
+      "name": "Chưa có exclusion được tự duyệt",
+      "status": "PASS",
+      "source": "evidence/T6-15/exclusions.csv"
+    },
+    {
+      "name": "12 VA có nguồn, phân loại và không chấm severity giả",
+      "status": "PASS",
+      "source": "evidence/T6-16/VA_Register.csv"
+    },
+    {
+      "name": "Giữ BUG-HD-008 duy nhất; không mở mã trùng",
+      "status": "PASS",
+      "source": "evidence/T6-16/VA_Register.csv"
+    },
+    {
+      "name": "18 ca mới không dùng lịch sử làm Actual",
+      "status": "PASS",
+      "source": "evidence/T6-16/Test_Cases.csv"
+    },
+    {
+      "name": "9 đầu mục còn thiếu ghi owner/status đúng",
+      "status": "PASS",
+      "source": "evidence/T6-16/Evidence_Index.csv"
+    },
+    {
+      "name": "Manifest draft giữ Before bất biến; chưa giả run/role/artifact",
+      "status": "PASS",
+      "source": "evidence/T6-16/run-manifest.draft.json"
+    },
+    {
+      "name": "README PR39 không còn ghi WAF Draft, có merge đã xác minh",
+      "status": "PASS",
+      "source": "evidence/T5-16/README.md"
+    },
+    {
+      "name": "Permalink snapshot và số dòng đối chiếu được",
+      "status": "PASS",
+      "source": "sources/index.json · []"
+    },
+    {
+      "name": "T6-15 git apply check",
+      "status": "PASS",
+      "source": "T6-15_followup_main_38a5a29.patch "
+    },
+    {
+      "name": "T6-15 git apply trên bản sao",
+      "status": "PASS",
+      "source": "T6-15_followup_main_38a5a29.patch "
+    },
+    {
+      "name": "T6-15 patch tái tạo mọi file đúng bytes",
+      "status": "PASS",
+      "source": "T6-15_followup_main_38a5a29.patch"
+    },
+    {
+      "name": "T6-15 các file dùng UTF-8 LF",
+      "status": "PASS",
+      "source": "candidate"
+    },
+    {
+      "name": "T6-15 không đóng gói ảnh/report/context giả",
+      "status": "PASS",
+      "source": "candidate"
+    },
+    {
+      "name": "T6-16 git apply check",
+      "status": "PASS",
+      "source": "T6-16_ho_so_PR39.patch "
+    },
+    {
+      "name": "T6-16 git apply trên bản sao",
+      "status": "PASS",
+      "source": "T6-16_ho_so_PR39.patch "
+    },
+    {
+      "name": "T6-16 patch tái tạo mọi file đúng bytes",
+      "status": "PASS",
+      "source": "T6-16_ho_so_PR39.patch"
+    },
+    {
+      "name": "T6-16 các file dùng UTF-8 LF",
+      "status": "PASS",
+      "source": "candidate"
+    },
+    {
+      "name": "T6-16 không đóng gói ảnh/report/context giả",
+      "status": "PASS",
+      "source": "candidate"
+    }
+  ],
+  "execution_os": "Linux",
+  "execution_platform": "Linux-6.8.0-149-generic-x86_64-with-glibc2.39",
+  "observed_time_utc": "2026-11-26T03:40:38.576174+00:00",
+  "not_executed": [
+    "nginx -t / Docker image",
+    "HTTP or ZAP scan",
+    "DetectionOnly/On acceptance",
+    "GitHub push / sheet write"
+  ]
+}

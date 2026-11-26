@@ -1,0 +1,28 @@
+[2J[HP01 T6-16 | REAL UBUNTU PERSONAL LAB EVIDENCE
+2026-11-26T05:07:26.455137+00:00
+Before 35c573d | https://127.0.0.1:28443 | WAF absent
+Read-only summary of saved runtime evidence; ZAP Docker, not Kali
+----------------------------------------------------------------------------
+HTTP: 20 rows; 19 PASS; 1 FAIL
+T616-AUTH-01 PASS HTTP 401
+T616-AUTH-02 PASS HTTP 401
+T616-AUTH-03 PASS HTTP 401
+T616-AUTH-04 PASS HTTP 401
+T616-AUTH-05 PASS HTTP 401
+T616-AUTH-06 PASS control=200 expired=401
+T616-AUTH-07 PASS logout=200 old=401
+T616-AUTH-08 PASS (401, 'INVALID_CREDENTIALS', 'Email hoặc mật khẩu không đúng') vs (401, 'INV
+T616-API-02 PASS HTTP=200 size=100 count=0
+T616-API-03 PASS HTTP 405
+T616-API-04 PASS GET=200 preflight=401 ACAO=[None, None]
+T616-EDGE-01 PASS HTTP=404 Content-Type=text/html SPA_fallback=False
+T616-EDGE-02 PASS HTTP=404 Content-Type=text/html SPA_fallback=False
+T616-EDGE-03 PASS HTTP=200 Content-Type=text/html SPA_fallback=True
+T616-AUTH-09 FAIL change=200 old_token=200
+T616-API-01 EMPLOYEE PASS nonempty scope verified
+T616-API-01 IT_STAFF PASS nonempty scope verified
+T616-API-01 IT_MANAGER PASS nonempty scope verified
+T616-API-01 ADMIN PASS nonempty scope verified
+T616-API-05 PASS HTTP=500 sensitive_error_text=False
+BUG-HD-008 is existing BEFORE issue; AFTER not concluded.
+----------------------------------------------------------------------------

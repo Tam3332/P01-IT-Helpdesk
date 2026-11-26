@@ -195,9 +195,9 @@ public class ReopenService {
         reopenRequest.setReviewedAt(now);
         reopenRequestRepository.save(reopenRequest);
 
-        // 2. Kích hoạt hạn SLA mới
+        // 2. Kích hoạt hạn SLA mới; thiếu cấu hình thì dùng mặc định Low 2h/48h (SRS §3 P2)
         SLAConfig sla = slaConfigRepository.findByPriorityLevel(ticket.getPriority())
-                .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
+                .orElseGet(() -> SlaDefaults.fallback(ticket.getPriority(), "APPROVE_REOPEN"));
         long resolutionMinutes = Math.round(sla.getResolutionTimeHours().doubleValue() * 60.0);
         ticket.setResolutionDeadline(now.plusMinutes(resolutionMinutes));
 

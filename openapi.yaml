@@ -35,7 +35,7 @@ paths:
     post:
       tags: [Authentication]
       summary: Đăng nhập hệ thống (IA-HD01, IA-HD05)
-      description: Xác thực người dùng bằng email và mật khẩu. Khóa 15 phút sau 5 lần sai.
+      description: Xác thực người dùng bằng email và mật khẩu. Sai 5 lần trong 5 phút theo cặp email + IP thì lần thứ 5 trả 429 và khóa 15 phút (audit LOGIN_FAILED 429 + ACCOUNT_LOCKED); trong lúc khóa, nhập đúng mật khẩu vẫn 429. Email không tồn tại xử lý giống hệt để không lộ tài khoản có thật.
       requestBody:
         required: true
         content:
@@ -62,7 +62,11 @@ paths:
         '400':
           $ref: '#/components/responses/400BadRequest'
         '401':
-          $ref: '#/components/responses/401Unauthorized'
+          description: Sai email hoặc mật khẩu (INVALID_CREDENTIALS, thông báo chung, không cho biết email có tồn tại hay không)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Tài khoản bị Admin khóa (is_active = false), chỉ báo sau khi mật khẩu đúng (SRS UC-01 2c)
           content:
@@ -111,7 +115,7 @@ paths:
     post:
       tags: [Authentication]
       summary: Đổi mật khẩu cho tài khoản hiện tại (IA-HD01, IA-HD05)
-      description: Người dùng đổi mật khẩu với mật khẩu hiện tại và mật khẩu mới (8-100 ký tự). Có giới hạn đổi tối đa 3 lần/ngày.
+      description: Người dùng đổi mật khẩu với mật khẩu hiện tại và mật khẩu mới (8-100 ký tự). Có giới hạn đổi tối đa 3 lần/ngày (lần thứ 4 trả 429). Sau thao tác, mọi token cấp trước đó của tài khoản này không dùng được nữa (401), người dùng phải đăng nhập lại (BUG-HD-008, credentials_updated_at).
       security:
         - BearerAuth: []
       requestBody:
@@ -129,6 +133,8 @@ paths:
                 newPassword:
                   type: string
                   format: password
+                  minLength: 8
+                  maxLength: 100
                   example: NewPassword@456
       responses:
         '200':
@@ -141,6 +147,12 @@ paths:
           $ref: '#/components/responses/400BadRequest'
         '401':
           $ref: '#/components/responses/401Unauthorized'
+        '429':
+          description: Đã đổi mật khẩu 3 lần trong ngày, trả PASSWORD_CHANGE_LIMIT_EXCEEDED; liên hệ Admin để được cấp lại (BUG-HD-008, commit 5d91c56)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # ================= TICKETS =================
   /tickets:
@@ -166,7 +178,7 @@ paths:
             type: integer
         - name: search
           in: query
-          description: Tìm theo tiêu đề hoặc mô tả (HD13)
+          description: Tìm theo mã ticket, tiêu đề hoặc mô tả, không phân biệt hoa thường; ký tự % và _ được hiểu là ký tự thường, không phải ký tự đại diện (HD13). Danh sách luôn sắp theo ngày tạo giảm dần, backend không nhận tham số sắp xếp từ client (T5-06)
           schema:
             type: string
         - name: assigneeId
@@ -176,23 +188,16 @@ paths:
             type: integer
         - name: createdFrom
           in: query
-          description: Ngày tạo từ (HD13). Chưa triển khai, backend hiện bỏ qua tham số này
+          description: Ngày tạo từ (HD13), định dạng yyyy-MM-dd, tính từ 00:00 giờ Việt Nam (UTC+7). Ngày từ sau ngày đến → 400 VALIDATION_FAILED (commit 367adcb)
           schema:
             type: string
             format: date
         - name: createdTo
           in: query
-          description: Ngày tạo đến (HD13). Chưa triển khai, backend hiện bỏ qua tham số này
+          description: Ngày tạo đến (HD13), định dạng yyyy-MM-dd, tính trọn ngày theo giờ Việt Nam (UTC+7) (commit 367adcb)
           schema:
             type: string
             format: date
-        - name: sort
-          in: query
-          description: Sắp xếp (UC-04 bước 3, HD13). Chưa triển khai, backend luôn sắp ngày tạo giảm dần
-          schema:
-            type: string
-            default: createdAt,desc
-            example: priority,desc
         - name: page
           in: query
           schema:
@@ -212,6 +217,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketPage'
+        '400':
+          description: createdFrom sau createdTo hoặc ngày sai định dạng yyyy-MM-dd (VALIDATION_FAILED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           $ref: '#/components/responses/401Unauthorized'
 
@@ -404,7 +415,7 @@ paths:
       tags: [Tickets]
       summary: Cập nhật trạng thái xử lý ticket (HD07, UC-07, BR-HD-01)
       description: >
-        Chỉ IT_STAFF đang được giao ticket (role khác nhận 403; IT Staff không được giao nhận 404).
+        IT_STAFF đang được giao ticket hoặc IT_MANAGER (PC-03, chốt 09/11). Employee, Admin nhận 403; IT Staff không được giao nhận 404 (Anti-IDOR); cả hai trường hợp ghi audit AUTHZ_DENIED.
         Luồng hợp lệ: ASSIGNED -> IN_PROGRESS, IN_PROGRESS -> RESOLVED, REOPENED -> IN_PROGRESS.
         Chuyển sang RESOLVED bắt buộc ghi chú giải pháp >= 20 ký tự (BR-HD-01).
         Ticket đang REOPEN_PENDING (chờ IT Manager duyệt) hoặc CLOSED trả 422.
@@ -553,12 +564,18 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ReopenRequestDTO'
+        '400':
+          description: status không thuộc PENDING, APPROVED, REJECTED (VALIDATION_FAILED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
           $ref: '#/components/responses/401Unauthorized'
         '403':
           $ref: '#/components/responses/403Forbidden'
 
-  /reopen-requests/{requestId}/approve:
+  /reopen-requests/{id}/approve:
     post:
       tags: [Tickets]
       summary: "IT Manager duyệt yêu cầu mở lại ticket (HD10, UC-08, BR-HD-03, BR-HD-04, BPMN P3)"
@@ -568,11 +585,25 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: requestId
+        - name: id
           in: path
           required: true
           schema:
             type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reviewNote:
+                  type: string
+                  maxLength: 1000
+                  description: Ghi chú phê duyệt (tùy chọn)
+                newAssigneeId:
+                  type: integer
+                  description: ID IT Staff mới nếu muốn giao lại cho người khác (tùy chọn); không phải IT Staff đang hoạt động trả 422 INVALID_ASSIGNEE
       responses:
         '200':
           description: Đã duyệt, ticket chuyển sang REOPENED
@@ -580,6 +611,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReopenRequestDTO'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
         '401':
           $ref: '#/components/responses/401Unauthorized'
         '403':
@@ -587,9 +620,9 @@ paths:
         '404':
           $ref: '#/components/responses/404NotFound'
         '422':
-          description: Yêu cầu không còn ở trạng thái PENDING
+          description: Yêu cầu không còn ở trạng thái PENDING, hoặc newAssigneeId không phải IT Staff đang hoạt động
 
-  /reopen-requests/{requestId}/reject:
+  /reopen-requests/{id}/reject:
     post:
       tags: [Tickets]
       summary: "IT Manager từ chối yêu cầu mở lại ticket (HD10, UC-08, BR-HD-04, BPMN P3)"
@@ -599,7 +632,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: requestId
+        - name: id
           in: path
           required: true
           schema:
@@ -614,7 +647,9 @@ paths:
               properties:
                 reviewNote:
                   type: string
-                  description: Lý do từ chối (UC-08, nhánh B, bước 6)
+                  minLength: 10
+                  maxLength: 1000
+                  description: Lý do từ chối, 10–1000 ký tự (UC-08, nhánh B, bước 6)
                   example: Sự cố mới không liên quan tới yêu cầu cũ, vui lòng tạo ticket mới.
       responses:
         '200':
@@ -671,8 +706,8 @@ paths:
         Chỉ IT Staff, IT Manager mới được đánh dấu isInternal=true (ghi chú nội bộ).
         Nếu Employee gửi với isInternal=true, backend tự đổi về false.
         Ticket đã CLOSED không nhận bình luận mới (422).
-        Ticket ngoài phạm vi của người gọi trả 404 như GET (Anti-IDOR, IA-HD02); 403 chỉ dùng khi role không được phép
-        (Admin, hoặc IT Staff bình luận trên ticket NEW chưa được giao).
+        Ticket ngoài phạm vi của người gọi (Employee khác, IT Staff không được giao ticket) trả 404 như GET
+        kèm audit AUTHZ_DENIED (Anti-IDOR, IA-HD02); 403 chỉ dùng cho Admin (chỉ đọc, không bình luận).
       security:
         - BearerAuth: []
       parameters:
@@ -822,7 +857,7 @@ paths:
     get:
       tags: [Feedback]
       summary: Xem đánh giá CSAT của ticket ở chế độ chỉ đọc (HD15)
-      description: Chỉ Employee chủ ticket xem được (SRS HD15, cột Actor ghi Employee). Ticket chưa có đánh giá trả 200 với data = null để giao diện hiện form đánh giá (HD15). 404 chỉ dùng khi ticket không tồn tại hoặc không có quyền (Anti-IDOR).
+      description: Employee chủ ticket, IT Staff đang được giao, IT Manager và Admin (chỉ đọc) xem được (PC-03, retest PC03.3 ngày 12/11). Employee khác hoặc IT Staff không được giao nhận 404 + audit AUTHZ_DENIED. Ticket chưa có đánh giá trả 200 với data = null để giao diện hiện form đánh giá (HD15). 404 chỉ dùng khi ticket không tồn tại hoặc không có quyền (Anti-IDOR).
       security:
         - BearerAuth: []
       parameters:
@@ -901,14 +936,13 @@ paths:
         - BearerAuth: []
       responses:
         '200':
-          description: Danh sách danh mục
-
+          description: Danh sách danh mục (bản rút gọn cho dropdown tạo ticket)
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CategoryDTO'
+                  $ref: '#/components/schemas/CategorySummaryDTO'
         '401':
           $ref: '#/components/responses/401Unauthorized'
 
@@ -947,10 +981,17 @@ paths:
               properties:
                 categoryCode:
                   type: string
+                  maxLength: 50
+                  pattern: '^[A-Z0-9_]+$'
                   example: PRINTER
                 categoryName:
                   type: string
+                  maxLength: 100
                   example: Máy in & Máy Scan
+                description:
+                  type: string
+                  maxLength: 500
+                  description: Mô tả danh mục (tùy chọn)
                 defaultPriority:
                   type: string
                   enum: [LOW, MEDIUM, HIGH, CRITICAL]
@@ -1174,14 +1215,24 @@ paths:
           application/json:
             schema:
               type: object
-              required: [responseTimeHours, resolutionTimeHours]
+              required: [responseTimeHours, resolutionTimeHours, warningThresholdPct, breachThresholdPct]
               properties:
                 responseTimeHours:
                   type: number
+                  minimum: 0.01
                   example: 0.5
                 resolutionTimeHours:
                   type: number
+                  minimum: 0.01
                   example: 8.0
+                warningThresholdPct:
+                  type: integer
+                  description: Ngưỡng nhãn Near Breach (% thời gian xử lý đã dùng), ví dụ 80
+                  example: 80
+                breachThresholdPct:
+                  type: integer
+                  description: Ngưỡng nhãn Breached (%), ví dụ 100
+                  example: 100
       responses:
         '200':
           description: Cập nhật SLA thành công
@@ -1195,12 +1246,14 @@ paths:
           $ref: '#/components/responses/401Unauthorized'
         '403':
           $ref: '#/components/responses/403Forbidden'
+        '404':
+          $ref: '#/components/responses/404NotFound'
 
   # ================= ADMIN & USERS =================
   /admin/users:
     get:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Danh sách tài khoản người dùng (ADMIN) (SRS §2 System Admin, IA-HD01)"
+      summary: "Danh sách tài khoản người dùng (ADMIN) (SRS §2 System Admin, IA-HD01)"
       security:
         - BearerAuth: []
       parameters:
@@ -1228,7 +1281,7 @@ paths:
 
     post:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Tạo tài khoản mới (ADMIN) (SRS §2 System Admin)"
+      summary: "Tạo tài khoản mới (ADMIN) (SRS §2 System Admin)"
       description: Trùng username hoặc email → 400 (cùng quy ước lỗi trùng dữ liệu của SRS UC-10 3a).
       security:
         - BearerAuth: []
@@ -1242,17 +1295,21 @@ paths:
               properties:
                 username:
                   type: string
+                  maxLength: 50
                   example: staff2
                 email:
                   type: string
+                  maxLength: 100
                   format: email
                   example: staff2@fpt.edu.vn
                 password:
                   type: string
+                  minLength: 6
                   format: password
                   description: Mật khẩu ban đầu, backend lưu hash bcrypt (HD01)
                 fullName:
                   type: string
+                  maxLength: 100
                   example: Nguyễn Văn B
                 department:
                   type: string
@@ -1277,8 +1334,8 @@ paths:
   /admin/users/{userId}/role:
     patch:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Gán lại vai trò cho tài khoản (ADMIN) (IA-HD01)"
-      description: Chỉ Admin được đổi role; người dùng không tự nâng quyền; mọi lần đổi role đều ghi audit (IA-HD01).
+      summary: "Gán lại vai trò cho tài khoản (ADMIN) (IA-HD01)"
+      description: Chỉ Admin được đổi role; Admin tự đổi role của mình trả 400 CANNOT_CHANGE_OWN_ROLE; mỗi lần đổi role ghi audit ROLE_CHANGED kèm role trước/sau (IA-HD01, IA-HD04). Sau thao tác, mọi token cấp trước đó của tài khoản này không dùng được nữa (401), người dùng phải đăng nhập lại (BUG-HD-008, credentials_updated_at).
       security:
         - BearerAuth: []
       parameters:
@@ -1317,8 +1374,8 @@ paths:
   /admin/users/{userId}/status:
     patch:
       tags: [Admin & Users]
-      summary: "[Chưa triển khai – tuần 4] Kích hoạt hoặc khóa tài khoản (ADMIN) (SRS §2 System Admin, UC-01 2c)"
-      description: Tài khoản bị khóa (isActive=false) không đăng nhập được (UC-01 2c).
+      summary: "Kích hoạt hoặc khóa tài khoản (ADMIN) (SRS §2 System Admin, UC-01 2c)"
+      description: Tài khoản bị khóa (isActive=false) không đăng nhập được (UC-01 2c); Admin tự khóa mình trả 400 CANNOT_LOCK_OWN_ACCOUNT; ghi audit LOCK_USER hoặc ACTIVATE_USER kèm is_active trước/sau. Sau thao tác, mọi token cấp trước đó của tài khoản này không dùng được nữa (401), người dùng phải đăng nhập lại (BUG-HD-008, credentials_updated_at).
       security:
         - BearerAuth: []
       parameters:
@@ -1357,7 +1414,7 @@ paths:
     put:
       tags: [Admin & Users]
       summary: Cập nhật thông tin tài khoản người dùng (ADMIN)
-      description: Admin chỉnh sửa thông tin họ tên, phòng ban, vai trò, số điện thoại hoặc trạng thái của người dùng.
+      description: Admin chỉnh sửa thông tin họ tên, phòng ban, vai trò, số điện thoại hoặc trạng thái của người dùng. Ghi audit USER_UPDATED; nếu đổi vai trò ghi thêm ROLE_CHANGED, nếu đổi trạng thái ghi thêm LOCK_USER hoặc ACTIVATE_USER (kèm trước/sau). Admin tự đổi role hoặc tự khóa mình trả 400 giống PATCH. Khi đổi vai trò hoặc trạng thái, token cũ của tài khoản không dùng được nữa (401) (BUG-HD-008).
       security:
         - BearerAuth: []
       parameters:
@@ -1408,7 +1465,7 @@ paths:
     post:
       tags: [Admin & Users]
       summary: Đặt lại mật khẩu cho người dùng (ADMIN)
-      description: Đặt lại mật khẩu ngẫu nhiên hoặc theo mật khẩu Admin chỉ định, và bật cờ yêu cầu đổi mật khẩu khi đăng nhập lại.
+      description: Đặt lại mật khẩu ngẫu nhiên hoặc theo mật khẩu Admin chỉ định, và bật cờ yêu cầu đổi mật khẩu khi đăng nhập lại. Sau thao tác, mọi token cấp trước đó của tài khoản này không dùng được nữa (401), người dùng phải đăng nhập lại (BUG-HD-008, credentials_updated_at).
       security:
         - BearerAuth: []
       parameters:
@@ -1490,9 +1547,11 @@ paths:
       tags: [Tickets]
       summary: Danh sách thông báo mới nhất của người dùng hiện tại (chuông thông báo)
       description: >-
-        Không có bảng riêng, backend lấy từ tickets và ticket_history theo role:
-        IT_MANAGER/ADMIN – ticket NEW hoặc yêu cầu mở lại; IT_STAFF – ticket vừa được phân công cho mình (ASSIGN/REASSIGN);
-        EMPLOYEE – ticket của mình vừa được giải quyết (RESOLVED).
+        Không có bảng riêng, backend lấy từ tickets, ticket_history và audit log theo role (NotificationService):
+        IT_MANAGER – ticket mới (NEW), yêu cầu mở lại (REOPEN_PENDING), kết quả duyệt/từ chối mở lại (REOPENED, REOPEN_REJECTED), ticket vi phạm SLA (BREACHED);
+        IT_STAFF – ticket được phân công cho mình (ASSIGNED) và cảnh báo vi phạm SLA (BREACHED);
+        EMPLOYEE – biến động ticket của mình: phân công (ASSIGNED), đổi trạng thái (IN_PROGRESS, RESOLVED, CLOSED, REOPEN_PENDING), kết quả mở lại (REOPEN_APPROVED, REOPEN_REJECTED);
+        ADMIN – ticket vi phạm SLA hoặc mức Critical/High, cảnh báo bảo mật (đăng nhập thất bại, truy cập trái quyền) và thay đổi quản trị tài khoản.
       security:
         - BearerAuth: []
       parameters:
@@ -1573,7 +1632,9 @@ paths:
       summary: "Thống kê tổng hợp số lượng vé, vi phạm SLA, hiệu năng (HD14)"
       description: >
         Trả về thống kê tổng quan: tổng số vé theo trạng thái, số vé vi phạm SLA,
-        thời gian xử lý trung bình. Dành riêng cho IT_MANAGER.
+        thời gian xử lý trung bình. Mọi role đã đăng nhập gọi được, số liệu lọc theo phạm vi của role:
+        Employee – ticket mình tạo; IT Staff – ticket được giao cho mình; IT Manager và Admin – toàn hệ thống
+        (nhóm chốt, Access Matrix v1.2; SecurityConfig /dashboard/**, DashboardService).
       security:
         - BearerAuth: []
       responses:
@@ -1585,8 +1646,6 @@ paths:
                 $ref: '#/components/schemas/DashboardStatsResponse'
         '401':
           $ref: '#/components/responses/401Unauthorized'
-        '403':
-          $ref: '#/components/responses/403Forbidden'
 
   /dashboard/sla-monitor:
     get:
@@ -1594,7 +1653,8 @@ paths:
       summary: "Giám sát vé sắp chạm ngưỡng cảnh báo 80% hoặc quá hạn SLA (HD12, HD14)"
       description: >
         Danh sách vé đang tiến gần đến ngưỡng SLA (>= 80% thời gian deadline)
-        hoặc đã vi phạm SLA (is_sla_breached = true). Dành riêng cho IT_MANAGER.
+        hoặc đã vi phạm SLA (is_sla_breached = true). Mọi role đã đăng nhập gọi được, danh sách lọc theo
+        phạm vi của role như /dashboard/stats.
       security:
         - BearerAuth: []
       parameters:
@@ -1616,8 +1676,6 @@ paths:
                   $ref: '#/components/schemas/SLAMonitorItem'
         '401':
           $ref: '#/components/responses/401Unauthorized'
-        '403':
-          $ref: '#/components/responses/403Forbidden'
 
 components:
   securitySchemes:
@@ -1806,9 +1864,6 @@ components:
     LoginResponse:
       type: object
       properties:
-        success:
-          type: boolean
-          example: true
         accessToken:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -1878,8 +1933,15 @@ components:
       type: object
       description: Đánh giá CSAT, tương ứng bảng ticket_feedbacks
       properties:
+        id:
+          type: integer
         ticketId:
           type: integer
+        requesterId:
+          type: integer
+          description: Employee chủ ticket đã gửi đánh giá
+        requesterName:
+          type: string
         ratingStars:
           type: integer
           minimum: 1
@@ -2087,6 +2149,12 @@ components:
           type: integer
         authorId:
           type: integer
+        authorName:
+          type: string
+          description: Họ tên người bình luận
+        authorRole:
+          type: string
+          description: Role của người bình luận (EMPLOYEE, IT_STAFF, IT_MANAGER)
         commentText:
           type: string
         isInternal:
@@ -2094,6 +2162,15 @@ components:
         createdAt:
           type: string
           format: date-time
+    CategorySummaryDTO:
+      type: object
+      description: Danh mục rút gọn trả cho GET /categories (CategoryResponse), chỉ gồm danh mục đang hoạt động
+      properties:
+        id: { type: integer }
+        categoryCode: { type: string }
+        categoryName: { type: string }
+        description: { type: string, nullable: true }
+        defaultPriority: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
     CategoryDTO:
       type: object
       description: Danh mục, tương ứng bảng ticket_categories
@@ -2104,15 +2181,29 @@ components:
           type: string
         categoryName:
           type: string
+        description:
+          type: string
+          nullable: true
         defaultPriority:
           type: string
           enum: *id001
         isActive:
           type: boolean
+          description: Có trong API quản trị (/admin/categories); danh sách cho Employee (GET /categories) chỉ trả danh mục đang bật và không có trường này
+        createdAt:
+          type: string
+          format: date-time
+          description: Chỉ có trong API quản trị
+        updatedAt:
+          type: string
+          format: date-time
+          description: Chỉ có trong API quản trị
     SlaConfigDTO:
       type: object
       description: Định mức SLA, tương ứng bảng sla_configs
       properties:
+        id:
+          type: integer
         priorityLevel:
           type: string
           enum: *id001
@@ -2120,6 +2211,12 @@ components:
           type: number
         resolutionTimeHours:
           type: number
+        warningThresholdPct:
+          type: integer
+          example: 80
+        breachThresholdPct:
+          type: integer
+          example: 100
         updatedAt:
           type: string
           format: date-time
@@ -2154,6 +2251,14 @@ components:
         timestamp:
           type: string
           format: date-time
+        oldValueLabel:
+          type: string
+          nullable: true
+          description: Tên hiển thị của oldValue khi field là current_assignee_id (id người dùng → họ tên); null với field khác
+        newValueLabel:
+          type: string
+          nullable: true
+          description: Tên hiển thị của newValue khi field là current_assignee_id; null với field khác
     UserPage:
       type: object
       description: Trang danh sách tài khoản
@@ -2222,6 +2327,14 @@ components:
         httpStatus:
           type: integer
           example: 200
+        before:
+          type: object
+          nullable: true
+          description: Giá trị trước khi thay đổi (event có before/after như ROLE_CHANGED, TICKET_ASSIGNED); null với event khác
+        after:
+          type: object
+          nullable: true
+          description: Giá trị sau khi thay đổi; null với event khác
 
     AuditLogPage:
       type: object

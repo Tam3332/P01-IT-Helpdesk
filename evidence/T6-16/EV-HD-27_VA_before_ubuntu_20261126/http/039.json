@@ -1,0 +1,18 @@
+{
+  "event_id": 39,
+  "utc": "2026-11-26T04:43:09.101149+00:00",
+  "completed_utc": "2026-11-26T04:43:09.118167+00:00",
+  "case_hint": "T616-EDGE-03",
+  "method": "GET",
+  "path": "/actuator/health",
+  "authenticated": false,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "text/html",
+    "Strict-Transport-Security": "max-age=31536000",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "6c9ddce33914a3d689a11ef6980bb5d699982cfe204bae4ae8c4cab723b24e22",
+  "body": "<!doctype html>\n<html lang=\"vi\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>Helpdesk</title>\n    <meta name=\"description\" content=\"Helpdesk: gửi và theo dõi yêu cầu hỗ trợ CNTT nội bộ. Internal IT helpdesk.\" />\n    <meta name=\"theme-color\" content=\"#F8FAFC\" media=\"(prefers-color-scheme: light)\" />\n    <meta name=\"theme-color\" content=\"#0B1220\" media=\"(prefers-color-scheme: dark)\" />\n    <meta property=\"og:title\" content=\"Helpdesk\" />\n    <meta property=\"og:description\" content=\"Hỗ trợ CNTT nội bộ / Internal IT helpdesk\" />\n    <meta property=\"og:type\" content=\"website\" />\n    <link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='3"
+}

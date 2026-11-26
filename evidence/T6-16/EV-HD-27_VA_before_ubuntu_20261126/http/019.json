@@ -1,0 +1,26 @@
+{
+  "event_id": 19,
+  "utc": "2026-11-26T04:42:43.382766+00:00",
+  "completed_utc": "2026-11-26T04:42:43.768935+00:00",
+  "case_hint": "T616-AUTH-08",
+  "method": "POST",
+  "path": "/api/v1/auth/login",
+  "authenticated": false,
+  "http_status": 401,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "23d19d97101d77ecffdc16cc15b75a7e70ce5f47a0da33941bd60701006caba5",
+  "body": {
+    "success": false,
+    "message": "Email hoặc mật khẩu không đúng",
+    "error": {
+      "code": "INVALID_CREDENTIALS",
+      "message": "Email hoặc mật khẩu không đúng"
+    },
+    "timestamp": "2026-11-26T04:42:43.742584648"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "task": "T6-16",
+  "baseline_commit": "35c573d20d4244985e617e8a056f880faaadf1db",
+  "documentation_source_commit": "38a5a29400feeb4ba164b85448e920e140a19a5b",
+  "environment": "personal Ubuntu isolated Before",
+  "target": "https://127.0.0.1:28443",
+  "runner": "official ZAP Docker on personal Ubuntu, not Kali",
+  "waf": "Absent",
+  "run_id": "EV-HD-27_VA_before_ubuntu_20261126",
+  "http_rows": 20,
+  "http_pass": 19,
+  "http_fail": 1,
+  "known_bug": "BUG-HD-008",
+  "zap_runs": [
+    {
+      "Run": "baseline-anon",
+      "Role": "ANON",
+      "Messages": 8,
+      "Alerts": 13,
+      "Start_UTC": "2026-11-26T04:46:51.381528+00:00",
+      "End_UTC": "2026-11-26T04:47:21.409525+00:00",
+      "Included_OpenAPI_GET": 0,
+      "Excluded_write_operations": 0,
+      "Limit": "traditional spider (no AJAX)"
+    },
+    {
+      "Run": "api-employee",
+      "Role": "EMPLOYEE",
+      "Messages": 77,
+      "Alerts": 23,
+      "Start_UTC": "2026-11-26T04:51:54.472882+00:00",
+      "End_UTC": "2026-11-26T04:53:40.762728+00:00",
+      "Included_OpenAPI_GET": 22,
+      "Excluded_write_operations": 23,
+      "Limit": "GET /api/v1/tickets?page=0&size=1 only; LOW; one thread; 600ms delay; 1min/rule; 2min/scan"
+    },
+    {
+      "Run": "api-it-staff",
+      "Role": "IT_STAFF",
+      "Messages": 76,
+      "Alerts": 23,
+      "Start_UTC": "2026-11-26T04:53:40.767843+00:00",
+      "End_UTC": "2026-11-26T04:57:18.423236+00:00",
+      "Included_OpenAPI_GET": 22,
+      "Excluded_write_operations": 23,
+      "Limit": "GET /api/v1/tickets?page=0&size=1 only; LOW; one thread; 600ms delay; 1min/rule; 2min/scan"
+    },
+    {
+      "Run": "api-it-manager",
+      "Role": "IT_MANAGER",
+      "Messages": 76,
+      "Alerts": 23,
+      "Start_UTC": "2026-11-26T04:57:18.424017+00:00",
+      "End_UTC": "2026-11-26T05:01:35.129054+00:00",
+      "Included_OpenAPI_GET": 22,
+      "Excluded_write_operations": 23,
+      "Limit": "GET /api/v1/tickets?page=0&size=1 only; LOW; one thread; 600ms delay; 1min/rule; 2min/scan"
+    },
+    {
+      "Run": "api-admin",
+      "Role": "ADMIN",
+      "Messages": 76,
+      "Alerts": 23,
+      "Start_UTC": "2026-11-26T05:01:35.129810+00:00",
+      "End_UTC": "2026-11-26T05:05:26.503384+00:00",
+      "Included_OpenAPI_GET": 22,
+      "Excluded_write_operations": 23,
+      "Limit": "GET /api/v1/tickets?page=0&size=1 only; LOW; one thread; 600ms delay; 1min/rule; 2min/scan"
+    }
+  ],
+  "new_findings": [
+    "BUG-HD-009",
+    "BUG-HD-010",
+    "BUG-HD-011"
+  ],
+  "scope_limits": "Coverage.md",
+  "cleanup_complete": true,
+  "artifact_state": "READY FOR USER REVIEW; no repository/PR/sheet mutation authorized before approval"
+}

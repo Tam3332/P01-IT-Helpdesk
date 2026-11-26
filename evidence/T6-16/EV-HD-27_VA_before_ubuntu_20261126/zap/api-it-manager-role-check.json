@@ -1,0 +1,8 @@
+{
+  "utc": "2026-11-26T04:59:59.338532+00:00",
+  "role_expected": "IT_MANAGER",
+  "role_actual": "IT_MANAGER",
+  "status": "HTTP/1.1 200",
+  "auth_header_present_in_ZAP_request": true,
+  "message_id": "1"
+}

@@ -1,0 +1,26 @@
+{
+  "event_id": 15,
+  "utc": "2026-11-26T04:42:34.125440+00:00",
+  "completed_utc": "2026-11-26T04:42:34.158347+00:00",
+  "case_hint": "T616-AUTH-06",
+  "method": "GET",
+  "path": "/api/v1/auth/me",
+  "authenticated": true,
+  "http_status": 401,
+  "headers": {
+    "Content-Type": "application/json;charset=UTF-8",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "2f6aeb73689a3e3776a8c9770c8796a70359a2c9d5faeba9a04aa5392c458565",
+  "body": {
+    "success": false,
+    "message": "Bạn chưa đăng nhập hoặc token không hợp lệ",
+    "error": {
+      "code": "UNAUTHORIZED",
+      "message": "Bạn chưa đăng nhập hoặc token không hợp lệ"
+    },
+    "timestamp": "2026-11-26T04:42:34.155965608"
+  }
+}

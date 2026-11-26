@@ -1,0 +1,14 @@
+{
+  "task": "T6-16",
+  "baseline": "35c573d20d4244985e617e8a056f880faaadf1db",
+  "created_utc": "2026-11-26T04:21:00.778658+00:00",
+  "project": "p01-t616-before",
+  "target": "https://127.0.0.1:28443",
+  "zap_api": "http://127.0.0.1:28090",
+  "waf": "Absent; baseline nginx:1.27-alpine",
+  "runner": "Official ZAP Docker container on personal Ubuntu; not Kali VM",
+  "source_compose_sha256": "93651c8a4c63fd9d3f4ae7982ae2f9e86669a3b7b586d224021f8eea213949f7",
+  "openapi_sha256": "a979e5957e7916fd46d1dc1ac2663d5409f18d9454203849ef84a259b8e366bd",
+  "source_modified": false,
+  "note": "Deployment-only overrides: isolated names/images/volumes, loopback port, resource limits, separate generated TLS/secrets."
+}

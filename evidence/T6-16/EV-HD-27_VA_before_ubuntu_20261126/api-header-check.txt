@@ -1,0 +1,19 @@
+HTTP/1.1 401 
+Server: nginx
+Date: Thu, 26 Nov 2026 05:01:57 GMT
+Content-Type: application/json;charset=UTF-8
+Content-Length: 231
+Connection: keep-alive
+X-Correlation-Id: 6c609d87aae0f53f6c36fc00b711c9c6
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+Strict-Transport-Security: max-age=31536000
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: strict-origin-when-cross-origin
+Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+

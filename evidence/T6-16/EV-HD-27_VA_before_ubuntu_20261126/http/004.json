@@ -1,0 +1,32 @@
+{
+  "event_id": 4,
+  "utc": "2026-11-26T04:42:16.455546+00:00",
+  "completed_utc": "2026-11-26T04:42:16.565158+00:00",
+  "case_hint": "",
+  "method": "GET",
+  "path": "/api/v1/auth/me",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "a002f32a7e99d9788db7ad6d868b8df693e145efd7999b6825487c45f6a14381",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "id": 3,
+      "username": "[SEED IDENTITY]",
+      "email": "[SEED IDENTITY]",
+      "fullName": "[SEED IDENTITY]",
+      "role": "IT_STAFF",
+      "department": "IT",
+      "isActive": true,
+      "mustChangePassword": "[REDACTED]"
+    },
+    "timestamp": "2026-11-26T04:42:16.554693629"
+  }
+}

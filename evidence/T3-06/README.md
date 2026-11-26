@@ -92,7 +92,7 @@ Theo `test_giao_dien.md`. Backend `cuong/be` sau commit `05cc318` + sửa cột 
 | EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E3_employee_khong_con_danh_muc.png | E3 | Employee không còn thấy danh mục đã tắt |
 | EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E5_sla_bang_0.png | E5 | SLA = 0 → "Hạn xử lý phải lớn hơn 0." |
 | EV-HD-02 | ui/E_Admin/2026-11-04/EV-HD-02_ui_E5_sla_am.png | E5 | SLA = -1 → bị chặn |
-| EV-HD-05 | ui/E_Admin/2026-11-04/EV-HD-05_ui_E6_admin_tong_quan_khong_co_menu_ticket.png | E6 | Menu Admin không có trang ticket chỉ đọc (lỗi FE) |
+| EV-HD-05 | ui/E_Admin/2026-11-04/EV-HD-05_ui_E6_admin_tong_quan_khong_co_menu_ticket.png | E6 | Menu Admin không có trang ticket chỉ đọc (lỗi FE lúc 04/11; bản hiện tại đã có menu Ticket chỉ đọc, `src/frontend/src/config/nav.js`; ảnh mới sẽ chụp lại khi test giao diện tuần 5) |
 
 ## Audit log JSONL (05/11/2026)
 

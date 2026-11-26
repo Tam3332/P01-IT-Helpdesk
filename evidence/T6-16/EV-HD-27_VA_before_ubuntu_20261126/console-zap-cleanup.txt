@@ -1,0 +1,20 @@
+[2J[HP01 T6-16 | REAL UBUNTU PERSONAL LAB EVIDENCE
+2026-11-26T05:07:48.455149+00:00
+Before 35c573d | https://127.0.0.1:28443 | WAF absent
+Read-only summary of saved runtime evidence; ZAP Docker, not Kali
+----------------------------------------------------------------------------
+baseline-anon messages=8 HTML+JSON+context exported
+api-employee messages=77 HTML+JSON+context exported
+  role verified: EMPLOYEE -> EMPLOYEE scope OK
+api-it-staff messages=76 HTML+JSON+context exported
+  role verified: IT_STAFF -> IT_STAFF scope OK
+api-it-manager messages=76 HTML+JSON+context exported
+  role verified: IT_MANAGER -> IT_MANAGER scope OK
+api-admin messages=76 HTML+JSON+context exported
+  role verified: ADMIN -> ADMIN scope OK
+Seed restored: True tickets: 0
+Original containers preserved: True
+ZAP stopped: True worker stop marker: True
+Sanitized export: PASS
+Limits: GET OpenAPI subset; bounded SQL rule40018; no AJAX flow.
+----------------------------------------------------------------------------

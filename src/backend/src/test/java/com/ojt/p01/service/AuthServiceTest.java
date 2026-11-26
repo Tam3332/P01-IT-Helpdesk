@@ -17,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("AuthServiceTest - Kiểm thử chức năng Đổi mật khẩu")
 class AuthServiceTest {
 
@@ -93,8 +96,31 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.changePassword(request));
 
         assertEquals("$2b$12$NewPasswordHashDemo", testUser.getPasswordHash());
+        assertNotNull(testUser.getPasswordChangedAt());
         verify(userRepository).save(testUser);
         verify(auditLogger).log(eq("PASSWORD_CHANGED"), eq(10L), eq("EMPLOYEE"), eq("USER"), eq("10"), eq("CHANGE_PASSWORD"), eq("SUCCESS"), eq(200));
+    }
+
+    @Test
+    @DisplayName("Đổi mật khẩu thất bại: vượt quá giới hạn 3 lần/ngày -> ném PASSWORD_CHANGE_LIMIT_EXCEEDED (429)")
+    void changePassword_rateLimitExceeded_throws429() {
+        ChangePasswordRequest request = new ChangePasswordRequest("OldPass@123", "NewPass@456");
+
+        when(userRepository.findByUsername("test.employee")).thenReturn(Optional.of(testUser));
+        when(passwordEncoder.matches(eq("OldPass@123"), any())).thenReturn(true);
+        when(passwordEncoder.matches(eq("NewPass@456"), any())).thenReturn(false);
+        when(passwordEncoder.encode("NewPass@456")).thenReturn("$2b$12$NewPasswordHashDemo");
+
+        // Đổi 3 lần thành công
+        authService.changePassword(request);
+        authService.changePassword(request);
+        authService.changePassword(request);
+
+        // Lần thứ 4 -> ném 429
+        AppException ex = assertThrows(AppException.class, () -> authService.changePassword(request));
+        assertEquals(ErrorCode.PASSWORD_CHANGE_LIMIT_EXCEEDED, ex.getErrorCode());
+        assertEquals(429, ex.getErrorCode().getHttpStatus().value());
+        verify(auditLogger).log(eq("PASSWORD_CHANGE_LIMIT_EXCEEDED"), eq(10L), eq("EMPLOYEE"), eq("USER"), eq("10"), eq("CHANGE_PASSWORD"), eq("FAILURE"), eq(429));
     }
 
     @Test

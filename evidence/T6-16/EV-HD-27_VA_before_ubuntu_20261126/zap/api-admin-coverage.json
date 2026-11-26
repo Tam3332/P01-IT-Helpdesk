@@ -1,0 +1,458 @@
+[
+  {
+    "id": "1",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/auth/me HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "2",
+    "request_line": "GET https://127.0.0.1:28443 HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "3",
+    "request_line": "GET https://127.0.0.1:28443/api HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "4",
+    "request_line": "GET https://127.0.0.1:28443/api/v1 HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "5",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/auth HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "6",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/auth/me HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "7",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?status=NEW&priority=LOW&categoryId=10&search=ZAP&assigneeId=10&createdFrom=createdFrom&createdTo=createdTo&sort=createdAt,desc&page=0&size=20 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "8",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/priorities HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "9",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "10",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/statuses HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "11",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/id HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "12",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/reopen-requests?status=PENDING HTTP/1.1",
+    "response_status": "HTTP/1.1 403",
+    "auth_header_present": true
+  },
+  {
+    "id": "13",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/comments HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "14",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10 HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "15",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/attachments HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "16",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/attachments/10 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "17",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/attachments HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "18",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/feedback HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "19",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/categories HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "20",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/categories HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "21",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "22",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/categories/10 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "23",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/categories HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "24",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/sla-configs HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "25",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/sla-configs/LOW HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "26",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/sla-configs HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "27",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/users?page=0&size=20 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "28",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/audit-logs?page=0&size=20&search=ZAP&result=ok HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "29",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/notifications?limit=15 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "30",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/users/it-staff HTTP/1.1",
+    "response_status": "HTTP/1.1 403",
+    "auth_header_present": true
+  },
+  {
+    "id": "31",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/users HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "32",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/history HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "33",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/dashboard/stats HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "34",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/dashboard HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": true
+  },
+  {
+    "id": "35",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/dashboard/sla-monitor?breachedOnly=false HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "36",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/auth/me HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "37",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "38",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/8398860168080042400 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "39",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/8398860168080042400 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "40",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/63108107964232551 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "41",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/63108107964232551 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "42",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/categories/3539226803402259856 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "43",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/categories/3539226803402259856 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "44",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/sla-configs/7827758945761389834 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "45",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/admin/sla-configs/7827758945761389834 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "46",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/auth/3943057111267442441 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "47",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/auth/3943057111267442441 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "48",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/dashboard/444343776455922914 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "49",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/dashboard/444343776455922914 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "50",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/3965785207564744345 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "51",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/3965785207564744345 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "52",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/7474921086453474682 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "53",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/7474921086453474682 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "54",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/attachments/3651408703878770800 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "55",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets/10/attachments/3651408703878770800 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "56",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/users/936650699540390857 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "57",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/users/936650699540390857 HTTP/1.1",
+    "response_status": "HTTP/1.1 404",
+    "auth_header_present": true
+  },
+  {
+    "id": "58",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=%27&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "59",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0%27&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "60",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=%22&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "61",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0%22&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "62",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "63",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=2-2&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "64",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0%2F2&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "65",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "66",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "67",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=%27 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "68",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1%27 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "69",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=%22 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "70",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1%22 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "71",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "72",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=3-2 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "73",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=2%2F2 HTTP/1.1",
+    "response_status": "HTTP/1.1 400",
+    "auth_header_present": true
+  },
+  {
+    "id": "74",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "75",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/tickets?page=0&size=1 HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  },
+  {
+    "id": "76",
+    "request_line": "GET https://127.0.0.1:28443/api/v1/auth/me HTTP/1.1",
+    "response_status": "HTTP/1.1 200",
+    "auth_header_present": true
+  }
+]

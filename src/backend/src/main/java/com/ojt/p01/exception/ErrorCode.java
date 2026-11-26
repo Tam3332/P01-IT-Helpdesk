@@ -40,6 +40,7 @@ public enum ErrorCode {
     CANNOT_CHANGE_OWN_ROLE     ("CANNOT_CHANGE_OWN_ROLE", "Không thể thay đổi vai trò của chính bạn", HttpStatus.BAD_REQUEST),
     CANNOT_LOCK_OWN_ACCOUNT    ("CANNOT_LOCK_OWN_ACCOUNT", "Không thể khóa tài khoản của chính bạn", HttpStatus.BAD_REQUEST),
     TOO_MANY_LOGIN_ATTEMPTS    ("TOO_MANY_LOGIN_ATTEMPTS", "Bạn đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút", HttpStatus.TOO_MANY_REQUESTS), // 429: UC-01 2b
+    PASSWORD_CHANGE_LIMIT_EXCEEDED("PASSWORD_CHANGE_LIMIT_EXCEEDED", "Bạn đã đổi mật khẩu 3 lần trong ngày hôm nay. Nếu muốn đổi lại, vui lòng liên hệ Quản trị viên (Admin) để được hỗ trợ cấp lại.", HttpStatus.TOO_MANY_REQUESTS),
 
     // -------------------------------------------------------------------------
     // Ticket state machine

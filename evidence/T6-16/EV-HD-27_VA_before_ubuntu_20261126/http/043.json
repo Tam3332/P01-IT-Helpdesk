@@ -1,0 +1,22 @@
+{
+  "event_id": 43,
+  "utc": "2026-11-26T04:43:13.107747+00:00",
+  "completed_utc": "2026-11-26T04:43:13.995336+00:00",
+  "case_hint": "Restore isolated demo password",
+  "method": "POST",
+  "path": "/api/v1/auth/change-password",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "abeb48a1906b77f8d06a66718480e28b681985006e3b1bdf7077e56a15d92b14",
+  "body": {
+    "success": true,
+    "message": "Đổi mật khẩu thành công",
+    "timestamp": "2026-11-26T04:43:13.980242255"
+  }
+}

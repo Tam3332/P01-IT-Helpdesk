@@ -1,0 +1,32 @@
+{
+  "event_id": 14,
+  "utc": "2026-11-26T04:42:33.104201+00:00",
+  "completed_utc": "2026-11-26T04:42:33.221191+00:00",
+  "case_hint": "Expiry fixture control",
+  "method": "GET",
+  "path": "/api/v1/auth/me",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "034d05e0c78e432e1f112cbcfd2dc7b2b65dad7597d0cce177f1c7f26d7000ab",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "id": 1,
+      "username": "[SEED IDENTITY]",
+      "email": "[SEED IDENTITY]",
+      "fullName": "[SEED IDENTITY]",
+      "role": "EMPLOYEE",
+      "department": "Kế toán",
+      "isActive": true,
+      "mustChangePassword": "[REDACTED]"
+    },
+    "timestamp": "2026-11-26T04:42:33.216432622"
+  }
+}
