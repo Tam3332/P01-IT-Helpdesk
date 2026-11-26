@@ -1,13 +1,165 @@
-# T6 16 VA Before hoàn thành kiểm thử
+# T6-16 · VA Before
 
-Nguyễn Trọng Khiêm · SE192700 · 26/11/2026 · Khiêm đã duyệt xuất bản
+## ZAP
 
-Đã hoàn tất lượt Before trên v0.5-mvp 35c573d20d4244985e617e8a056f880faaadf1db ở lab Ubuntu cá nhân, WAF absent. Kết quả20 dòng HTTP:19PASS,1FAIL tái hiện BUG-HD-008; bốn role có dữ liệu ticket thật. Đã xuất Baseline và API cho4role, mỗi lượt có HTML/JSON/context, role-check và coverage. Hai nhóm alertMedium mới là BUG-HD-009/010; HSTS trùng là BUG-HD-011Low; không có findingHigh trong lượt này. Mã009–011 được ghi vào Defect Log sau khi Khiêm duyệt gói xuất bản; mức độ/owner và retest vẫn theo triage. Hoàn tất đánh giá Before không có nghĩa mọi testPASS hoặc hệ thống đã được security sign-off.
+### ZAP Baseline
 
-Đọc VA_Register.md, Test_Cases.csv, ZAP_Triage.md/CSV, Defect_Log.md, Coverage.md và Handoff.md. Gói raw được giữ riêng trên VM, bản nộp đã sanitize. Lỗi của detector/status parser và lần thử đầu được giữ trong log, không che giấu hoặc tínhPASS. Hồ sơ static38checks được giữ riêng, không thay cho runtimeevidence.
+![ZAP Baseline](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_03_ZAP_Baseline.jpg)
 
-Khiêm đã duyệt gói và yêu cầu “up đi thầy” ngày 26/11/2026. Xuất bản qua PR #39; trạng thái Done trên sheet chỉ cập nhật sau khi evidence đã publish và PR đã gộp. Bàn giao qua repo không có nghĩa Khánh đã xác nhận tiếp nhận hoặc AFTER đã hoàn tất.
+### CSP
 
-## Bổ sung ảnh chi tiết ngày 26/11/2026
+![CSP](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_04_ZAP_CSP.jpg)
 
-Đã bổ sung 37 ảnh report ZAP, chi tiết từng dòng HTTP và kiểm tra bốn role. Xem [Screenshot_Index.md](EV-HD-27_VA_before_ubuntu_20261126/Screenshot_Index.md) hoặc [gallery](EV-HD-27_VA_before_ubuntu_20261126/Screenshot_Gallery.html). Test_Cases.csv liên kết ảnh tương ứng từng dòng. Ảnh HTTP là ảnh xem lại JSON đã sanitize; kết quả kiểm thử không thay đổi. Gói đã được Khiêm duyệt xuất bản ngày 26/11/2026.
+### SRI
+
+![SRI](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_05_ZAP_SRI.jpg)
+
+### HSTS
+
+![HSTS](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_06_ZAP_HSTS.jpg)
+
+### ZAP API · ADMIN
+
+![ZAP API · ADMIN](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_ZAP_ADMIN.jpg)
+
+### ZAP API · EMPLOYEE
+
+![ZAP API · EMPLOYEE](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_ZAP_EMPLOYEE.jpg)
+
+### ZAP API · IT_MANAGER
+
+![ZAP API · IT_MANAGER](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_ZAP_IT_MANAGER.jpg)
+
+### ZAP API · IT_STAFF
+
+![ZAP API · IT_STAFF](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_ZAP_IT_STAFF.jpg)
+
+## Vai trò
+
+### Role ADMIN
+
+![Role ADMIN](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_Role_admin.jpg)
+
+### Role EMPLOYEE
+
+![Role EMPLOYEE](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_Role_employee.jpg)
+
+### Role IT_MANAGER
+
+![Role IT_MANAGER](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_Role_it-manager.jpg)
+
+### Role IT_STAFF
+
+![Role IT_STAFF](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_Role_it-staff.jpg)
+
+## HTTP
+
+### T616-API-01 · ADMIN
+
+![T616-API-01 · ADMIN](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-admin.jpg)
+
+### T616-API-01 · ADMIN · chi tiết
+
+![T616-API-01 · ADMIN · chi tiết](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-admin_detail.jpg)
+
+### T616-API-01 · EMPLOYEE
+
+![T616-API-01 · EMPLOYEE](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-employee.jpg)
+
+### T616-API-01 · EMPLOYEE · chi tiết
+
+![T616-API-01 · EMPLOYEE · chi tiết](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-employee_detail.jpg)
+
+### T616-API-01 · IT_MANAGER
+
+![T616-API-01 · IT_MANAGER](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-it-manager.jpg)
+
+### T616-API-01 · IT_MANAGER · chi tiết
+
+![T616-API-01 · IT_MANAGER · chi tiết](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-it-manager_detail.jpg)
+
+### T616-API-01 · IT_STAFF
+
+![T616-API-01 · IT_STAFF](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-it-staff.jpg)
+
+### T616-API-01 · IT_STAFF · chi tiết
+
+![T616-API-01 · IT_STAFF · chi tiết](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-01-it-staff_detail.jpg)
+
+### T616-API-02 · ADMIN
+
+![T616-API-02 · ADMIN](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-02-admin.jpg)
+
+### T616-API-03 · EMPLOYEE
+
+![T616-API-03 · EMPLOYEE](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-03-employee.jpg)
+
+### T616-API-04 · EMPLOYEE
+
+![T616-API-04 · EMPLOYEE](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-04-employee.jpg)
+
+### T616-API-04 · EMPLOYEE · chi tiết
+
+![T616-API-04 · EMPLOYEE · chi tiết](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-04-employee_detail.jpg)
+
+### T616-API-05
+
+![T616-API-05](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-API-05.jpg)
+
+### T616-AUTH-01
+
+![T616-AUTH-01](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-01.jpg)
+
+### T616-AUTH-02
+
+![T616-AUTH-02](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-02.jpg)
+
+### T616-AUTH-03
+
+![T616-AUTH-03](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-03.jpg)
+
+### T616-AUTH-04
+
+![T616-AUTH-04](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-04.jpg)
+
+### T616-AUTH-05
+
+![T616-AUTH-05](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-05.jpg)
+
+### T616-AUTH-06
+
+![T616-AUTH-06](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-06.jpg)
+
+### T616-AUTH-07
+
+![T616-AUTH-07](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-07.jpg)
+
+### T616-AUTH-08
+
+![T616-AUTH-08](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-08.jpg)
+
+### T616-AUTH-09 · EMPLOYEE
+
+![T616-AUTH-09 · EMPLOYEE](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-AUTH-09-employee.jpg)
+
+### T616-EDGE-01
+
+![T616-EDGE-01](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-EDGE-01.jpg)
+
+### T616-EDGE-02
+
+![T616-EDGE-02](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-EDGE-02.jpg)
+
+### T616-EDGE-03
+
+![T616-EDGE-03](EV-HD-27_VA_before_ubuntu_20261126/screenshots/detail/EV-HD-27_VA_before_T616-EDGE-03.jpg)
+
+## Ubuntu
+
+### Kết quả HTTP
+
+![Kết quả HTTP](EV-HD-27_VA_before_ubuntu_20261126/screenshots/EV-HD-27_VA_before_01_HTTP.png)
+
+### ZAP và cleanup
+
+![ZAP và cleanup](EV-HD-27_VA_before_ubuntu_20261126/screenshots/EV-HD-27_VA_before_02_ZAP_cleanup.png)
