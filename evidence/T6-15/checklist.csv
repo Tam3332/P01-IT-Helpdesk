@@ -1,0 +1,16 @@
+ID,Chế độ,Kiểm tra,Expected,Owner,Build,Actual,EV,Trạng thái
+WAF-01,DetectionOnly,Startup module/rules/nginx -t,Parse thành công,Nhi/Chính,,,,NOT RUN
+WAF-02,DetectionOnly,Giữ project volumes network port,Chỉ thay gateway; dữ liệu giữ nguyên,Chính,,,,NOT RUN
+WAF-03,DetectionOnly,TLS headers rate limit và API docs,Tương đương control gateway trước,Nhi/Chính,,,,NOT RUN
+WAF-04,DetectionOnly,P1 hợp lệ,Không chặn nhầm,Trí/Chính/Khánh,,,,NOT RUN
+WAF-05,DetectionOnly,P3 approve hợp lệ,Không chặn nhầm,Trí/Chính/Khánh,,,,NOT RUN
+WAF-06,DetectionOnly,P3 reject hợp lệ,Không chặn nhầm,Trí/Chính/Khánh,,,,NOT RUN
+WAF-07,DetectionOnly,Upload gần10MB/JSON/ký tự hợp lệ,Đúng giới hạn ứng dụng không falsepositive,Khánh/Nhi,,,,NOT RUN
+WAF-08,Cả hai,Audit privacy và correlation,Không header/bodysecret; đủ trace tối thiểu,Nhi/Hoà,,,,NOT RUN
+WAF-09,On sau duyệt,Ca chặn WAF đã duyệt,HTTP403 có audit interrupted đúng lớp,Khánh,,,,NOT RUN
+WAF-10,On sau duyệt,UI khi nhận WAF403,Thông báo thân thiện không rawserver/rule/stack,Chính,,,,NOT RUN
+WAF-11,Cả hai,403 RBAC từ Backend,Mã/body backend không bị gán thành WAF,Khánh/Chính,,,,NOT RUN
+WAF-12,On sau duyệt,Luồng hợp lệ regression,Không chặn nhầm P1/P3/upload/API,Khánh/SE,,,,NOT RUN
+WAF-13,On sau duyệt,Audit WAF sang MonitoringR3,Alert đủ schema/correlation đúng lượt,Hoà,,,,NOT RUN
+WAF-14,Cả hai,CPU RAM và rollback,Đo VM nhóm và có phương án phục hồi gateway,Chính/Nhi,,,,NOT RUN
+WAF-15,Trước On,Chốt PL1 và anomaly5/4,Reviewer/ngày/scope/lịch được ghi nhận,Nhi/Khánh,,,,Chờ xác nhận

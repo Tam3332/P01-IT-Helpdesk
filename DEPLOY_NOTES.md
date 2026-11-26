@@ -1,5 +1,9 @@
 # Triển khai P01 bằng Docker Compose (VM Ubuntu lab)
 
+## Bàn giao WAF T6 15 ngày 26 tháng 11 năm 2026
+
+Phần WAF đã có trên main qua PR #38; follow-up chuẩn bị cho Nhi review và Chính deploy theo [hướng dẫn riêng](evidence/T6-15/DEPLOY_CHINH.md). Dùng đúng SHA đã review trên project/volumes hiện hành, DetectionOnly trước rồi On sau nghiệm thu. Gateway image WAF nghe 8443 trong container; host port vẫn theo HTTPS_PORT. TLS cần bản sao đọc được bởi user image, không dùng key root0600 trực tiếp hoặc sửa key gốc. Chỉ recreate nginx bằng `up -d --no-deps --no-build --pull never nginx`; giữ các container ứng dụng. Các phần tuần4/5 bên dưới là lịch sử triển khai cũ. Với lượt WAF không chạy `down -v` hoặc thay DB để xử lý lỗi gateway. Chưa có kết quả deploy VM nhóm cho follow-up này.
+
 ## Thành phần
 | Dịch vụ | Container | Ghi chú |
 |---|---|---|

@@ -112,13 +112,15 @@ services:
       - "${HTTPS_PORT:-443}:8443"
     volumes:
       - ./nginx/nginx-waf.conf:/etc/nginx/templates/nginx.conf.template:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ${WAF_TLS_DIR:-./nginx/ssl}:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
       - waf_audit_logs:/var/log/modsecurity/audit
     environment:
       MODSEC_RULE_ENGINE: "${WAF_RULE_ENGINE:-DetectionOnly}"
       BLOCKING_PARANOIA: "1"
       DETECTION_PARANOIA: "1"
+      ANOMALY_INBOUND: "${WAF_ANOMALY_INBOUND:-5}"
+      ANOMALY_OUTBOUND: "${WAF_ANOMALY_OUTBOUND:-4}"
       # Phương thức REST dùng để phân công, đổi trạng thái và quản lý danh mục.
       ALLOWED_METHODS: "GET HEAD POST OPTIONS PUT PATCH DELETE"
       MODSEC_AUDIT_ENGINE: "RelevantOnly"

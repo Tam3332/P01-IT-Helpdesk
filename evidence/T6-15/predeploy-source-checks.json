@@ -1,0 +1,155 @@
+{
+  "base_sha": "c61ccb2124a8e77529db815a21e72d00d2380cda",
+  "scope": "Static source/contract checks; no Docker runtime or group deployment",
+  "checks": [
+    {
+      "check": "postgres Compose unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "backend Compose unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "frontend Compose unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Volumes and networks unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway image unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway ports unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway networks unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway container_name unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway depends_on unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway restart unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Only threshold env additions",
+      "status": "PASS"
+    },
+    {
+      "check": "TLS source is optional variable with old default",
+      "status": "PASS"
+    },
+    {
+      "check": "Other gateway mounts unchanged",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: ssl_protocols       TLSv1.2 TLSv1.3;",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: client_max_body_size 11m;",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: rate=10r/m;",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: rate=20r/s;",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: proxy_intercept_errors off;",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: modsecurity_transaction_id \"$request_id\";",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: add_header X-Request-Id \"$request_id\" always;",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: GATEWAY_FORBIDDEN",
+      "status": "PASS"
+    },
+    {
+      "check": "Gateway control: actuator",
+      "status": "PASS"
+    },
+    {
+      "check": "Metadata log omits raw query/header/body/UA",
+      "status": "PASS"
+    },
+    {
+      "check": "WAF403 handler does not proxy",
+      "status": "PASS"
+    },
+    {
+      "check": "Mode defaults DetectionOnly and anomaly5/4",
+      "status": "PASS"
+    },
+    {
+      "check": "15 cases retain no invented Actual",
+      "status": "PASS"
+    },
+    {
+      "check": "VM cases remain not run/pending",
+      "status": "PASS"
+    },
+    {
+      "check": "No approved exclusion invented",
+      "status": "PASS"
+    },
+    {
+      "check": "02_SecRS_Threat_Model.docx preserves VA Before paragraphs",
+      "status": "PASS"
+    },
+    {
+      "check": "02_SecRS_Threat_Model.docx has pending WAF handoff",
+      "status": "PASS"
+    },
+    {
+      "check": "03_System_Security_Design.docx preserves VA Before paragraphs",
+      "status": "PASS"
+    },
+    {
+      "check": "03_System_Security_Design.docx has pending WAF handoff",
+      "status": "PASS"
+    },
+    {
+      "check": "04_Test_Plan_Cases_Evidence.docx preserves VA Before paragraphs",
+      "status": "PASS"
+    },
+    {
+      "check": "04_Test_Plan_Cases_Evidence.docx has pending WAF handoff",
+      "status": "PASS"
+    },
+    {
+      "check": "Existing defect identifiers preserved",
+      "status": "PASS"
+    },
+    {
+      "check": "No backend/frontend application edits",
+      "status": "PASS"
+    },
+    {
+      "check": "Diff whitespace valid",
+      "status": "PASS"
+    }
+  ],
+  "status": "PASS"
+}
