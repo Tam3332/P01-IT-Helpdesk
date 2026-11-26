@@ -1,0 +1,6 @@
+{
+  "utc": "2026-11-26T04:46:51.230846+00:00",
+  "first_attempt_preserved": "http-results-attempt1.json",
+  "API-01": "Initial detector incorrectly matched contract boolean mustChangePassword. Corrected against UserResponse.java and reran all four roles. Empty ticket list: role data scoping is not proven by this case.",
+  "API-05": "Initial authenticated DB-down request returned401 because blacklist lookup occurs in auth filter. Public login reaches service/global500 handler. Both raw events preserved."
+}

@@ -1,0 +1,19 @@
+P01 T6-15 / T6-16 - KIEM TRA TINH TREN UBUNTU
+Nhom kiem tra: source / YAML / contracts / patch, khong HTTP hay ZAP
+2026-11-26T03:40:38+00:00
+Linux 6.8.0-149-generic x86_64 GNU/Linux
+User: khiem
+Git: git version 2.43.0
+Python: Python 3.12.3
+Thu muc: /home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu
+
+{"execution_os": "Linux", "observed_time_utc": "2026-11-26T03:40:38.576174+00:00", "checks": 38, "status": "STATIC_PASS", "runtime": "NOT_RUN", "zip": "/home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu/P01_T6-15_T6-16_gui_Khiem_kiem_tra_2026-11-26.zip", "zip_files": 25, "sha256": "e31aab1dae89c411b7abd33f7ce97def354e935d8f9fb2b05f1270caa361d70c"}
+
+KET QUA THUC TE
+OS: Linux
+UTC: 2026-11-26T03:40:38.576174+00:00
+STATIC: 38 / 38 PASS
+Main doi chieu: 38a5a29400feeb4ba164b85448e920e140a19a5b
+Before bat bien: 35c573d20d4244985e617e8a056f880faaadf1db
+RUNTIME: NOT_RUN
+Khong quet ZAP/HTTP; khong deploy VM nhom; khong doi du lieu week4.

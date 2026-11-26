@@ -1,0 +1,26 @@
+{
+  "event_id": 26,
+  "utc": "2026-11-26T04:42:55.704607+00:00",
+  "completed_utc": "2026-11-26T04:42:55.824741+00:00",
+  "case_hint": "T616-API-01",
+  "method": "GET",
+  "path": "/api/v1/admin/users",
+  "authenticated": true,
+  "http_status": 403,
+  "headers": {
+    "Content-Type": "application/json;charset=UTF-8",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "90ce3ae0d6657b1ef77972ddde883824eed350622b5c3b9ba57d87be6bdec40e",
+  "body": {
+    "success": false,
+    "message": "Bạn không có quyền thực hiện hành động này",
+    "error": {
+      "code": "FORBIDDEN",
+      "message": "Bạn không có quyền thực hiện hành động này"
+    },
+    "timestamp": "2026-11-26T04:42:55.815280763"
+  }
+}

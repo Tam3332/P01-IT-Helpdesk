@@ -1,0 +1,18 @@
+{
+  "event_id": 38,
+  "utc": "2026-11-26T04:43:08.106017+00:00",
+  "completed_utc": "2026-11-26T04:43:08.123934+00:00",
+  "case_hint": "T616-EDGE-02",
+  "method": "GET",
+  "path": "/v3/api-docs",
+  "authenticated": false,
+  "http_status": 404,
+  "headers": {
+    "Content-Type": "text/html",
+    "Strict-Transport-Security": "max-age=31536000",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "55f7d9e99b8e2d4e0e193b2f0275501e6d9c1ebd29cadbea6a0da48a8587e3e0",
+  "body": "<html>\r\n<head><title>404 Not Found</title></head>\r\n<body>\r\n<center><h1>404 Not Found</h1></center>\r\n<hr><center>nginx</center>\r\n</body>\r\n</html>\r\n"
+}

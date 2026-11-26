@@ -1,0 +1,24 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>T616-AUTH-09-employee · Saved T6-16 evidence</title><style>
+    *{box-sizing:border-box}body{font:15px/1.4 Arial,sans-serif;margin:0;color:#14202b;background:#f4f6f8}main{max-width:1420px;margin:0 auto;padding:20px 26px}h1{font-size:27px;margin:6px 0}h2{font-size:17px;margin:8px 0}p{margin:6px 0}.note{background:#fff4d8;border-left:4px solid #b88100;padding:8px 12px;font-size:13px}.summary{background:white;padding:12px 16px;border:1px solid #cbd5df;margin:12px 0}.status{font-weight:bold;color:#9d1c1c}.meta{font:12px/1.4 monospace;color:#415164}section{border:1px solid #cbd5df;background:white;padding:10px 14px;margin:10px 0}.event{display:flex;justify-content:space-between;gap:16px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.3 Consolas,monospace;margin:8px 0 0}table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;border:1px solid #cad2dc;padding:5px}a{color:#075ca3}.role{font-weight:bold}footer{font-size:12px;color:#465769;margin:14px 0}</style></head><body><main>
+    <div class="meta">P01 · T6-16 · BASELINE 35c573d · Ubuntu cá nhân · WAF absent</div><h1>T616-AUTH-09 <span class="status">FAIL</span></h1><div class="role">Role: EMPLOYEE · BUG: BUG-HD-008</div>
+    <p class="note">Ảnh xem lại evidence đã lưu sau khi kiểm thử. Trang này đọc JSON đã sanitize; không phải Postman/ZAP GUI và không thực hiện lại request. authenticated=true chỉ ghi có gửi token.</p>
+    <div class="summary"><h2>Existing BUG-HD-008 old session after password change</h2><p><strong>Expected:</strong> change200; old token401</p><p><strong>Actual:</strong> change=200 old_token=200</p></div>
+    <section><div class="event"><strong>POST /api/v1/auth/change-password</strong><b>HTTP 200</b></div><p class="meta">2026-11-26T04:43:10.105801+00:00 · <a href="../http/040.json">http/040.json</a> · authenticated=true</p><pre>{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;Đổi mật khẩu thành công&quot;,
+  &quot;timestamp&quot;: &quot;2026-11-26T04:43:11.18384909&quot;
+}</pre></section><section><div class="event"><strong>GET /api/v1/auth/me</strong><b>HTTP 200</b></div><p class="meta">2026-11-26T04:43:11.260590+00:00 · <a href="../http/041.json">http/041.json</a> · authenticated=true</p><pre>{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;Success&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: 1,
+    &quot;username&quot;: &quot;[SEED IDENTITY]&quot;,
+    &quot;email&quot;: &quot;[SEED IDENTITY]&quot;,
+    &quot;fullName&quot;: &quot;[SEED IDENTITY]&quot;,
+    &quot;role&quot;: &quot;EMPLOYEE&quot;,
+    &quot;department&quot;: &quot;Kế toán&quot;,
+    &quot;isActive&quot;: true,
+    &quot;mustChangePassword&quot;: &quot;[REDACTED]&quot;
+  },
+  &quot;timestamp&quot;: &quot;2026-11-26T04:43:12.109024534&quot;
+}</pre></section><h2>Tất cả file phản hồi của ca này</h2><table><tr><th>Source</th><th>Method</th><th>Path</th><th>HTTP</th></tr><tr><td>http/040.json</td><td>POST</td><td>/api/v1/auth/change-password</td><td>200</td></tr><tr><td>http/041.json</td><td>GET</td><td>/api/v1/auth/me</td><td>200</td></tr></table><footer>Thời điểm UTC trong mỗi response là thời điểm kiểm thử gốc. Thời điểm chụp mới và SHA256 nguồn được ghi trong capture-manifest-detail.json. Mở JSON gốc để đối chiếu đầy đủ body/header/hash.</footer></main></body></html>

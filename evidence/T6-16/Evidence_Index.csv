@@ -1,0 +1,12 @@
+Artifact_ID,Status,Evidence,Owner
+DEPLOY-BEFORE,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/setup-manifest.json; EV-HD-27_VA_before_ubuntu_20261126/logs/07-app-images.log,Khiêm
+ZAP-BASELINE,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/zap/baseline-anon.html; EV-HD-27_VA_before_ubuntu_20261126/zap/baseline-anon.json,Khiêm
+ZAP-API,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/zap/api-*-manifest.json; Run_Summary.csv,Khiêm
+ZAP-CONTEXT,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/zap/api-*.context; automation/README.md; role-check JSON,Khiêm; Khánh dùng cho T6-02
+AUTHN-JWT,COMPLETE WITH BUG-HD-008,Test_Cases.csv; EV-HD-27_VA_before_ubuntu_20261126/http/*.json,Khiêm
+API-RESULTS,COMPLETE IN DECLARED SCOPE,Test_Cases.csv; EV-HD-27_VA_before_ubuntu_20261126/fixture-manifest.json,Khiêm
+TRIAGE,COMPLETE,ZAP_Triage.csv; Defect_Log.csv,Khiêm
+SEED-RESTORE,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/cleanup-manifest.json,Khiêm; isolated personal project only
+AFTER-HANDOFF,ARTIFACT READY; ACKNOWLEDGEMENT NOT CLAIMED,Handoff.md; Coverage.md,Khánh
+CONSOLE-SCREENSHOTS,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/screenshots/README.md,Khiêm
+DETAIL-SCREENSHOTS,COMPLETE,EV-HD-27_VA_before_ubuntu_20261126/Screenshot_Index.md; EV-HD-27_VA_before_ubuntu_20261126/Screenshot_Gallery.html; EV-HD-27_VA_before_ubuntu_20261126/capture-manifest-detail.json,Khiêm

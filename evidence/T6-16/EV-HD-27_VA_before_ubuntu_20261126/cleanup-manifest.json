@@ -1,0 +1,35 @@
+{
+  "utc": "2026-11-26T05:06:50.189720+00:00",
+  "project": "p01-t616-before",
+  "reset_seed": true,
+  "tickets_after_reset": 0,
+  "http_after_reset": 200,
+  "admin_login_after_reset": true,
+  "existing_project": "p01-it-helpdesk",
+  "original_containers_preserved": {
+    "p01-gateway": {
+      "id_before": "1fd4ecad7d74",
+      "id_after": "1fd4ecad7d74",
+      "state_after": "running"
+    },
+    "p01-backend": {
+      "id_before": "c9cfc7ab497e",
+      "id_after": "c9cfc7ab497e",
+      "state_after": "running"
+    },
+    "p01-frontend": {
+      "id_before": "ef7484869bd5",
+      "id_after": "ef7484869bd5",
+      "state_after": "running"
+    },
+    "p01-db": {
+      "id_before": "20a94a75b4a9",
+      "id_after": "20a94a75b4a9",
+      "state_after": "running"
+    }
+  },
+  "zap_container_stopped": true,
+  "scope": "Only disposable Before volumes reset; original project containers/volumes untouched",
+  "private_runtime_retained": "VM run folder private/ and zapraw/ mode0700; not exported",
+  "no_persistent_sudoers_or_service_added": true
+}

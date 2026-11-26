@@ -1,0 +1,37 @@
+{
+  "event_id": 5,
+  "utc": "2026-11-26T04:42:22.103321+00:00",
+  "completed_utc": "2026-11-26T04:42:24.148786+00:00",
+  "case_hint": "Role verification/login",
+  "method": "POST",
+  "path": "/api/v1/auth/login",
+  "authenticated": false,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "a39884b20695e47c25dd388fb8777452fe43bc093dcb760e9265db9a8bdbd359",
+  "body": {
+    "success": true,
+    "message": "Đăng nhập thành công",
+    "data": {
+      "accessToken": "[REDACTED]",
+      "tokenType": "[REDACTED]",
+      "expiresIn": 900,
+      "user": {
+        "id": 5,
+        "username": "[SEED IDENTITY]",
+        "email": "[SEED IDENTITY]",
+        "fullName": "[SEED IDENTITY]",
+        "role": "IT_MANAGER",
+        "department": "IT",
+        "isActive": true,
+        "mustChangePassword": "[REDACTED]"
+      }
+    },
+    "timestamp": "2026-11-26T04:42:24.110272249"
+  }
+}

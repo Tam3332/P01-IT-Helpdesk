@@ -1,0 +1,59 @@
+{
+  "event_id": 65,
+  "utc": "2026-11-26T04:48:03.436427+00:00",
+  "completed_utc": "2026-11-26T04:48:03.511906+00:00",
+  "case_hint": "Disposable data-scope fixture categories",
+  "method": "GET",
+  "path": "/api/v1/categories",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "65c7181a0401b6f4fa22c0362f663e2a575edd240d87062d4e2ed725c967cbd3",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": [
+      {
+        "id": 3,
+        "categoryCode": "NETWORK",
+        "categoryName": "Mạng nội bộ & VPN",
+        "description": "Mất kết nối WiFi văn phòng, chậm mạng, không vào được VPN",
+        "defaultPriority": "HIGH"
+      },
+      {
+        "id": 1,
+        "categoryCode": "HARDWARE",
+        "categoryName": "Sự cố Phần cứng (PC/Laptop/Màn hình/Máy in)",
+        "description": "Lỗi hỏng hóc thiết bị vật lý tại văn phòng",
+        "defaultPriority": "MEDIUM"
+      },
+      {
+        "id": 2,
+        "categoryCode": "SOFTWARE",
+        "categoryName": "Sự cố Phần mềm & Ứng dụng",
+        "description": "Lỗi cài đặt phần mềm chuyên môn, crash ứng dụng, bản quyền",
+        "defaultPriority": "MEDIUM"
+      },
+      {
+        "id": 4,
+        "categoryCode": "ACCOUNT",
+        "categoryName": "Tài khoản & Phân quyền",
+        "description": "Quên mật khẩu, khóa tài khoản AD, cấp quyền truy cập thư mục",
+        "defaultPriority": "HIGH"
+      },
+      {
+        "id": 5,
+        "categoryCode": "OTHER",
+        "categoryName": "Yêu cầu CNTT khác",
+        "description": "Các đề nghị tư vấn, mượn thiết bị hoặc hỗ trợ hội nghị",
+        "defaultPriority": "LOW"
+      }
+    ],
+    "timestamp": "2026-11-26T04:48:03.505202337"
+  }
+}

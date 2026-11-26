@@ -1,0 +1,26 @@
+{
+  "event_id": 77,
+  "utc": "2026-11-26T04:48:21.214044+00:00",
+  "completed_utc": "2026-11-26T04:48:25.147771+00:00",
+  "case_hint": "T616-API-01 detail boundary",
+  "method": "GET",
+  "path": "/api/v1/tickets/2",
+  "authenticated": true,
+  "http_status": 404,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "45131e626be9de420790ae39e6775d2373494baccb00d4d0996a7fc485619001",
+  "body": {
+    "success": false,
+    "message": "Không tìm thấy phiếu yêu cầu",
+    "error": {
+      "code": "TICKET_NOT_FOUND",
+      "message": "Không tìm thấy phiếu yêu cầu"
+    },
+    "timestamp": "2026-11-26T04:48:25.120818124"
+  }
+}

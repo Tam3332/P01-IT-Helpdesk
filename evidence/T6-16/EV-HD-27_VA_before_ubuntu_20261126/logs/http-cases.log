@@ -1,0 +1,22 @@
+T6-16 REAL HTTP CHECKS - PERSONAL BEFORE 35c573d20d4244985e617e8a056f880faaadf1db
+T616-AUTH-01  PASS HTTP 401
+T616-AUTH-02  PASS HTTP 401
+T616-AUTH-03  PASS HTTP 401
+T616-AUTH-04  PASS HTTP 401
+T616-AUTH-05  PASS HTTP 401
+T616-AUTH-06  PASS control=200 expired=401
+T616-AUTH-07  PASS logout=200 old=401
+T616-AUTH-08  PASS (401, 'INVALID_CREDENTIALS', 'Email hoặc mật khẩu không đúng') vs (401, 'INVALID_CREDENTIALS', 'Email hoặc mật khẩu không đúng')
+T616-API-01 EMPLOYEE FAIL me=200 tickets=200 admin-users=403 forbidden_keys=['mustChangePassword']
+T616-API-01 IT_STAFF FAIL me=200 tickets=200 admin-users=403 forbidden_keys=['mustChangePassword']
+T616-API-01 IT_MANAGER FAIL me=200 tickets=200 admin-users=403 forbidden_keys=['mustChangePassword']
+T616-API-01 ADMIN FAIL me=200 tickets=200 admin-users=200 forbidden_keys=['mustChangePassword']
+T616-API-02 ADMIN PASS HTTP=200 size=100 count=0
+T616-API-03 EMPLOYEE PASS HTTP 405
+T616-API-04 EMPLOYEE PASS GET=200 preflight=401 ACAO=[None, None]
+T616-EDGE-01  PASS HTTP=404 Content-Type=text/html SPA_fallback=False
+T616-EDGE-02  PASS HTTP=404 Content-Type=text/html SPA_fallback=False
+T616-EDGE-03  PASS HTTP=200 Content-Type=text/html SPA_fallback=True
+T616-AUTH-09 EMPLOYEE FAIL change=200 old_token=200
+T616-API-05 ADMIN FAIL HTTP=401 sensitive_error_text=False
+HTTP CASES COMPLETE {"rows": 20, "unique_cases": 17, "pass": 14, "fail": 6, "events": 46, "build": "35c573d20d4244985e617e8a056f880faaadf1db"}

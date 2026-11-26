@@ -1,0 +1,6 @@
+START 2026-11-26T04:41:58.857750+00:00
+COMMAND ["docker", "image", "inspect", "p01-t616-before-backend:35c573d", "p01-t616-before-frontend:35c573d", "--format", "{{.Id}} {{json .Config.Labels}}"]
+sha256:c3b2460219906cb997ed48f2465fa091e71c4c1ec96f15e565074c5603df428b {"com.docker.compose.project":"p01-t616-before","com.docker.compose.service":"backend","com.docker.compose.version":"2.40.3","description":"P01 Backend REST API - Spring Boot 3","maintainer":"P01 Team - SE & IA Group 2","org.opencontainers.image.revision":"35c573d20d4244985e617e8a056f880faaadf1db","p01.task":"T6-16-before"}
+sha256:582ed938943c9211f5e5ed3151bf1607a66efabfd9255fcb58be41bef35501c8 {"com.docker.compose.project":"p01-t616-before","com.docker.compose.service":"frontend","com.docker.compose.version":"2.40.3","maintainer":"NGINX Docker Maintainers <docker-maint@nginx.com>","org.opencontainers.image.revision":"35c573d20d4244985e617e8a056f880faaadf1db","p01.task":"T6-16-before"}
+
+END 2026-11-26T04:41:58.982232+00:00 RC=0

@@ -1,0 +1,100 @@
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>T616-API-01-admin · Saved T6-16 evidence</title><style>
+    *{box-sizing:border-box}body{font:15px/1.4 Arial,sans-serif;margin:0;color:#14202b;background:#f4f6f8}main{max-width:1420px;margin:0 auto;padding:20px 26px}h1{font-size:27px;margin:6px 0}h2{font-size:17px;margin:8px 0}p{margin:6px 0}.note{background:#fff4d8;border-left:4px solid #b88100;padding:8px 12px;font-size:13px}.summary{background:white;padding:12px 16px;border:1px solid #cbd5df;margin:12px 0}.status{font-weight:bold;color:#14552c}.meta{font:12px/1.4 monospace;color:#415164}section{border:1px solid #cbd5df;background:white;padding:10px 14px;margin:10px 0}.event{display:flex;justify-content:space-between;gap:16px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.3 Consolas,monospace;margin:8px 0 0}table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;border:1px solid #cad2dc;padding:5px}a{color:#075ca3}.role{font-weight:bold}footer{font-size:12px;color:#465769;margin:14px 0}</style></head><body><main>
+    <div class="meta">P01 · T6-16 · BASELINE 35c573d · Ubuntu cá nhân · WAF absent</div><h1>T616-API-01 <span class="status">PASS</span></h1><div class="role">Role: ADMIN · BUG: —</div>
+    <p class="note">Ảnh xem lại evidence đã lưu sau khi kiểm thử. Trang này đọc JSON đã sanitize; không phải Postman/ZAP GUI và không thực hiện lại request. authenticated=true chỉ ghi có gửi token.</p>
+    <div class="summary"><h2>Response DTO fields/admin boundary; mustChangePassword is documented boolean, not a secret</h2><p><strong>Expected:</strong> me/tickets200; admin-users200 ADMIN else403; no password/hash fields; two-owner/two-assignee fixtures: Employee/Staff see own assigned fixture, other404; Manager/Admin both200</p><p><strong>Actual:</strong> me=200 tickets=200 admin-users=200 forbidden_keys=[]; assigned fixtures visible=[1, 2] expected=[1, 2] detail=[200, 200] forbidden_detail_fields=[]</p></div>
+    <section><div class="event"><strong>GET /api/v1/tickets?page=0&amp;size=100</strong><b>HTTP 200</b></div><p class="meta">2026-11-26T04:48:31.104045+00:00 · <a href="../http/081.json">http/081.json</a> · authenticated=true</p><pre>{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;Success&quot;,
+  &quot;data&quot;: {
+    &quot;content&quot;: [
+      {
+        &quot;id&quot;: 2,
+        &quot;ticketNumber&quot;: &quot;HD-2026-0002&quot;,
+        &quot;title&quot;: &quot;T616 disposable scope fixture 2&quot;,
+        &quot;description&quot;: &quot;Personal isolated lab fixture. Reset seed after assessment.&quot;,
+        &quot;categoryName&quot;: &quot;Mạng nội bộ &amp; VPN&quot;,
+        &quot;impactLevel&quot;: &quot;LOW&quot;,
+        &quot;priority&quot;: &quot;LOW&quot;,
+        &quot;status&quot;: &quot;ASSIGNED&quot;,
+        &quot;requesterName&quot;: &quot;Lê Thị Cúc&quot;,
+        &quot;assigneeId&quot;: 4,
+        &quot;assigneeName&quot;: &quot;Hoàng Văn Nam&quot;,
+        &quot;responseDeadline&quot;: &quot;2026-11-26T06:48:14.143647Z&quot;,
+        &quot;resolutionDeadline&quot;: &quot;2026-11-28T04:48:14.143647Z&quot;,
+        &quot;isSlaBreached&quot;: false,
+        &quot;resolvedAt&quot;: null,
+        &quot;closedAt&quot;: null,
+        &quot;createdAt&quot;: &quot;2026-11-26T04:48:14.143647Z&quot;
+      },
+      {
+        &quot;id&quot;: 1,
+        &quot;ticketNumber&quot;: &quot;HD-2026-0001&quot;,
+        &quot;title&quot;: &quot;T616 disposable scope fixture 1&quot;,
+        &quot;description&quot;: &quot;Personal isolated lab fixture. Reset seed after assessment.&quot;,
+        &quot;category
+[Trích 1000 ký tự; mở file gốc để xem đầy đủ]</pre></section><section><div class="event"><strong>GET /api/v1/tickets/1</strong><b>HTTP 200</b></div><p class="meta">2026-11-26T04:48:32.186849+00:00 · <a href="../http/082.json">http/082.json</a> · authenticated=true</p><pre>{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;Success&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: 1,
+    &quot;ticketNumber&quot;: &quot;HD-2026-0001&quot;,
+    &quot;title&quot;: &quot;T616 disposable scope fixture 1&quot;,
+    &quot;description&quot;: &quot;Personal isolated lab fixture. Reset seed after assessment.&quot;,
+    &quot;categoryId&quot;: 3,
+    &quot;categoryCode&quot;: &quot;NETWORK&quot;,
+    &quot;categoryName&quot;: &quot;Mạng nội bộ &amp; VPN&quot;,
+    &quot;impactLevel&quot;: &quot;LOW&quot;,
+    &quot;priority&quot;: &quot;LOW&quot;,
+    &quot;status&quot;: &quot;ASSIGNED&quot;,
+    &quot;requesterId&quot;: 1,
+    &quot;requesterName&quot;: &quot;Nguyễn Văn An&quot;,
+    &quot;requesterEmail&quot;: &quot;employee@helpdesk.local&quot;,
+    &quot;requesterDepartment&quot;: &quot;Kế toán&quot;,
+    &quot;assigneeId&quot;: 3,
+    &quot;assigneeName&quot;: &quot;Trần Thị Bình&quot;,
+    &quot;assigneeEmail&quot;: &quot;staff@helpdesk.local&quot;,
+    &quot;responseDeadline&quot;: &quot;2026-11-26T06:48:11.434141Z&quot;,
+    &quot;resolutionDeadline&quot;: &quot;2026-11-28T04:48:11.434141Z&quot;,
+    &quot;isSlaBreached&quot;: false,
+    &quot;firstRespondedAt&quot;: null,
+    &quot;resolvedAt&quot;: null,
+    &quot;closedAt&quot;: null,
+    &quot;reopenedAt&quot;: null,
+    &quot;reopenCount&quot;: 0,
+    &quot;reopenReason&quot;: null,
+    &quot;resolutionNote&quot;: null,
+    &quot;createdAt&quot;: &quot;2026-11-26T0
+[Trích 1000 ký tự; mở file gốc để xem đầy đủ]</pre></section><section><div class="event"><strong>GET /api/v1/tickets/2</strong><b>HTTP 200</b></div><p class="meta">2026-11-26T04:48:33.109577+00:00 · <a href="../http/083.json">http/083.json</a> · authenticated=true</p><pre>{
+  &quot;success&quot;: true,
+  &quot;message&quot;: &quot;Success&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: 2,
+    &quot;ticketNumber&quot;: &quot;HD-2026-0002&quot;,
+    &quot;title&quot;: &quot;T616 disposable scope fixture 2&quot;,
+    &quot;description&quot;: &quot;Personal isolated lab fixture. Reset seed after assessment.&quot;,
+    &quot;categoryId&quot;: 3,
+    &quot;categoryCode&quot;: &quot;NETWORK&quot;,
+    &quot;categoryName&quot;: &quot;Mạng nội bộ &amp; VPN&quot;,
+    &quot;impactLevel&quot;: &quot;LOW&quot;,
+    &quot;priority&quot;: &quot;LOW&quot;,
+    &quot;status&quot;: &quot;ASSIGNED&quot;,
+    &quot;requesterId&quot;: 2,
+    &quot;requesterName&quot;: &quot;Lê Thị Cúc&quot;,
+    &quot;requesterEmail&quot;: &quot;employee2@helpdesk.local&quot;,
+    &quot;requesterDepartment&quot;: &quot;Kế toán&quot;,
+    &quot;assigneeId&quot;: 4,
+    &quot;assigneeName&quot;: &quot;Hoàng Văn Nam&quot;,
+    &quot;assigneeEmail&quot;: &quot;staff2@helpdesk.local&quot;,
+    &quot;responseDeadline&quot;: &quot;2026-11-26T06:48:14.143647Z&quot;,
+    &quot;resolutionDeadline&quot;: &quot;2026-11-28T04:48:14.143647Z&quot;,
+    &quot;isSlaBreached&quot;: false,
+    &quot;firstRespondedAt&quot;: null,
+    &quot;resolvedAt&quot;: null,
+    &quot;closedAt&quot;: null,
+    &quot;reopenedAt&quot;: null,
+    &quot;reopenCount&quot;: 0,
+    &quot;reopenReason&quot;: null,
+    &quot;resolutionNote&quot;: null,
+    &quot;createdAt&quot;: &quot;2026-11-26T04
+[Trích 1000 ký tự; mở file gốc để xem đầy đủ]</pre></section><h2>Tất cả file phản hồi của ca này</h2><table><tr><th>Source</th><th>Method</th><th>Path</th><th>HTTP</th></tr><tr><td>http/060.json</td><td>GET</td><td>/api/v1/auth/me</td><td>200</td></tr><tr><td>http/061.json</td><td>GET</td><td>/api/v1/tickets?page=0&amp;size=20</td><td>200</td></tr><tr><td>http/062.json</td><td>GET</td><td>/api/v1/admin/users</td><td>200</td></tr><tr><td>http/068.json</td><td>POST</td><td>/api/v1/tickets</td><td>201</td></tr><tr><td>http/069.json</td><td>PUT</td><td>/api/v1/tickets/1/assign</td><td>200</td></tr><tr><td>http/070.json</td><td>POST</td><td>/api/v1/tickets</td><td>201</td></tr><tr><td>http/071.json</td><td>PUT</td><td>/api/v1/tickets/2/assign</td><td>200</td></tr><tr><td>http/081.json</td><td>GET</td><td>/api/v1/tickets?page=0&amp;size=100</td><td>200</td></tr><tr><td>http/082.json</td><td>GET</td><td>/api/v1/tickets/1</td><td>200</td></tr><tr><td>http/083.json</td><td>GET</td><td>/api/v1/tickets/2</td><td>200</td></tr></table><footer>Thời điểm UTC trong mỗi response là thời điểm kiểm thử gốc. Thời điểm chụp mới và SHA256 nguồn được ghi trong capture-manifest-detail.json. Mở JSON gốc để đối chiếu đầy đủ body/header/hash.</footer></main></body></html>
