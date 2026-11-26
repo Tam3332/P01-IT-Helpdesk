@@ -1,0 +1,9 @@
+START 2026-11-26T04:22:27.542047+00:00
+COMMAND ["docker", "images", "--format", "{{json .}}"]
+{"Containers":"4","CreatedAt":"2026-11-16 20:24:07 +0000 UTC","CreatedSince":"9 days ago","Digest":"\u003cnone\u003e","ID":"c95914e1855c","Repository":"owasp/modsecurity-crs","SharedSize":"N/A","Size":"314MB","Tag":"nginx","UniqueSize":"N/A"}
+{"Containers":"1","CreatedAt":"2026-11-11 07:08:13 +0000 UTC","CreatedSince":"2 weeks ago","Digest":"\u003cnone\u003e","ID":"6005afa95c9b","Repository":"p01-backend","SharedSize":"N/A","Size":"409MB","Tag":"latest","UniqueSize":"N/A"}
+{"Containers":"1","CreatedAt":"2026-11-11 07:05:15 +0000 UTC","CreatedSince":"2 weeks ago","Digest":"\u003cnone\u003e","ID":"db4aa2aa9f62","Repository":"p01-frontend","SharedSize":"N/A","Size":"74.2MB","Tag":"latest","UniqueSize":"N/A"}
+{"Containers":"1","CreatedAt":"2026-10-21 22:56:40 +0000 UTC","CreatedSince":"5 weeks ago","Digest":"\u003cnone\u003e","ID":"10a5c69a8303","Repository":"postgres","SharedSize":"N/A","Size":"433MB","Tag":"18-alpine","UniqueSize":"N/A"}
+{"Containers":"2","CreatedAt":"2025-04-16 14:50:31 +0000 UTC","CreatedSince":"19 months ago","Digest":"\u003cnone\u003e","ID":"65645c7bb6a0","Repository":"nginx","SharedSize":"N/A","Size":"74.5MB","Tag":"1.27-alpine","UniqueSize":"N/A"}
+
+END 2026-11-26T04:22:27.961954+00:00 RC=0

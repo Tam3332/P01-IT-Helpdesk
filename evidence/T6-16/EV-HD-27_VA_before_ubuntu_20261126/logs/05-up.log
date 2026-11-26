@@ -1,0 +1,46 @@
+START 2026-11-26T04:41:16.406484+00:00
+COMMAND ["docker", "compose", "--progress", "plain", "--project-name", "p01-t616-before", "--env-file", "/home/khiem/P01-T6-16-VA-cYYVbmyU/private/before.env", "-f", "/home/khiem/P01-T6-16-VA-cYYVbmyU/compose.before.yml", "up", "-d", "--no-build", "--wait", "--wait-timeout", "180"]
+ Network p01-t616-before_p01-front  Creating
+ Network p01-t616-before_p01-front  Created
+ Network p01-t616-before_p01-public  Creating
+ Network p01-t616-before_p01-public  Created
+ Network p01-t616-before_p01-back  Creating
+ Network p01-t616-before_p01-back  Created
+ Network p01-t616-before_p01-db  Creating
+ Network p01-t616-before_p01-db  Created
+ Volume p01-t616-before_nginx_logs  Creating
+ Volume p01-t616-before_nginx_logs  Created
+ Volume p01-t616-before_pgdata  Creating
+ Volume p01-t616-before_pgdata  Created
+ Volume p01-t616-before_uploads_data  Creating
+ Volume p01-t616-before_uploads_data  Created
+ Volume p01-t616-before_audit_logs  Creating
+ Volume p01-t616-before_audit_logs  Created
+ Container p01-t616-before-frontend  Creating
+ Container p01-t616-before-postgres  Creating
+ Container p01-t616-before-frontend  Created
+ Container p01-t616-before-postgres  Created
+ Container p01-t616-before-backend  Creating
+ Container p01-t616-before-backend  Created
+ Container p01-t616-before-nginx  Creating
+ Container p01-t616-before-nginx  Created
+ Container p01-t616-before-postgres  Starting
+ Container p01-t616-before-frontend  Starting
+ Container p01-t616-before-frontend  Started
+ Container p01-t616-before-postgres  Started
+ Container p01-t616-before-postgres  Waiting
+ Container p01-t616-before-postgres  Healthy
+ Container p01-t616-before-backend  Starting
+ Container p01-t616-before-backend  Started
+ Container p01-t616-before-nginx  Starting
+ Container p01-t616-before-nginx  Started
+ Container p01-t616-before-nginx  Waiting
+ Container p01-t616-before-postgres  Waiting
+ Container p01-t616-before-backend  Waiting
+ Container p01-t616-before-frontend  Waiting
+ Container p01-t616-before-nginx  Healthy
+ Container p01-t616-before-postgres  Healthy
+ Container p01-t616-before-frontend  Healthy
+ Container p01-t616-before-backend  Healthy
+
+END 2026-11-26T04:41:58.732814+00:00 RC=0

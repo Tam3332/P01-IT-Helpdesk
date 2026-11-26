@@ -1,0 +1,5 @@
+START 2026-11-26T05:01:37.455719+00:00
+COMMAND ["docker", "run", "-d", "--rm", "--name", "p01-t616-zap", "--network", "host", "--memory", "1g", "--cpus", "1", "--pids-limit", "256", "--mount", "type=bind,src=/home/khiem/P01-T6-16-VA-cYYVbmyU/zapraw,dst=/zap/wrk", "--env", "ZAP_API_KEY", "--env", "JAVA_OPTS=-Xmx640m", "--env", "ZAP_AUTH_HEADER_VALUE", "--env", "ZAP_AUTH_HEADER=Authorization", "--env", "ZAP_AUTH_HEADER_SITE=127.0.0.1", "--entrypoint", "/bin/sh", "ghcr.io/zaproxy/zaproxy:stable", "-c", "exec /zap/zap.sh -daemon -host 127.0.0.1 -port 28090 -config \"api.key=$ZAP_API_KEY\" -config autoupdate.checkOnStart=false"]
+d294479a8ab6a5464878073ea2778179541b9d33e8d6da5330bc15583e1985db
+
+END 2026-11-26T05:01:38.034832+00:00 RC=0

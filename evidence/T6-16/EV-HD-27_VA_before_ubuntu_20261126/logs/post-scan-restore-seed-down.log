@@ -1,0 +1,36 @@
+START 2026-11-26T05:06:02.462092+00:00
+COMMAND ["docker", "compose", "--progress", "plain", "--project-name", "p01-t616-before", "--env-file", "/home/khiem/P01-T6-16-VA-cYYVbmyU/private/before.env", "-f", "/home/khiem/P01-T6-16-VA-cYYVbmyU/compose.before.yml", "down", "--volumes", "--timeout", "30"]
+ Container p01-t616-before-nginx  Stopping
+ Container p01-t616-before-nginx  Stopped
+ Container p01-t616-before-nginx  Removing
+ Container p01-t616-before-nginx  Removed
+ Container p01-t616-before-frontend  Stopping
+ Container p01-t616-before-backend  Stopping
+ Container p01-t616-before-frontend  Stopped
+ Container p01-t616-before-frontend  Removing
+ Container p01-t616-before-frontend  Removed
+ Container p01-t616-before-backend  Stopped
+ Container p01-t616-before-backend  Removing
+ Container p01-t616-before-backend  Removed
+ Container p01-t616-before-postgres  Stopping
+ Container p01-t616-before-postgres  Stopped
+ Container p01-t616-before-postgres  Removing
+ Container p01-t616-before-postgres  Removed
+ Volume p01-t616-before_nginx_logs  Removing
+ Volume p01-t616-before_pgdata  Removing
+ Network p01-t616-before_p01-front  Removing
+ Volume p01-t616-before_audit_logs  Removing
+ Network p01-t616-before_p01-db  Removing
+ Network p01-t616-before_p01-public  Removing
+ Network p01-t616-before_p01-back  Removing
+ Volume p01-t616-before_uploads_data  Removing
+ Volume p01-t616-before_pgdata  Removed
+ Volume p01-t616-before_audit_logs  Removed
+ Volume p01-t616-before_nginx_logs  Removed
+ Volume p01-t616-before_uploads_data  Removed
+ Network p01-t616-before_p01-public  Removed
+ Network p01-t616-before_p01-back  Removed
+ Network p01-t616-before_p01-front  Removed
+ Network p01-t616-before_p01-db  Removed
+
+END 2026-11-26T05:06:04.828450+00:00 RC=0

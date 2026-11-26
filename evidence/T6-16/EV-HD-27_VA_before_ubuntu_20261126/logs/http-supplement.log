@@ -1,0 +1,6 @@
+T616-API-01 EMPLOYEE PASS me=200 tickets=200 admin-users=403 forbidden_keys=[]
+T616-API-01 IT_STAFF PASS me=200 tickets=200 admin-users=403 forbidden_keys=[]
+T616-API-01 IT_MANAGER PASS me=200 tickets=200 admin-users=403 forbidden_keys=[]
+T616-API-01 ADMIN PASS me=200 tickets=200 admin-users=200 forbidden_keys=[]
+T616-API-05  PASS HTTP=500 sensitive_error_text=False
+HTTP SUPPLEMENT COMPLETE 20 rows 19 PASS 1 FAIL

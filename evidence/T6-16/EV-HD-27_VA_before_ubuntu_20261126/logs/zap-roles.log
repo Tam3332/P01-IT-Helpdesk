@@ -1,0 +1,12 @@
+START EMPLOYEE 2026-11-26T04:48:33.269104+00:00
+Traceback (most recent call last):
+  File "/home/khiem/P01-T6-16-VA-cYYVbmyU/zap_runs.py", line 176, in <module>
+    now_start=now();print('START',role,now_start,flush=True);api_role(role,index)
+                                                             ^^^^^^^^^^^^^^^^^^^^
+  File "/home/khiem/P01-T6-16-VA-cYYVbmyU/zap_runs.py", line 142, in api_role
+    version=wait_zap();cid=configure(label);check=verify_role(role,label)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/khiem/P01-T6-16-VA-cYYVbmyU/zap_runs.py", line 91, in verify_role
+    if ' 200 ' not in status or actual!=role or not auth_present:raise RuntimeError('ZAP role verification failed '+json.dumps(result))
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: ZAP role verification failed {"utc": "2026-11-26T04:51:09.617920+00:00", "role_expected": "EMPLOYEE", "role_actual": "EMPLOYEE", "status": "HTTP/1.1 200", "auth_header_present_in_ZAP_request": true, "message_id": "1"}
