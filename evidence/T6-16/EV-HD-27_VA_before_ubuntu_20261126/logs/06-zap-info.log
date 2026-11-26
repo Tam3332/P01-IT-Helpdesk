@@ -1,0 +1,5 @@
+START 2026-11-26T04:41:58.739038+00:00
+COMMAND ["docker", "image", "inspect", "ghcr.io/zaproxy/zaproxy:stable", "--format", "{{json .RepoDigests}} {{.Id}} {{.Config.User}}"]
+["ghcr.io/zaproxy/zaproxy@sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af"] sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af zap
+
+END 2026-11-26T04:41:58.855628+00:00 RC=0

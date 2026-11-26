@@ -1,0 +1,19 @@
+START 2026-11-26T04:42:42.836290+00:00
+COMMAND ["docker", "logs", "--tail", "80", "p01-t616-zap"]
+Found Java version 17.0.21
+Available memory: 3915 MB
+Using JVM args: -Xmx978m
+1403 [main] INFO  org.parosproxy.paros.Constant - Copying default configuration to /home/zap/.ZAP/config.xml
+1819 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/session
+1820 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/dirbuster
+1820 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/fuzzers
+1820 [main] INFO  org.parosproxy.paros.Constant - Creating directory /home/zap/.ZAP/plugin
+2130 [main] INFO  org.zaproxy.zap.DaemonBootstrap - ZAP 2.17.0 started 26/11/2026, 04:42:31 with home: /home/zap/.ZAP/ cores: 1 maxMemory: 945 MB
+2252 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config api.key = [REDACTED] was null
+2252 [main] INFO  org.parosproxy.paros.common.AbstractParam - Setting config autoupdate.checkOnStart = false was null
+10413 [ZAP-daemon] INFO  org.zaproxy.zap.control.ExtensionFactory - Installed add-ons: [[id=alertFilters, version=29.0.0], [id=ascanrules, version=84.0.0], [id=authhelper, version=0.44.0], [id=automation, version=0.62.0], [id=bruteforce, version=21.0.0], [id=callhome, version=0.23.0], [id=client, version=0.34.0], [id=commonlib, version=1.44.0], [id=database, version=0.9.0], [id=diff, version=18.0.0], [id=directorylistv1, version=9.0.0], [id=domxss, version=24.0.0], [id=encoder, version=1.9.0], [id=exim, version=0.22.0], [id=formhandler, version=6.9.0], [id=fuzz, version=13.17.0], [id=gettingStarted, version=20.0.0], [id=graaljs, version=0.14.0], [id=graphql, version=0.35.0], [id=help, version=22.0.0], [id=hud, version=0.19.0], [id=insights, version=0.7.0], [id=invoke, version=17.0.0], [id=network, version=0.33.0], [id=oast, version=0.26.0], [id=onlineMenu, version=15.0.0], [id=openapi, version=58.0.0], [id=params, version=0.1.0], [id=postman, version=0.10.0], [id=pscan, version=0.6.0], [id=pscanrules, version=77.0.0], [id=quickstart, version=60.0.0], [id=replacer, version=22.0.0], [id=reports, version=0.46.0], [id=requester, version=7.10.0], [id=retest, version=0.11.0], [id=retire, version=0.68.0], [id=reveal, version=10.0.0], [id=scanpolicies, version=0.8.0], [id=scripts, version=45.20.0], [id=selenium, version=15.60.0], [id=sequence, version=10.0.0], [id=soap, version=32.0.0], [id=spider, version=0.20.0], [id=spiderAjax, version=23.33.0], [id=tips, version=16.0.0], [id=webdriverlinux, version=231.0.0], [id=websocket, version=38.0.0], [id=zest, version=48.14.0]]
+10417 [ZAP-daemon] INFO  org.zaproxy.zap.control.ExtensionFactory - Loading extensions
+11655 [ZAP-daemon] INFO  org.zaproxy.addon.network.internal.TlsUtils - Using supported SSL/TLS protocols: [TLSv1.2, TLSv1.3]
+13075 [ZAP-daemon] INFO  org.zaproxy.zap.control.ExtensionFactory - Extensions loaded
+
+END 2026-11-26T04:42:42.923622+00:00 RC=0

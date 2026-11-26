@@ -1,0 +1,68 @@
+START 2026-11-26T04:24:25.227956+00:00
+COMMAND ["docker", "pull", "ghcr.io/zaproxy/zaproxy:stable"]
+stable: Pulling from zaproxy/zaproxy
+c212a4ce8543: Pulling fs layer
+3c5439d0ae62: Pulling fs layer
+cd5f7553f81c: Pulling fs layer
+1b1d49a38a01: Pulling fs layer
+beff637b166d: Pulling fs layer
+68fc7dda2d84: Pulling fs layer
+d76c7e4d4eed: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+0a41632055c2: Pulling fs layer
+6173fb42a391: Pulling fs layer
+dee331ead96d: Pulling fs layer
+5ea75c5c7143: Pulling fs layer
+41737c9a08d0: Pulling fs layer
+af3152b6af93: Pulling fs layer
+41b28138a536: Pulling fs layer
+f63a8bdddb02: Pulling fs layer
+39623f43dfaa: Pulling fs layer
+e5ca1437e0c7: Pulling fs layer
+7829b3d60f05: Pulling fs layer
+f26fc71eb93e: Pulling fs layer
+4f4fb700ef54: Already exists
+c212a4ce8543: Download complete
+68fc7dda2d84: Download complete
+beff637b166d: Download complete
+0a41632055c2: Download complete
+d76c7e4d4eed: Download complete
+f26fc71eb93e: Download complete
+41b28138a536: Download complete
+39623f43dfaa: Download complete
+af3152b6af93: Download complete
+f63a8bdddb02: Download complete
+41737c9a08d0: Download complete
+7829b3d60f05: Download complete
+5ea75c5c7143: Download complete
+e5ca1437e0c7: Download complete
+3c5439d0ae62: Download complete
+3c5439d0ae62: Pull complete
+dee331ead96d: Download complete
+1b1d49a38a01: Download complete
+cd5f7553f81c: Download complete
+cd5f7553f81c: Pull complete
+1b1d49a38a01: Pull complete
+beff637b166d: Pull complete
+68fc7dda2d84: Pull complete
+d76c7e4d4eed: Pull complete
+4f4fb700ef54: Pull complete
+0a41632055c2: Pull complete
+6173fb42a391: Download complete
+6173fb42a391: Pull complete
+dee331ead96d: Pull complete
+41737c9a08d0: Pull complete
+41b28138a536: Pull complete
+af3152b6af93: Pull complete
+f63a8bdddb02: Pull complete
+5ea75c5c7143: Pull complete
+7829b3d60f05: Pull complete
+e5ca1437e0c7: Pull complete
+f26fc71eb93e: Pull complete
+39623f43dfaa: Pull complete
+c212a4ce8543: Pull complete
+Digest: sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af
+Status: Downloaded newer image for ghcr.io/zaproxy/zaproxy:stable
+ghcr.io/zaproxy/zaproxy:stable
+
+END 2026-11-26T04:29:08.188510+00:00 RC=0
