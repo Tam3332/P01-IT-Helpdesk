@@ -101,19 +101,32 @@ services:
 
   # Nginx Security Gateway - cổng duy nhất ra ngoài, xử lý TLS và rate limit
   nginx:
-    image: nginx:1.27-alpine
+    image: owasp/modsecurity-crs@sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3
     container_name: p01-gateway
     restart: unless-stopped
     depends_on:
       - backend
       - frontend
     ports:
-      # [ĐỔI] Chỉ mở cổng 443 ra ngoài (SDD §8). Muốn có chuyển hướng HTTP→HTTPS thì thêm "80:80" lại.
-      - "${HTTPS_PORT:-443}:443"
+      # Chỉ publish HTTPS. Gateway WAF nghe 8443 trong container.
+      - "${HTTPS_PORT:-443}:8443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/nginx-waf.conf:/etc/nginx/templates/nginx.conf.template:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
-      - nginx_logs:/var/log/nginx # [ĐỔI] tách khỏi audit log của Backend
+      - nginx_logs:/var/log/nginx
+      - waf_audit_logs:/var/log/modsecurity/audit
+    environment:
+      MODSEC_RULE_ENGINE: "${WAF_RULE_ENGINE:-DetectionOnly}"
+      BLOCKING_PARANOIA: "1"
+      DETECTION_PARANOIA: "1"
+      # Phương thức REST dùng để phân công, đổi trạng thái và quản lý danh mục.
+      ALLOWED_METHODS: "GET HEAD POST OPTIONS PUT PATCH DELETE"
+      MODSEC_AUDIT_ENGINE: "RelevantOnly"
+      MODSEC_AUDIT_LOG_TYPE: "Serial"
+      MODSEC_AUDIT_LOG_FORMAT: "JSON"
+      MODSEC_AUDIT_LOG: /var/log/modsecurity/audit/waf-audit.jsonl
+      # Ghi metadata và kết quả. Bỏ header, body và nội dung rule match khỏi audit JSON.
+      MODSEC_AUDIT_LOG_PARTS: "AZ"
     networks:
       - p01-public
       - p01-front
@@ -145,3 +158,4 @@ volumes:
   uploads_data: # tệp đính kèm ticket (IA-HD03)
   audit_logs: # audit log JSON Lines cho Monitoring (IA-HD04/05)
   nginx_logs:
+  waf_audit_logs:
