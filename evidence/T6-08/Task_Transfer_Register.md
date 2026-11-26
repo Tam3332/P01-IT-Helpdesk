@@ -57,3 +57,14 @@ Theo yêu cầu T6-08 trong Sheet: dòng cũ có task kế thừa được đón
 - BUG-HD-003/008 cần evidence AFTER; full P3 cần quyền/từ chối/audit/regression ngoài bốn ảnh nhánh duyệt.
 - Biên bản 14/11, Review 2 ngày 21/11 và xác nhận phạm vi GV chưa có theo thông tin Khiêm cung cấp ngày 25/11. T6-08 tiếp tục In progress.
 - Việc VA/WAF chỉ thực hiện theo scope và quy trình đã được phê duyệt; hồ sơ này không phải lệnh chạy kiểm thử.
+
+## Bổ sung hai dòng tuần 5 theo đề xuất ngày 26 tháng 11
+
+Bảng 41 dòng ở trên là snapshot đối chiếu 25/11, giữ nguyên lịch sử. Đề xuất bổ sung 2 dòng, tổng cộng 43 dòng nguồn được theo dõi; chờ Khiêm duyệt cập nhật Sheet và tài liệu.
+
+| Dòng nguồn | Trạng thái Sheet đọc 26/11 | Task kế thừa | Cách ghi khi được duyệt |
+|---|---|---|---|
+| T5-15 Khiêm | In progress | T6-15 | Done theo nghĩa đã chuyển việc; PR #31 PoC, PR #38 đã merge, PR #52 follow-up còn review. WAF nhóm vẫn chưa nghiệm thu |
+| T5-16 Khiêm | In progress | T6-16, AFTER T6-02 | Done theo nghĩa bàn giao; VA Before cá nhân đúng 35c573d đã xuất bản qua PR #39. Không coi Done là PASS toàn bộ VA/AFTER |
+
+Không tạo trạng thái dropdown mới “Done (bàn giao)”; ô trạng thái dùng Done, nghĩa bàn giao ghi ở Evidence/Ghi chú. T6-01/T6-08/T6-15 giữ In progress; T6-16 giữ Done theo phạm vi Before và phương án lab cá nhân đã ghi trong ô R17 live. Không tự sửa scope gốc hoặc hợp thức hóa thành chạy VM nhóm/Kali.
