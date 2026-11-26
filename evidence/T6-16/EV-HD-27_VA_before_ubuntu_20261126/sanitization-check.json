@@ -1,0 +1,9 @@
+{
+  "utc": "2026-11-26T05:06:51.255954+00:00",
+  "checked_files": 176,
+  "exact_runtime_secrets_checked": true,
+  "jwt_patterns_checked": true,
+  "private_key_markers_checked": true,
+  "secret_values_not_exported": true,
+  "result": "PASS"
+}

@@ -1,0 +1,91 @@
+{
+  "event_id": 32,
+  "utc": "2026-11-26T04:43:02.101681+00:00",
+  "completed_utc": "2026-11-26T04:43:02.194815+00:00",
+  "case_hint": "T616-API-01",
+  "method": "GET",
+  "path": "/api/v1/admin/users",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "1bb782b3cf48fd6a5c099740541a5cffa9051b4a46eae22bb865af42241779b0",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "content": [
+        {
+          "id": 1,
+          "username": "[SEED IDENTITY]",
+          "email": "[SEED IDENTITY]",
+          "fullName": "[SEED IDENTITY]",
+          "role": "EMPLOYEE",
+          "department": "Kế toán",
+          "isActive": true,
+          "mustChangePassword": "[REDACTED]"
+        },
+        {
+          "id": 2,
+          "username": "[SEED IDENTITY]",
+          "email": "[SEED IDENTITY]",
+          "fullName": "[SEED IDENTITY]",
+          "role": "EMPLOYEE",
+          "department": "Kế toán",
+          "isActive": true,
+          "mustChangePassword": "[REDACTED]"
+        },
+        {
+          "id": 3,
+          "username": "[SEED IDENTITY]",
+          "email": "[SEED IDENTITY]",
+          "fullName": "[SEED IDENTITY]",
+          "role": "IT_STAFF",
+          "department": "IT",
+          "isActive": true,
+          "mustChangePassword": "[REDACTED]"
+        },
+        {
+          "id": 4,
+          "username": "[SEED IDENTITY]",
+          "email": "[SEED IDENTITY]",
+          "fullName": "[SEED IDENTITY]",
+          "role": "IT_STAFF",
+          "department": "IT",
+          "isActive": true,
+          "mustChangePassword": "[REDACTED]"
+        },
+        {
+          "id": 5,
+          "username": "[SEED IDENTITY]",
+          "email": "[SEED IDENTITY]",
+          "fullName": "[SEED IDENTITY]",
+          "role": "IT_MANAGER",
+          "department": "IT",
+          "isActive": true,
+          "mustChangePassword": "[REDACTED]"
+        },
+        {
+          "id": 6,
+          "username": "[SEED IDENTITY]",
+          "email": "[SEED IDENTITY]",
+          "fullName": "[SEED IDENTITY]",
+          "role": "ADMIN",
+          "department": "IT",
+          "isActive": true,
+          "mustChangePassword": "[REDACTED]"
+        }
+      ],
+      "pageNo": 0,
+      "pageSize": 20,
+      "totalElements": 6,
+      "totalPages": 1,
+      "last": true
+    },
+    "timestamp": "2026-11-26T04:43:02.167895312"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "event_id": 34,
+  "utc": "2026-11-26T04:43:04.109888+00:00",
+  "completed_utc": "2026-11-26T04:43:04.237088+00:00",
+  "case_hint": "T616-API-03",
+  "method": "PUT",
+  "path": "/api/v1/auth/me",
+  "authenticated": true,
+  "http_status": 405,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "9de6145b321db67f29b393a35ee3f844542e8f88dfbaa7805e33a1622ce53023",
+  "body": {
+    "success": false,
+    "message": "Yêu cầu không được hỗ trợ",
+    "error": {
+      "code": "METHOD_NOT_ALLOWED",
+      "message": "Yêu cầu không được hỗ trợ"
+    },
+    "timestamp": "2026-11-26T04:43:04.185503824"
+  }
+}

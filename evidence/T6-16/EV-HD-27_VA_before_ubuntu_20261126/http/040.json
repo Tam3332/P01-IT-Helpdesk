@@ -1,0 +1,22 @@
+{
+  "event_id": 40,
+  "utc": "2026-11-26T04:43:10.105801+00:00",
+  "completed_utc": "2026-11-26T04:43:11.260268+00:00",
+  "case_hint": "T616-AUTH-09 BUG-HD-008",
+  "method": "POST",
+  "path": "/api/v1/auth/change-password",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "bab8755287fe42faf67dd9e4ae720ef56dda0e1f9f51add297f1f6e5cb68e21c",
+  "body": {
+    "success": true,
+    "message": "Đổi mật khẩu thành công",
+    "timestamp": "2026-11-26T04:43:11.18384909"
+  }
+}

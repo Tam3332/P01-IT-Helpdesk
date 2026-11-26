@@ -1,0 +1,254 @@
+[
+  {
+    "filename": "EV-HD-27_VA_before_04_ZAP_CSP.jpg",
+    "source": "zap/baseline-anon.html#10055",
+    "captured_utc": "2026-11-26T05:23:20.738Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 227990
+  },
+  {
+    "filename": "EV-HD-27_VA_before_05_ZAP_SRI.jpg",
+    "source": "zap/baseline-anon.html#90003",
+    "captured_utc": "2026-11-26T05:23:21.385Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 191000
+  },
+  {
+    "filename": "EV-HD-27_VA_before_ZAP_EMPLOYEE.jpg",
+    "source": "zap/api-employee.html",
+    "captured_utc": "2026-11-26T05:23:29.305Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 124125
+  },
+  {
+    "filename": "EV-HD-27_VA_before_ZAP_IT_STAFF.jpg",
+    "source": "zap/api-it-staff.html",
+    "captured_utc": "2026-11-26T05:23:29.954Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 124026
+  },
+  {
+    "filename": "EV-HD-27_VA_before_ZAP_IT_MANAGER.jpg",
+    "source": "zap/api-it-manager.html",
+    "captured_utc": "2026-11-26T05:23:30.623Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 124045
+  },
+  {
+    "filename": "EV-HD-27_VA_before_ZAP_ADMIN.jpg",
+    "source": "zap/api-admin.html",
+    "captured_utc": "2026-11-26T05:23:31.357Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 124220
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-01.jpg",
+    "source": "saved-evidence-views/T616-AUTH-01.html",
+    "captured_utc": "2026-11-26T05:26:51.482Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 91444
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-02.jpg",
+    "source": "saved-evidence-views/T616-AUTH-02.html",
+    "captured_utc": "2026-11-26T05:26:52.216Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 88898
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-03.jpg",
+    "source": "saved-evidence-views/T616-AUTH-03.html",
+    "captured_utc": "2026-11-26T05:26:52.816Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 91829
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-04.jpg",
+    "source": "saved-evidence-views/T616-AUTH-04.html",
+    "captured_utc": "2026-11-26T05:26:57.503Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 91576
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-05.jpg",
+    "source": "saved-evidence-views/T616-AUTH-05.html",
+    "captured_utc": "2026-11-26T05:26:58.038Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 92017
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-06.jpg",
+    "source": "saved-evidence-views/T616-AUTH-06.html",
+    "captured_utc": "2026-11-26T05:24:09.875Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 116680
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-07.jpg",
+    "source": "saved-evidence-views/T616-AUTH-07.html",
+    "captured_utc": "2026-11-26T05:24:10.435Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 111234
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-08.jpg",
+    "source": "saved-evidence-views/T616-AUTH-08.html",
+    "captured_utc": "2026-11-26T05:24:10.988Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 121565
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-02-admin.jpg",
+    "source": "saved-evidence-views/T616-API-02-admin.html",
+    "captured_utc": "2026-11-26T05:24:11.560Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 94645
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-03-employee.jpg",
+    "source": "saved-evidence-views/T616-API-03-employee.html",
+    "captured_utc": "2026-11-26T05:24:12.095Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 92480
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-04-employee.jpg",
+    "source": "saved-evidence-views/T616-API-04-employee.html",
+    "captured_utc": "2026-11-26T05:27:15.113Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 110936
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-EDGE-01.jpg",
+    "source": "saved-evidence-views/T616-EDGE-01.html",
+    "captured_utc": "2026-11-26T05:24:34.060Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 104550
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-EDGE-02.jpg",
+    "source": "saved-evidence-views/T616-EDGE-02.html",
+    "captured_utc": "2026-11-26T05:24:34.577Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 105369
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-EDGE-03.jpg",
+    "source": "saved-evidence-views/T616-EDGE-03.html",
+    "captured_utc": "2026-11-26T05:24:35.095Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 136355
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-AUTH-09-employee.jpg",
+    "source": "saved-evidence-views/T616-AUTH-09-employee.html",
+    "captured_utc": "2026-11-26T05:24:35.667Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 120718
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-employee.jpg",
+    "source": "saved-evidence-views/T616-API-01-employee.html",
+    "captured_utc": "2026-11-26T05:24:48.844Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 128785
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-employee_detail.jpg",
+    "source": "saved-evidence-views/T616-API-01-employee.html",
+    "captured_utc": "2026-11-26T05:24:49.171Z",
+    "method": "Native Edge window screenshot at document bottom; unedited",
+    "bytes": 126556
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-it-staff.jpg",
+    "source": "saved-evidence-views/T616-API-01-it-staff.html",
+    "captured_utc": "2026-11-26T05:24:49.767Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 131936
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-it-staff_detail.jpg",
+    "source": "saved-evidence-views/T616-API-01-it-staff.html",
+    "captured_utc": "2026-11-26T05:24:49.991Z",
+    "method": "Native Edge window screenshot at document bottom; unedited",
+    "bytes": 115167
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-it-manager.jpg",
+    "source": "saved-evidence-views/T616-API-01-it-manager.html",
+    "captured_utc": "2026-11-26T05:24:50.564Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 139640
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-it-manager_detail.jpg",
+    "source": "saved-evidence-views/T616-API-01-it-manager.html",
+    "captured_utc": "2026-11-26T05:24:50.790Z",
+    "method": "Native Edge window screenshot at document bottom; unedited",
+    "bytes": 112508
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-admin.jpg",
+    "source": "saved-evidence-views/T616-API-01-admin.html",
+    "captured_utc": "2026-11-26T05:24:51.445Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 136133
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-01-admin_detail.jpg",
+    "source": "saved-evidence-views/T616-API-01-admin.html",
+    "captured_utc": "2026-11-26T05:24:51.767Z",
+    "method": "Native Edge window screenshot at document bottom; unedited",
+    "bytes": 126791
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-05.jpg",
+    "source": "saved-evidence-views/T616-API-05.html",
+    "captured_utc": "2026-11-26T05:24:52.258Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 103374
+  },
+  {
+    "filename": "EV-HD-27_VA_before_06_ZAP_HSTS.jpg",
+    "source": "zap/api-admin.html#10035",
+    "captured_utc": "2026-11-26T05:26:58.590Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 180586
+  },
+  {
+    "filename": "EV-HD-27_VA_before_Role_employee.jpg",
+    "source": "zap/api-employee-role-check.json",
+    "captured_utc": "2026-11-26T05:27:04.313Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 40427
+  },
+  {
+    "filename": "EV-HD-27_VA_before_Role_it-staff.jpg",
+    "source": "zap/api-it-staff-role-check.json",
+    "captured_utc": "2026-11-26T05:27:04.885Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 39930
+  },
+  {
+    "filename": "EV-HD-27_VA_before_Role_it-manager.jpg",
+    "source": "zap/api-it-manager-role-check.json",
+    "captured_utc": "2026-11-26T05:27:05.454Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 39645
+  },
+  {
+    "filename": "EV-HD-27_VA_before_Role_admin.jpg",
+    "source": "zap/api-admin-role-check.json",
+    "captured_utc": "2026-11-26T05:27:05.989Z",
+    "method": "Native Edge window screenshot via CUA; unedited",
+    "bytes": 39916
+  },
+  {
+    "filename": "EV-HD-27_VA_before_T616-API-04-employee_detail.jpg",
+    "source": "saved-evidence-views/T616-API-04-employee.html",
+    "captured_utc": "2026-11-26T05:27:15.328Z",
+    "method": "Native Edge window screenshot at document bottom; unedited",
+    "bytes": 106207
+  }
+]

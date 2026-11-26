@@ -1,0 +1,32 @@
+{
+  "event_id": 64,
+  "utc": "2026-11-26T04:46:45.109537+00:00",
+  "completed_utc": "2026-11-26T04:46:51.228178+00:00",
+  "case_hint": "Supplement DB recovery",
+  "method": "GET",
+  "path": "/api/v1/auth/me",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "6996cefe014ab57dc67e27d000b75d54865b146385f82e66a535ae9814cab2f6",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "id": 6,
+      "username": "[SEED IDENTITY]",
+      "email": "[SEED IDENTITY]",
+      "fullName": "[SEED IDENTITY]",
+      "role": "ADMIN",
+      "department": "IT",
+      "isActive": true,
+      "mustChangePassword": "[REDACTED]"
+    },
+    "timestamp": "2026-11-26T04:46:51.222354128"
+  }
+}

@@ -69,8 +69,8 @@ public class AuthService {
     static final int MAX_FAILED_ATTEMPTS = 5;
     static final Duration FAIL_WINDOW = Duration.ofMinutes(5);
     static final Duration LOCK_DURATION = Duration.ofMinutes(15);
-    // Tên event khi khóa: SDD §7 ghi BRUTE_FORCE_DETECTED, sheet T5-06 ghi ACCOUNT_LOCKED → chờ Hoà chốt, đổi tại đây
-    static final String LOCK_EVENT = "BRUTE_FORCE_DETECTED";
+    // Tên event khi bắt đầu khóa: ACCOUNT_LOCKED theo sheet T5-06 (Hoà chốt 17/11; trước đây là BRUTE_FORCE_DETECTED). Chỉ ghi 1 lần lúc bắt đầu khóa, các lần thử trong lúc khóa chỉ ghi LOGIN_FAILED 429
+    static final String LOCK_EVENT = "ACCOUNT_LOCKED";
     // Quá ngưỡng này thì dọn bản ghi đã hết hạn, tránh phình bộ nhớ khi bị gửi hàng loạt email ngẫu nhiên
     private static final int CLEANUP_THRESHOLD = 1000;
 
@@ -281,8 +281,7 @@ public class AuthService {
         long countToday = history.stream().filter(t -> !t.isBefore(startOfDay)).count();
         if (countToday >= MAX_PASSWORD_CHANGES_PER_DAY) {
             auditLogger.log("PASSWORD_CHANGE_LIMIT_EXCEEDED", user.getId(), roleName, "USER", String.valueOf(user.getId()), "CHANGE_PASSWORD", "FAILURE", 429);
-            throw new AppException(ErrorCode.VALIDATION_FAILED,
-                    "Bạn đã đổi mật khẩu 3 lần trong ngày hôm nay. Nếu muốn đổi lại, vui lòng liên hệ Quản trị viên (Admin) để được hỗ trợ cấp lại.");
+            throw new AppException(ErrorCode.PASSWORD_CHANGE_LIMIT_EXCEEDED);
         }
 
         // 1. So khớp mật khẩu hiện tại
@@ -297,9 +296,10 @@ public class AuthService {
             throw new AppException(ErrorCode.PASSWORD_SAME_AS_CURRENT);
         }
 
-        // 3. Cập nhật mật khẩu mới băm BCrypt và tắt cờ yêu cầu đổi mật khẩu
+        // 3. Cập nhật mật khẩu mới băm BCrypt, cập nhật mốc password_changed_at và tắt cờ yêu cầu đổi mật khẩu
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         user.setMustChangePassword(false);
+        user.setCredentialsUpdatedAt(now);
         userRepository.save(user);
 
         // Ghi nhận lần đổi mật khẩu thành công vào tracker trong ngày

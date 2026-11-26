@@ -1,0 +1,30 @@
+{
+  "event_id": 61,
+  "utc": "2026-11-26T04:46:10.105877+00:00",
+  "completed_utc": "2026-11-26T04:46:11.117586+00:00",
+  "case_hint": "T616-API-01",
+  "method": "GET",
+  "path": "/api/v1/tickets?page=0&size=20",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "347cc8701a8cc472b45915006271752cae417d5604bb77984805055891789f4b",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "content": [],
+      "pageNo": 0,
+      "pageSize": 20,
+      "totalElements": 0,
+      "totalPages": 0,
+      "last": true
+    },
+    "timestamp": "2026-11-26T04:46:10.158588097"
+  }
+}

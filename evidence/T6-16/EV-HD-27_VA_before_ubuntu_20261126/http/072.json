@@ -1,0 +1,50 @@
+{
+  "event_id": 72,
+  "utc": "2026-11-26T04:48:15.198281+00:00",
+  "completed_utc": "2026-11-26T04:48:15.249017+00:00",
+  "case_hint": "T616-API-01 nonempty data scope",
+  "method": "GET",
+  "path": "/api/v1/tickets?page=0&size=100",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "ba3e9d249181a521665047d4810967abb96ce3f085185bc2d91657edcad47804",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "content": [
+        {
+          "id": 1,
+          "ticketNumber": "HD-2026-0001",
+          "title": "T616 disposable scope fixture 1",
+          "description": "Personal isolated lab fixture. Reset seed after assessment.",
+          "categoryName": "Mạng nội bộ & VPN",
+          "impactLevel": "LOW",
+          "priority": "LOW",
+          "status": "ASSIGNED",
+          "requesterName": "Nguyễn Văn An",
+          "assigneeId": 3,
+          "assigneeName": "Trần Thị Bình",
+          "responseDeadline": "2026-11-26T06:48:11.434141Z",
+          "resolutionDeadline": "2026-11-28T04:48:11.434141Z",
+          "isSlaBreached": false,
+          "resolvedAt": null,
+          "closedAt": null,
+          "createdAt": "2026-11-26T04:48:11.434141Z"
+        }
+      ],
+      "pageNo": 0,
+      "pageSize": 100,
+      "totalElements": 1,
+      "totalPages": 1,
+      "last": true
+    },
+    "timestamp": "2026-11-26T04:48:15.241481754"
+  }
+}

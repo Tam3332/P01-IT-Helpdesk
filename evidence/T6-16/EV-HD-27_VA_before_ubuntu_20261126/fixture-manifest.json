@@ -1,0 +1,13 @@
+{
+  "utc": "2026-11-26T04:48:33.156082+00:00",
+  "created_in": "p01-t616-before only",
+  "category_id": 3,
+  "tickets": [
+    1,
+    2
+  ],
+  "owners": "EMPLOYEE and EMPLOYEE2 seed accounts",
+  "assignees": "IT_STAFF and STAFF2 seed accounts",
+  "cleanup": "Reset isolated project seed after all ZAP roles",
+  "purpose": "Nonempty cross-owner and cross-assignee data scoping; unauthorized details404; allowed DTO fields follow baseline contract"
+}

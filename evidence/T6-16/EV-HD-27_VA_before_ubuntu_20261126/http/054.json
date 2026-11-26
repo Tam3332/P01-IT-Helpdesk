@@ -1,0 +1,32 @@
+{
+  "event_id": 54,
+  "utc": "2026-11-26T04:46:03.113956+00:00",
+  "completed_utc": "2026-11-26T04:46:03.185908+00:00",
+  "case_hint": "T616-API-01 corrected schema detector",
+  "method": "GET",
+  "path": "/api/v1/auth/me",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "bf5bcdcac9172cc87bf92a82cf79fa78e5804f67cd0de485a00a434152ea9d7d",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "id": 3,
+      "username": "[SEED IDENTITY]",
+      "email": "[SEED IDENTITY]",
+      "fullName": "[SEED IDENTITY]",
+      "role": "IT_STAFF",
+      "department": "IT",
+      "isActive": true,
+      "mustChangePassword": "[REDACTED]"
+    },
+    "timestamp": "2026-11-26T04:46:03.180381903"
+  }
+}

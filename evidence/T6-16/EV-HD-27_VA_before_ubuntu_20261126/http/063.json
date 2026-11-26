@@ -1,0 +1,26 @@
+{
+  "event_id": 63,
+  "utc": "2026-11-26T04:46:12.181859+00:00",
+  "completed_utc": "2026-11-26T04:46:43.218899+00:00",
+  "case_hint": "T616-API-05 unauthenticated service path while isolated DB stopped",
+  "method": "POST",
+  "path": "/api/v1/auth/login",
+  "authenticated": false,
+  "http_status": 500,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "a3a73c454e938e3d165b2b426cfba844eef8169248f89eccdb41418fc84e922a",
+  "body": {
+    "success": false,
+    "message": "Đã xảy ra lỗi hệ thống, vui lòng thử lại sau",
+    "error": {
+      "code": "UNCATEGORIZED_EXCEPTION",
+      "message": "Đã xảy ra lỗi hệ thống, vui lòng thử lại sau"
+    },
+    "timestamp": "2026-11-26T04:46:43.207265722"
+  }
+}

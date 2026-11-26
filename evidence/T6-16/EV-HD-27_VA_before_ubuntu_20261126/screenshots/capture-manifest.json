@@ -1,0 +1,13 @@
+{
+  "method": "VirtualBox VBoxManage controlvm screenshotpng; native guest framebuffer",
+  "vm_name": "Ubuntu Server",
+  "vm_uuid": "54d999e5-8d3b-49b0-90d8-cb5b91539a72",
+  "console_source": "show_evidence.py reads saved JSON on Ubuntu and prints read-only summaries to owner tty1",
+  "capture_time": "2026-11-26 approximately12:07 Asia/Saigon; exactUTC is printed in each screenshot",
+  "not_live_scan_screen": "Screenshots are console views of saved runtime results after scans, not screenshots of a graphical ZAP session or Kali",
+  "edits": "None; original PNG framebuffer captures",
+  "files": {
+    "EV-HD-27_VA_before_01_HTTP.png": "fde26174476833bcace338b48211ae549c70bae127ac6fc209d6e92d65dcf392",
+    "EV-HD-27_VA_before_02_ZAP_cleanup.png": "a0b4bd57af0a17bdbe75fe5a78a51c950d5ee4ebd779ec59375727ff023d3689"
+  }
+}

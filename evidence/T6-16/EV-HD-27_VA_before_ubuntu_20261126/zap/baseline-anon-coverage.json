@@ -1,0 +1,50 @@
+[
+  {
+    "id": "4",
+    "request_line": "GET https://127.0.0.1:28443/ HTTP/1.1",
+    "response_status": "HTTP/1.1 200 OK",
+    "auth_header_present": false
+  },
+  {
+    "id": "5",
+    "request_line": "GET https://127.0.0.1:28443 HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": false
+  },
+  {
+    "id": "9",
+    "request_line": "GET https://127.0.0.1:28443/robots.txt HTTP/1.1",
+    "response_status": "HTTP/1.1 200 OK",
+    "auth_header_present": false
+  },
+  {
+    "id": "10",
+    "request_line": "GET https://127.0.0.1:28443/sitemap.xml HTTP/1.1",
+    "response_status": "HTTP/1.1 200 OK",
+    "auth_header_present": false
+  },
+  {
+    "id": "11",
+    "request_line": "GET https://127.0.0.1:28443/assets/constants-BKs4-PTL.js HTTP/1.1",
+    "response_status": "HTTP/1.1 200 OK",
+    "auth_header_present": false
+  },
+  {
+    "id": "12",
+    "request_line": "GET https://127.0.0.1:28443/assets HTTP/1.1",
+    "response_status": "HTTP/1.0 0",
+    "auth_header_present": false
+  },
+  {
+    "id": "13",
+    "request_line": "GET https://127.0.0.1:28443/assets/index-COP-mB6e.css HTTP/1.1",
+    "response_status": "HTTP/1.1 200 OK",
+    "auth_header_present": false
+  },
+  {
+    "id": "14",
+    "request_line": "GET https://127.0.0.1:28443/assets/index-BG6MJ4Sw.js HTTP/1.1",
+    "response_status": "HTTP/1.1 200 OK",
+    "auth_header_present": false
+  }
+]

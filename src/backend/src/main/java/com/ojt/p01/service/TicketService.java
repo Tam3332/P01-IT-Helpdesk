@@ -123,9 +123,9 @@ public class TicketService {
         // 4. Tính priority = impactLevel
         String priority = request.impactLevel();
 
-        // 5. Tra SLA config + tính deadline
+        // 5. Tra SLA config + tính deadline; thiếu cấu hình thì dùng mặc định Low 2h/48h (SRS §3 P2)
         SLAConfig slaConfig = slaConfigRepository.findByPriorityLevel(priority)
-                .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
+                .orElseGet(() -> SlaDefaults.fallback(priority, "CREATE_TICKET"));
 
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime responseDeadline = now.plusMinutes(
@@ -412,8 +412,9 @@ public class TicketService {
             ticket.setStatus(TicketStatus.ASSIGNED.name());
 
             // hạn = created_at + giờ theo SLAConfig của mức ưu tiên chính thức
+            // Thiếu cấu hình thì dùng mặc định Low 2h/48h (SRS §3 P2)
             SLAConfig sla = slaConfigRepository.findByPriorityLevel(newPriority)
-                    .orElseThrow(() -> new AppException(ErrorCode.SLA_CONFIG_NOT_FOUND));
+                    .orElseGet(() -> SlaDefaults.fallback(newPriority, "ASSIGN_TICKET"));
             OffsetDateTime created = ticket.getCreatedAt();
             ticket.setResponseDeadline(created.plusMinutes(toMinutes(sla.getResponseTimeHours().doubleValue())));
             ticket.setResolutionDeadline(created.plusMinutes(toMinutes(sla.getResolutionTimeHours().doubleValue())));

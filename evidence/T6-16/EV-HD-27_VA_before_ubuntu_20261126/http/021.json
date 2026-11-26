@@ -1,0 +1,32 @@
+{
+  "event_id": 21,
+  "utc": "2026-11-26T04:42:51.385977+00:00",
+  "completed_utc": "2026-11-26T04:42:51.460700+00:00",
+  "case_hint": "T616-API-01",
+  "method": "GET",
+  "path": "/api/v1/auth/me",
+  "authenticated": true,
+  "http_status": 200,
+  "headers": {
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Strict-Transport-Security": "max-age=31536000 ; includeSubDomains",
+    "X-Frame-Options": "DENY"
+  },
+  "raw_response_sha256": "e1a33c652b3b34df77b657a0895fd8fbf348fab00f248e9e794c4ecca274ce3e",
+  "body": {
+    "success": true,
+    "message": "Success",
+    "data": {
+      "id": 1,
+      "username": "[SEED IDENTITY]",
+      "email": "[SEED IDENTITY]",
+      "fullName": "[SEED IDENTITY]",
+      "role": "EMPLOYEE",
+      "department": "Kế toán",
+      "isActive": true,
+      "mustChangePassword": "[REDACTED]"
+    },
+    "timestamp": "2026-11-26T04:42:51.449650896"
+  }
+}

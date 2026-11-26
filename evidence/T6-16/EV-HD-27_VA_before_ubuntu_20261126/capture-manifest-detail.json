@@ -1,0 +1,735 @@
+{
+  "captured_on_local_date": "2026-11-26",
+  "method": "Unedited native Microsoft Edge screenshots via CUA",
+  "scope": "Screenshots of existing sanitized reports/JSON; no new HTTP test or ZAP scan was performed during capture",
+  "interpretation": "ZAP images display original sanitized ZAP HTML output, not ZAP desktop GUI. HTTP images display clearly labeled saved-evidence views, not Postman or a live test client. Test timestamps remain in original JSON; capture timestamps are separate.",
+  "screenshot_count": 37,
+  "http_rows_covered": 20,
+  "unique_http_case_ids": 17,
+  "zap_reports_covered": 5,
+  "role_checks_covered": 4,
+  "images": [
+    {
+      "filename": "EV-HD-27_VA_before_03_ZAP_Baseline.jpg",
+      "source": "zap/baseline-anon.html",
+      "captured_utc": "2026-11-26T05:22:04.331388+00:00",
+      "timestamp_basis": "File last-write UTC recorded immediately after native CUA capture",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 134263,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "19f40e7f0ad05d71682dbbfef50fe95de061866b0342eca2c4ab4734ecb67fc4",
+      "source_sha256": "7000946f912652b7f0a6f3628275cc77a6da5f00aa280b167a3874afb2dca5b8",
+      "kind": "original-sanitized-zap-html-report"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_04_ZAP_CSP.jpg",
+      "source": "zap/baseline-anon.html#10055",
+      "captured_utc": "2026-11-26T05:23:20.738Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 227990,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "b8108ca18de611c4d41c445bf9ac6fb85dc5086d2a3cdeb00d9c8c683b19f283",
+      "source_sha256": "7000946f912652b7f0a6f3628275cc77a6da5f00aa280b167a3874afb2dca5b8",
+      "kind": "original-sanitized-zap-html-report"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_05_ZAP_SRI.jpg",
+      "source": "zap/baseline-anon.html#90003",
+      "captured_utc": "2026-11-26T05:23:21.385Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 191000,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "9ba29aab434881c0100fe8c8831ab8d425c10f780c7bbfa06022e1e8e14354cf",
+      "source_sha256": "7000946f912652b7f0a6f3628275cc77a6da5f00aa280b167a3874afb2dca5b8",
+      "kind": "original-sanitized-zap-html-report"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_06_ZAP_HSTS.jpg",
+      "source": "zap/api-admin.html#10035",
+      "captured_utc": "2026-11-26T05:26:58.590Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 180586,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "81d76bfa910a89dfd3c7f25c6020cb47d370f15e2aa0a20e3b41bc375bd7e9aa",
+      "source_sha256": "8e96c9aca9200dad8762021b6dd3d1497c29745f1e082376b29db0f4d9ee30d6",
+      "kind": "original-sanitized-zap-html-report"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_Role_admin.jpg",
+      "source": "zap/api-admin-role-check.json",
+      "captured_utc": "2026-11-26T05:27:05.989Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 39916,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "8f1e948a199281ed88fc5d6060ccd31920cec49d1c141cd9e6ad50d101c22355",
+      "source_sha256": "689e95609705abfe6465953ccba3f79af3793321bd53253b84cca6a1eb6012d7",
+      "kind": "saved-zap-role-check-json"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_Role_employee.jpg",
+      "source": "zap/api-employee-role-check.json",
+      "captured_utc": "2026-11-26T05:27:04.313Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 40427,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "deb61da8d39e491939872894f45ca816a4e0b93edee2671f71711536ccd523c8",
+      "source_sha256": "76574afd8c9cb02d9043067d36efc9438340da512f5d8659033b0f5381b77c18",
+      "kind": "saved-zap-role-check-json"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_Role_it-manager.jpg",
+      "source": "zap/api-it-manager-role-check.json",
+      "captured_utc": "2026-11-26T05:27:05.454Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 39645,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "e9c3a6ed4851e3dc5cfde6afa777699348afc890df656a43163fdb13daa7b54e",
+      "source_sha256": "5c1886ea92736cdd4e8c08f807dfd35189ac0f42a205141b4fad094ce490e805",
+      "kind": "saved-zap-role-check-json"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_Role_it-staff.jpg",
+      "source": "zap/api-it-staff-role-check.json",
+      "captured_utc": "2026-11-26T05:27:04.885Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 39930,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "f947ae29e378e89c55911a5599991328e13f92003a88bc88d3a1910bc5cfb9c8",
+      "source_sha256": "5f303c7f8e5e46e7326e070851dd72be8e34fc8e97d226fe149c26961b183f0f",
+      "kind": "saved-zap-role-check-json"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-admin.jpg",
+      "source": "saved-evidence-views/T616-API-01-admin.html",
+      "captured_utc": "2026-11-26T05:24:51.445Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 136133,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "870ed1a51fd49eaea55576181b72f9e4f4c00eb8aaa82873e0c0bcb1a2b2ffa3",
+      "source_sha256": "d95e9d163fe97f0c1667d1e8960615e5cdedbb4a938e9c4eb16c1999f419b343",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "ADMIN",
+      "original_json_sha256": {
+        "http/060.json": "8c0203b8c49d8d63d37044347b5a541c85fa61a9e4222f290e77130ff4edb140",
+        "http/061.json": "5bed7ccfc12c4c3c321f11cad1f053aa89be71041c63d8882544784856b5c754",
+        "http/062.json": "4fac4ccf48fdc1024b70a149397875f3fc734b5811edf74d52b177dbf78b775f",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/081.json": "96b1c83c0d6b22cc04aad985c542e1026f786bdd75ec4835e0ab5cf95b0eb50e",
+        "http/082.json": "06a2456d603e30ed79b08c7fa57e7bd53179f215b76c5df15059a3bf8ffbb256",
+        "http/083.json": "456953faa0b4d25ed8f62ea39a3e6f833dd124a1211475add32b65902dcba338"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-admin_detail.jpg",
+      "source": "saved-evidence-views/T616-API-01-admin.html",
+      "captured_utc": "2026-11-26T05:24:51.767Z",
+      "method": "Native Edge window screenshot at document bottom; unedited",
+      "bytes": 126791,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "1e20b7ed612bf8cb272f8fd8e4985a8d97971856c3a9663c68dbae4af8129dd7",
+      "source_sha256": "d95e9d163fe97f0c1667d1e8960615e5cdedbb4a938e9c4eb16c1999f419b343",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "ADMIN",
+      "original_json_sha256": {
+        "http/060.json": "8c0203b8c49d8d63d37044347b5a541c85fa61a9e4222f290e77130ff4edb140",
+        "http/061.json": "5bed7ccfc12c4c3c321f11cad1f053aa89be71041c63d8882544784856b5c754",
+        "http/062.json": "4fac4ccf48fdc1024b70a149397875f3fc734b5811edf74d52b177dbf78b775f",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/081.json": "96b1c83c0d6b22cc04aad985c542e1026f786bdd75ec4835e0ab5cf95b0eb50e",
+        "http/082.json": "06a2456d603e30ed79b08c7fa57e7bd53179f215b76c5df15059a3bf8ffbb256",
+        "http/083.json": "456953faa0b4d25ed8f62ea39a3e6f833dd124a1211475add32b65902dcba338"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-employee.jpg",
+      "source": "saved-evidence-views/T616-API-01-employee.html",
+      "captured_utc": "2026-11-26T05:24:48.844Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 128785,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "4793419473fad7eb182c57b1f1e40b8b64a63f0facc9315d7226f32a096bd6c4",
+      "source_sha256": "63796a28f8ca3f08534bd3f198864c3c5f3354b271aa30106e6985e53b15d67f",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "EMPLOYEE",
+      "original_json_sha256": {
+        "http/051.json": "b8825c13651caffb2ca325798c886dc18ef1078d95eac0bd69d86334d4629cdc",
+        "http/052.json": "8d76f5081af51cb8733ba6a63112c9fa0b02ee0e139c630645cd17c9adbac74b",
+        "http/053.json": "9fe021601aadc249bde8d9dcdb9563ad5423ff0d6eeed918eab3c1a25c700f53",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/072.json": "b621cd8a36fba1c14bd4365979ea24aeffaf54c589ab0f35c79592ff5bd041eb",
+        "http/073.json": "4a009a5331ffcde16296168d130e4ed7b6d13710b8b4470df1ae97f0f7a08cec",
+        "http/074.json": "d3605443ea555159d2d8efe292006446a43768f5dcacacf4333d9f30fc815fbf"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-employee_detail.jpg",
+      "source": "saved-evidence-views/T616-API-01-employee.html",
+      "captured_utc": "2026-11-26T05:24:49.171Z",
+      "method": "Native Edge window screenshot at document bottom; unedited",
+      "bytes": 126556,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "c5ac64274a09a76c116208dde6a1adb8adb90592bfd885eccd1e34d55c97b845",
+      "source_sha256": "63796a28f8ca3f08534bd3f198864c3c5f3354b271aa30106e6985e53b15d67f",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "EMPLOYEE",
+      "original_json_sha256": {
+        "http/051.json": "b8825c13651caffb2ca325798c886dc18ef1078d95eac0bd69d86334d4629cdc",
+        "http/052.json": "8d76f5081af51cb8733ba6a63112c9fa0b02ee0e139c630645cd17c9adbac74b",
+        "http/053.json": "9fe021601aadc249bde8d9dcdb9563ad5423ff0d6eeed918eab3c1a25c700f53",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/072.json": "b621cd8a36fba1c14bd4365979ea24aeffaf54c589ab0f35c79592ff5bd041eb",
+        "http/073.json": "4a009a5331ffcde16296168d130e4ed7b6d13710b8b4470df1ae97f0f7a08cec",
+        "http/074.json": "d3605443ea555159d2d8efe292006446a43768f5dcacacf4333d9f30fc815fbf"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-it-manager.jpg",
+      "source": "saved-evidence-views/T616-API-01-it-manager.html",
+      "captured_utc": "2026-11-26T05:24:50.564Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 139640,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "a02eeda4483074c7276e4f3dea8f7ee9bf053864d32576f4cf3873c6095a4c39",
+      "source_sha256": "cf855513d94506d08f6b67f2c62f3ce0e4eb6d3498ca1008d31be10910e02682",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "IT_MANAGER",
+      "original_json_sha256": {
+        "http/057.json": "778b5ed464eeddae8b9f0502b2ba31409099060e2806365bf58ea7dc1af3b647",
+        "http/058.json": "d3662f55b47d14da9f2f634d53f3ce967ab7f0f8db5e7515e9fa7b2341249938",
+        "http/059.json": "83f9a7023d39bdde4094523c8cee98a105a73cfaf9b95378d8f76f1b67a8ac8d",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/078.json": "a365c6d8296ff75153f545910896050569dc8b2c93de4f0774cbd892cae79491",
+        "http/079.json": "a47cede28c12c536e7593e9393aa27fca9b3c773b58655b79334a8c24fb353b6",
+        "http/080.json": "59e2a37c3634abc142140a9e240244e5cf2af11547dca324a1ceed0e54d4c455"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-it-manager_detail.jpg",
+      "source": "saved-evidence-views/T616-API-01-it-manager.html",
+      "captured_utc": "2026-11-26T05:24:50.790Z",
+      "method": "Native Edge window screenshot at document bottom; unedited",
+      "bytes": 112508,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "22d0553c62ed1fe729386f216ed519397abbc9038b292d0b8713f9f3dd5f14ed",
+      "source_sha256": "cf855513d94506d08f6b67f2c62f3ce0e4eb6d3498ca1008d31be10910e02682",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "IT_MANAGER",
+      "original_json_sha256": {
+        "http/057.json": "778b5ed464eeddae8b9f0502b2ba31409099060e2806365bf58ea7dc1af3b647",
+        "http/058.json": "d3662f55b47d14da9f2f634d53f3ce967ab7f0f8db5e7515e9fa7b2341249938",
+        "http/059.json": "83f9a7023d39bdde4094523c8cee98a105a73cfaf9b95378d8f76f1b67a8ac8d",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/078.json": "a365c6d8296ff75153f545910896050569dc8b2c93de4f0774cbd892cae79491",
+        "http/079.json": "a47cede28c12c536e7593e9393aa27fca9b3c773b58655b79334a8c24fb353b6",
+        "http/080.json": "59e2a37c3634abc142140a9e240244e5cf2af11547dca324a1ceed0e54d4c455"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-it-staff.jpg",
+      "source": "saved-evidence-views/T616-API-01-it-staff.html",
+      "captured_utc": "2026-11-26T05:24:49.767Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 131936,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "7ea83f7681607cd2ccfb58d943978c63b754d0fe7582159ea07921afa0044415",
+      "source_sha256": "d5fb6956db37da84709f11e2170c6a4e7578d3ab352886f5e29cbab2bbbdcd37",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "IT_STAFF",
+      "original_json_sha256": {
+        "http/054.json": "a14a7c84da3e4bca60f9572512d2ea7b669a38144c51b87ca34ba78e15d80ae9",
+        "http/055.json": "2fad2450f0875c328ad079ec57644c9b16b8b2d987360a31976e7c17b9fc5eff",
+        "http/056.json": "425c5b449d7ee8c0cd6bd763ccdab589f93840986d81ccb15d96de730ad1f065",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/075.json": "2ac24aa7f2ca9c691fc69a7cd2c6edd6fe52ab1975a514c77e662a2c33ce8909",
+        "http/076.json": "cb23ebece03a8dc4eaad98dbcbc6634cd59e8a76faf2881d0d2a7ca980e73e3c",
+        "http/077.json": "6d86ab66bf8316627b18a0f1c1627d7c90654bba151d1a1a7191d1ab4c1141f8"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-01-it-staff_detail.jpg",
+      "source": "saved-evidence-views/T616-API-01-it-staff.html",
+      "captured_utc": "2026-11-26T05:24:49.991Z",
+      "method": "Native Edge window screenshot at document bottom; unedited",
+      "bytes": 115167,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "2c8145b5f2b3b4e3bf40c2ec3e9fb398ec69c10d8df593dd381adb160f24e0e0",
+      "source_sha256": "d5fb6956db37da84709f11e2170c6a4e7578d3ab352886f5e29cbab2bbbdcd37",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-01",
+      "role": "IT_STAFF",
+      "original_json_sha256": {
+        "http/054.json": "a14a7c84da3e4bca60f9572512d2ea7b669a38144c51b87ca34ba78e15d80ae9",
+        "http/055.json": "2fad2450f0875c328ad079ec57644c9b16b8b2d987360a31976e7c17b9fc5eff",
+        "http/056.json": "425c5b449d7ee8c0cd6bd763ccdab589f93840986d81ccb15d96de730ad1f065",
+        "http/068.json": "241f5e63b8aa9acadd7da2e47fa9ee3dcc3ec040ba482a21fb6ad4d9f6d89744",
+        "http/069.json": "d04edb14afca224479e65c90e84d627fc81b56f53f1ccc291120a785897121ad",
+        "http/070.json": "acb0c61083b52d26387f7929c80e6dd0d4aff8f60035792bb0da79247ff7cf0d",
+        "http/071.json": "8bcd4ccceb449255963d2eb6fb9ea9acfc46e8213ae9f48f65ebd0b1495aba96",
+        "http/075.json": "2ac24aa7f2ca9c691fc69a7cd2c6edd6fe52ab1975a514c77e662a2c33ce8909",
+        "http/076.json": "cb23ebece03a8dc4eaad98dbcbc6634cd59e8a76faf2881d0d2a7ca980e73e3c",
+        "http/077.json": "6d86ab66bf8316627b18a0f1c1627d7c90654bba151d1a1a7191d1ab4c1141f8"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-02-admin.jpg",
+      "source": "saved-evidence-views/T616-API-02-admin.html",
+      "captured_utc": "2026-11-26T05:24:11.560Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 94645,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "cbce77a9a2f827a57e310fc81aa38b030d4da0cb547b7086b672cdfc5095330c",
+      "source_sha256": "e58009b58a8439387675aca02c9a6df22ed2dc535d23ee92e8a0a37099c50fe5",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-02",
+      "role": "ADMIN",
+      "original_json_sha256": {
+        "http/033.json": "45b9195fe388de9ced22d3fa7a37d0e4079e13d02fcef48bb35ffd32d2a44b75"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-03-employee.jpg",
+      "source": "saved-evidence-views/T616-API-03-employee.html",
+      "captured_utc": "2026-11-26T05:24:12.095Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 92480,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "d387103eccc34458210e5d10e5d3a1a4b80f3adfbc3720e672096e54c7f5b278",
+      "source_sha256": "e0117b18fae2d83d4517619a5c845c3564e021943e5bf9c49629639765802ca0",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-03",
+      "role": "EMPLOYEE",
+      "original_json_sha256": {
+        "http/034.json": "077c55e387039c79f2b140218b890c9cbafc13fa79fffb5e42e8d017d15c901f"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-04-employee.jpg",
+      "source": "saved-evidence-views/T616-API-04-employee.html",
+      "captured_utc": "2026-11-26T05:27:15.113Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 110936,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "5f8a19d0f3f27e72f98dfb3e43847ef47f414afead3ede1c72bc9f9c50535743",
+      "source_sha256": "e98c081b7f929cbee230e38828e36240e98005d9af1ced8115d294f09cd6b761",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-04",
+      "role": "EMPLOYEE",
+      "original_json_sha256": {
+        "http/035.json": "2fba31eb39bb35161c5ecadad72f98f68631b69352093139028154f7c4953aae",
+        "http/036.json": "f20c295a8600a518ee8eec791fd8c8e301043595a900bddbc1a1346cf155b8e1"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-04-employee_detail.jpg",
+      "source": "saved-evidence-views/T616-API-04-employee.html",
+      "captured_utc": "2026-11-26T05:27:15.328Z",
+      "method": "Native Edge window screenshot at document bottom; unedited",
+      "bytes": 106207,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "40095e7286fb7363a0fdde4b0ee59a619b4e459f8cc8de35db6b54f2d6f91466",
+      "source_sha256": "e98c081b7f929cbee230e38828e36240e98005d9af1ced8115d294f09cd6b761",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-04",
+      "role": "EMPLOYEE",
+      "original_json_sha256": {
+        "http/035.json": "2fba31eb39bb35161c5ecadad72f98f68631b69352093139028154f7c4953aae",
+        "http/036.json": "f20c295a8600a518ee8eec791fd8c8e301043595a900bddbc1a1346cf155b8e1"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-API-05.jpg",
+      "source": "saved-evidence-views/T616-API-05.html",
+      "captured_utc": "2026-11-26T05:24:52.258Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 103374,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "1c6d5928090da43e3c8256515de0a1b9add2b04cdd01d994def23fd8fe9a8faf",
+      "source_sha256": "2c67fbba793a5015ce6491ec3f4be803ef98077d7ec301b37bed7848d916d1e4",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-API-05",
+      "role": "",
+      "original_json_sha256": {
+        "http/063.json": "9a0ed9c1a76cfeeb3619a51f57063318c31d4ebe24f40979a07f876f173d649e"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-01.jpg",
+      "source": "saved-evidence-views/T616-AUTH-01.html",
+      "captured_utc": "2026-11-26T05:26:51.482Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 91444,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "d89becb39331d54676e7e6bcfac96ca4af58d7addb77b1adac36c875bde2c50e",
+      "source_sha256": "37ebffb06fb7c769543e6ce4718cd94b24c1f087c1ebf548ccecb4732bd3fc77",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-01",
+      "role": "",
+      "original_json_sha256": {
+        "http/009.json": "a061030f42620f1668a66b0f34587e2d2d36b9a5e2a099a4ae5436616896521d"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-02.jpg",
+      "source": "saved-evidence-views/T616-AUTH-02.html",
+      "captured_utc": "2026-11-26T05:26:52.216Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 88898,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "a97ee2c3e7d00bc213ff28f1ce3b46dec1208ec85ba41665e52c4768a9acfce3",
+      "source_sha256": "3858613e45e79c17cbd2864e49d46e78c1de55fbcccff0bbb0e615daf86c437d",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-02",
+      "role": "",
+      "original_json_sha256": {
+        "http/010.json": "397ecc10bb371d62f11138a2dda0f84fe075b74916b0264456cac9b282483dc0"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-03.jpg",
+      "source": "saved-evidence-views/T616-AUTH-03.html",
+      "captured_utc": "2026-11-26T05:26:52.816Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 91829,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "ee1ad559c895e20f911429c8c5b2315e1fb2dad3b8feb531c049216f951e2b57",
+      "source_sha256": "1df66e504d31a52da996a277ad56af8ead15cb29182aef179a7b132259dea5e2",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-03",
+      "role": "",
+      "original_json_sha256": {
+        "http/011.json": "af59c54d4141ec35864bd5f9661c459b62e1a3a09de011a1953845bb1f4604a8"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-04.jpg",
+      "source": "saved-evidence-views/T616-AUTH-04.html",
+      "captured_utc": "2026-11-26T05:26:57.503Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 91576,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "df9b1448293e5cf4fffc1098c06a52e33fd73cad89a63460e8b51e528228c478",
+      "source_sha256": "4ddd4198e6d395d0ddbe58c64adda9e5721bd6c35f7cc29c57e5e93f829194aa",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-04",
+      "role": "",
+      "original_json_sha256": {
+        "http/012.json": "13d38a216d712f096bc6a800bbe5866c30bc9a7f6252eda258bcaecaef1ee735"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-05.jpg",
+      "source": "saved-evidence-views/T616-AUTH-05.html",
+      "captured_utc": "2026-11-26T05:26:58.038Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 92017,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "7fc3b8cd32977aea13f69129686a04094d52bb586857b719330e117bb912ac6e",
+      "source_sha256": "27e14a875c10633239c6979c4e0e2fa68204cc8d605693db95a71911365b32c7",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-05",
+      "role": "",
+      "original_json_sha256": {
+        "http/013.json": "b5f17de4430ce5dc8d5c584b8835db4dc02ab7f1fb8d99500e8348363bc26b83"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-06.jpg",
+      "source": "saved-evidence-views/T616-AUTH-06.html",
+      "captured_utc": "2026-11-26T05:24:09.875Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 116680,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "83c5063995701c68612baee212f12c7103725840f54e123ade5f2fc4238c651d",
+      "source_sha256": "f25d2e23e552a0d73ee7527a269cba7e5ce70d3beaac3142d8442846f617d2e4",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-06",
+      "role": "",
+      "original_json_sha256": {
+        "http/014.json": "19a1926edab8fb4af0d26c3423ef3f27b516b00bc9cb1a545c97e9e0ac541dd5",
+        "http/015.json": "067758e4ac2f5fd0bdb2c1d2fc0859db98757bee494054163ee2548d5bcf65bf"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-07.jpg",
+      "source": "saved-evidence-views/T616-AUTH-07.html",
+      "captured_utc": "2026-11-26T05:24:10.435Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 111234,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "7f823b3cde834710044b25da465458297059dc43c04350a7bd7fc0d9311b6de1",
+      "source_sha256": "980f453c41890b1880565e5ca926e0d0ec01c6652f6d524f10611da0938f1c4e",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-07",
+      "role": "",
+      "original_json_sha256": {
+        "http/016.json": "652432c1d98c7683286755018d3bff2013ae3826bcd90fe02e4b1e4b7cb35a50",
+        "http/017.json": "652aa50547039dd3e14f21eb6b998dc78d6f7ba61251d30dd7db21c1c695e7e4"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-08.jpg",
+      "source": "saved-evidence-views/T616-AUTH-08.html",
+      "captured_utc": "2026-11-26T05:24:10.988Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 121565,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "fe823f6d7fee106de9c3276b35680e54341daba634e8c1537329d6fb1430a9f2",
+      "source_sha256": "aabfa1bd83a9b60b1e3d983c9cc6cc8eef93d5b9ef86dc9c1f074427367e089e",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-08",
+      "role": "",
+      "original_json_sha256": {
+        "http/019.json": "076b569755eb472ec0dd4eae550fd309e2383c32aada6c6353d2c28a633b255c",
+        "http/020.json": "3f40ce04c28cbd2aab3dcf4ba20abdebed2773b6cce36aae82491d7484afc4ee"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-AUTH-09-employee.jpg",
+      "source": "saved-evidence-views/T616-AUTH-09-employee.html",
+      "captured_utc": "2026-11-26T05:24:35.667Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 120718,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "cb52edb7c649f8be2707a092dbad6ea4ccb766037e9f98cd51acd414d6c7c075",
+      "source_sha256": "b002a36d9b7715e4d60dfe689083adacad56ec95b1c3e9b4a2392ffb1711fb83",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-AUTH-09",
+      "role": "EMPLOYEE",
+      "original_json_sha256": {
+        "http/040.json": "0c60a93a4c7324aaf1dde5d7c89b1080532ac9f8cfdb616c0f328cbdde938128",
+        "http/041.json": "acf65fa863a5d119765c93aef9282c3fe133e8f21717969509bb4f0346b63259"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-EDGE-01.jpg",
+      "source": "saved-evidence-views/T616-EDGE-01.html",
+      "captured_utc": "2026-11-26T05:24:34.060Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 104550,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "26083c7bc538743f2bae2ad797ffd2ed68ecce56a670cbea244b4aaf8d154efc",
+      "source_sha256": "42e3885ea8514bee5abd81b773df9cce64277278c822a6d4109d59c431932910",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-EDGE-01",
+      "role": "",
+      "original_json_sha256": {
+        "http/037.json": "37e86a34223423544ba4c2d8f1b66fe4a94e95ce08ddc43147ebc87c35f6b442"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-EDGE-02.jpg",
+      "source": "saved-evidence-views/T616-EDGE-02.html",
+      "captured_utc": "2026-11-26T05:24:34.577Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 105369,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "9ba59790dc47522194918614b2b3f150439b68fcd0a08556713ac167ebf3b53b",
+      "source_sha256": "34ca2067c3cdaf8a5ead9ce8774c5c7e936842cb5b1e37aca9e1ecee98800da4",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-EDGE-02",
+      "role": "",
+      "original_json_sha256": {
+        "http/038.json": "83148016bd17e99fc038d706412bb11e994f37e586d0f0175a02cd004fbee941"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_T616-EDGE-03.jpg",
+      "source": "saved-evidence-views/T616-EDGE-03.html",
+      "captured_utc": "2026-11-26T05:24:35.095Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 136355,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "d097cffa16c8b071502052a885a2da271321e2829798e8834e66f711f4f88897",
+      "source_sha256": "acf0002132b4f8ede3fde6950d6f1b3ddc9050071ce37608244a3e41ff8feff4",
+      "kind": "saved-http-evidence-view",
+      "case_id": "T616-EDGE-03",
+      "role": "",
+      "original_json_sha256": {
+        "http/039.json": "e1d22d9338faa63a87d4f2b983ee6f5292eb565445c2697d8bff6f5b89c7ab21"
+      }
+    },
+    {
+      "filename": "EV-HD-27_VA_before_ZAP_ADMIN.jpg",
+      "source": "zap/api-admin.html",
+      "captured_utc": "2026-11-26T05:23:31.357Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 124220,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "65f4e20d1e670d4f33d2b320c7361b781056d69400023c662d11a54d677da0fb",
+      "source_sha256": "8e96c9aca9200dad8762021b6dd3d1497c29745f1e082376b29db0f4d9ee30d6",
+      "kind": "original-sanitized-zap-html-report"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_ZAP_EMPLOYEE.jpg",
+      "source": "zap/api-employee.html",
+      "captured_utc": "2026-11-26T05:23:29.305Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 124125,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "76127c720cbbe5fd19a6810009c719d9acc46816ebd02a1bceb886b13d3b95d0",
+      "source_sha256": "bf57f4152735120d339d32a1adbc6c9691b811c0881dc5a7b6336d3b6164c794",
+      "kind": "original-sanitized-zap-html-report"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_ZAP_IT_MANAGER.jpg",
+      "source": "zap/api-it-manager.html",
+      "captured_utc": "2026-11-26T05:23:30.623Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 124045,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "5738651594c2fb8d2464f6e7e4d514f8ab9d37570b9fdad6d482758576c161be",
+      "source_sha256": "2f155e01667c3a94e82a88e3016755ad7e5e11a3ab3a6278401c958f27144659",
+      "kind": "original-sanitized-zap-html-report"
+    },
+    {
+      "filename": "EV-HD-27_VA_before_ZAP_IT_STAFF.jpg",
+      "source": "zap/api-it-staff.html",
+      "captured_utc": "2026-11-26T05:23:29.954Z",
+      "method": "Native Edge window screenshot via CUA; unedited",
+      "bytes": 124026,
+      "dimensions": [
+        1536,
+        960
+      ],
+      "sha256": "45ca873d2e9c3ff3598b1d4a41d089bbeb29c87f3f0df5600eaa3a0e124027d1",
+      "source_sha256": "c516166599bc1361dc2691af3c9b9d5a17d203e6b0e445db2fc9fc65737ef082",
+      "kind": "original-sanitized-zap-html-report"
+    }
+  ]
+}
