@@ -3,7 +3,7 @@
 ## Thành phần
 | Dịch vụ | Container | Ghi chú |
 |---|---|---|
-| postgres | p01-db | PostgreSQL 16, nạp `database/schema.sql`, `init_data.sql`, `init_demo_users.sql` lần đầu |
+| postgres | p01-db | PostgreSQL 18, nạp `database/schema.sql`, `init_data.sql`, `init_demo_users.sql` lần đầu |
 | backend | p01-backend | Spring Boot (Java 21), build từ `src/backend/Dockerfile` |
 | frontend | p01-frontend | React build bằng Vite, Nginx phục vụ file tĩnh |
 | nginx | p01-gateway | Cổng duy nhất ra ngoài (443, TLS tự ký), giới hạn tốc độ, header bảo mật |
@@ -86,7 +86,7 @@ Chạy lệnh Docker Compose bằng `sudo` vì tài khoản `nhi` không thuộc
 ### Cách sử dụng lab chung
 - Thành viên kết nối Tailscale và truy cập `https://<IP-VM>:8443/login`; liên hệ Nhi nếu chưa được cấp quyền vào tailnet.
 - VM là môi trường dùng chung. Không tự ý `git pull`, checkout phiên bản khác hoặc chạy `docker compose up -d --build` trên VM.
-- Dùng `sudo docker compose start|stop|restart` để điều khiển dịch vụ; xem log bằng `sudo docker compose logs --tail=100`.
+- Điều khiển dịch vụ bằng một trong các lệnh: `sudo docker compose start`, `sudo docker compose stop` hoặc `sudo docker compose restart`; xem log bằng `sudo docker compose logs --tail=100`.
 - Không chạy `docker compose down -v` vì lệnh này xóa volume dữ liệu.
 - Trình duyệt có thể cảnh báo chứng chỉ; phần xử lý/cấu hình TLS sẽ do IA phối hợp thực hiện ở bước riêng.
 
