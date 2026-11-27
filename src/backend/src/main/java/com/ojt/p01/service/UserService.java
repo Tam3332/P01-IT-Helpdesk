@@ -30,6 +30,10 @@ import java.util.List;
 @Service
 public class UserService {
 
+    // Độ dài mật khẩu tạm khi Admin đặt lại (khớp ChangePasswordRequest: 8–100 ký tự)
+    static final int MIN_RESET_PASSWORD_LENGTH = 8;
+    static final int MAX_RESET_PASSWORD_LENGTH = 100;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final AuditLogger auditLogger;
@@ -181,9 +185,15 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        String passToSet = (newPassword != null && !newPassword.trim().isBlank()) ? newPassword.trim() : "Demo@12345";
-        if (passToSet.length() < 6) {
-            throw new AppException(ErrorCode.VALIDATION_FAILED, "Mật khẩu đặt lại phải có ít nhất 6 ký tự");
+        // BUG-HD-012: không còn mật khẩu dự phòng cố định trong mã nguồn khi Admin để trống.
+        // Admin phải tự nhập mật khẩu tạm (8–100 ký tự, cùng ràng buộc với đổi mật khẩu) và báo người dùng qua kênh quản trị;
+        // người dùng bắt buộc đổi lại ở lần đăng nhập sau (mustChangePassword).
+        String passToSet = newPassword != null ? newPassword.trim() : "";
+        if (passToSet.isEmpty()) {
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Vui lòng nhập mật khẩu tạm thời cho người dùng");
+        }
+        if (passToSet.length() < MIN_RESET_PASSWORD_LENGTH || passToSet.length() > MAX_RESET_PASSWORD_LENGTH) {
+            throw new AppException(ErrorCode.VALIDATION_FAILED, "Mật khẩu tạm thời phải dài từ 8 đến 100 ký tự");
         }
 
         user.setPasswordHash(passwordEncoder.encode(passToSet));

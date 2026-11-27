@@ -1465,7 +1465,7 @@ paths:
     post:
       tags: [Admin & Users]
       summary: Đặt lại mật khẩu cho người dùng (ADMIN)
-      description: Đặt lại mật khẩu ngẫu nhiên hoặc theo mật khẩu Admin chỉ định, và bật cờ yêu cầu đổi mật khẩu khi đăng nhập lại. Sau thao tác, mọi token cấp trước đó của tài khoản này không dùng được nữa (401), người dùng phải đăng nhập lại (BUG-HD-008, credentials_updated_at).
+      description: Admin nhập mật khẩu tạm thời (8–100 ký tự, bắt buộc; không còn mật khẩu mặc định khi để trống – BUG-HD-012) và hệ thống bật cờ yêu cầu đổi mật khẩu khi đăng nhập lại. Admin không tự đặt lại mật khẩu của chính mình (403, dùng chức năng đổi mật khẩu). Sau thao tác, mọi token cấp trước đó của tài khoản này không dùng được nữa (401), người dùng phải đăng nhập lại (BUG-HD-008, credentials_updated_at).
       security:
         - BearerAuth: []
       parameters:
@@ -1475,16 +1475,19 @@ paths:
           schema:
             type: integer
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [newPassword]
               properties:
                 newPassword:
                   type: string
                   format: password
-                  example: ResetPass@123
+                  minLength: 8
+                  maxLength: 100
+                  description: Mật khẩu tạm thời do Admin nhập, người dùng phải đổi ở lần đăng nhập sau
       responses:
         '200':
           description: Đặt lại mật khẩu thành công
