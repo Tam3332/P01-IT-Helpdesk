@@ -1,0 +1,27 @@
+P01 T6-15 - NGINX SYNTAX CHECK ON PERSONAL UBUNTU
+UTC: 2026-11-26T03:45:59.097644+00:00
+Kernel: 6.8.0-149-generic
+Config SHA256: b99e9a409f71762a432804af4d4d3d1875bd784c913f2a2d40569a61c0b33b33
+Image: owasp/modsecurity-crs@sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3
+Test scope: temporary containers; network=none; no published ports.
+Existing application, project and volumes are not changed.
+Image ID: sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3
+Image default user: nginx
+TLS retest: private copy; UID=101 GID=101; key=0400 dir=0700
+Original server.key: UID=0 GID=0 mode=0o600
+
+MODE: DetectionOnly | PL1 | inbound=5 outbound=4 | command: nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+ACTUAL: PASS exit_code= 0
+
+MODE: On | PL1 | inbound=5 outbound=4 | command: nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+ACTUAL: PASS exit_code= 0
+Temporary private TLS copy removed: True
+Source key permissions/content metadata unchanged: True
+
+RESULT: SYNTAX_PASS
+This is syntax-only. WAF block / valid-flow / UI / R3 are NOT RUN.
+Logs: /home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu/evidence-ubuntu/nginx-after

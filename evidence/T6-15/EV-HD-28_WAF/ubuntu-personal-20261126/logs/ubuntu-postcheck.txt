@@ -1,0 +1,34 @@
+2026-11-26T03:47:45+00:00
+
+REPO=/home/khiem/P01-IT-Helpdesk
+## main...origin/main [behind 190]
+ M docker-compose.yml
+ M src/frontend/Dockerfile
+?? nginx/
+e60f5b3182f56584cf05bcab3df95eacb3a91d0a Merge pull request #11 from Tam3332/tri/be
+
+REPO=/home/khiem/P01-IT-Helpdesk-week4
+## HEAD (no branch)
+?? P01-IT-Helpdesk/
+38a5a29400feeb4ba164b85448e920e140a19a5b Merge pull request #38 from Tam3332/khiem/t5-15-waf-integration
+
+REPO=/home/khiem/P01-IT-Helpdesk-t5-15
+## t5-15-waf
+ M docker-compose.yml
+?? nginx/nginx-waf.conf
+07c71af4f49ec595eae431b3ea679f1e0fb11c21 Merge pull request #28 from Tam3332/hoa/t5-monitoring-v2
+
+REPO=/home/khiem/P01-IT-Helpdesk-t5-16
+## HEAD (no branch)
+35c573d20d4244985e617e8a056f880faaadf1db evidence(T3-07, T4-07): doi ma EV theo quy uoc T5-09
+
+SOURCE_KEY_STAT
+600 root root 1704 /home/khiem/P01-IT-Helpdesk-week4/nginx/ssl/server.key
+
+TLS_TEMP_DIRS_REMAINING
+
+VERIFIED_CONFIG_HASHES
+b99e9a409f71762a432804af4d4d3d1875bd784c913f2a2d40569a61c0b33b33  /home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu/T6-15/candidate/nginx/nginx-waf.conf
+904a79491435d63b8c3cd2305652fc0f066698b82018e373b2f37dd9bea09dde  /home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu/T6-15/candidate/docker-compose.yml
+34fd9e2483cd502922cc20c87c9a12fcec6be288e469116b6852d90b7d0218da  /home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu/run_nginx_syntax_ubuntu.py
+e312ffacd8842dd07ef082e108ce8a1c43b36b295e786dca145365bacbce16b4  /home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu/retest_secure_tls_ubuntu.py

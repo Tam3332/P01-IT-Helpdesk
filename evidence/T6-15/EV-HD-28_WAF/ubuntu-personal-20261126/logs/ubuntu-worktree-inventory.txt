@@ -1,0 +1,29 @@
+HOME=/home/khiem
+CONSOLE=WRITABLE
+
+REPO=/home/khiem/P01-IT-Helpdesk
+## main...origin/main [behind 190]
+ M docker-compose.yml
+ M src/frontend/Dockerfile
+?? nginx/
+e60f5b3182f56584cf05bcab3df95eacb3a91d0a Merge pull request #11 from Tam3332/tri/be
+SSL_DIR=/home/khiem/P01-IT-Helpdesk/nginx/ssl
+
+REPO=/home/khiem/P01-IT-Helpdesk-week4
+## HEAD (no branch)
+?? P01-IT-Helpdesk/
+38a5a29400feeb4ba164b85448e920e140a19a5b Merge pull request #38 from Tam3332/khiem/t5-15-waf-integration
+SSL_DIR=/home/khiem/P01-IT-Helpdesk-week4/nginx/ssl
+
+REPO=/home/khiem/P01-IT-Helpdesk-t5-15
+## t5-15-waf
+ M docker-compose.yml
+?? nginx/nginx-waf.conf
+07c71af4f49ec595eae431b3ea679f1e0fb11c21 Merge pull request #28 from Tam3332/hoa/t5-monitoring-v2
+SSL_DIR=/home/khiem/P01-IT-Helpdesk-t5-15/nginx/ssl
+
+REPO=/home/khiem/P01-IT-Helpdesk-t5-16
+## HEAD (no branch)
+35c573d20d4244985e617e8a056f880faaadf1db evidence(T3-07, T4-07): doi ma EV theo quy uoc T5-09
+
+NEW_CHECK_DIR=/home/khiem/P01-T6-kiem-tra-Qg6ffzJW
