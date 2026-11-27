@@ -22,7 +22,7 @@ export const NAV = {
     { path: '/manager', label: 'Tổng quan', icon: 'home', subtitle: 'Hàng đợi ticket, tình trạng SLA và yêu cầu mở lại.' },
     { path: '/manager/tickets', label: 'Quản lý ticket', icon: 'list', subtitle: 'Toàn bộ ticket, phân công và phân công lại người xử lý.' },
     { path: '/manager/sla', label: 'Giám sát SLA', icon: 'clock', subtitle: 'Thời hạn xử lý của mọi ticket đang mở.' },
-    { path: '/manager/reopen-requests', label: 'Yêu cầu mở lại', icon: 'refresh', subtitle: 'Xem xét lý do và quyết định mở lại ticket đã đóng.' },
+    { path: '/manager/reopen-requests', label: 'Yêu cầu mở lại', icon: 'refresh', subtitle: 'Xem xét lý do và quyết định mở lại ticket đã giải quyết.' },
   ],
   [A]: [
     { path: '/admin', label: 'Tổng quan', icon: 'home', subtitle: 'Người dùng, cấu hình hệ thống và nhật ký chỉ đọc.' },

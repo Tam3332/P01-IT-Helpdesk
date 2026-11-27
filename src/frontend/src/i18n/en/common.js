@@ -64,7 +64,6 @@ export default {
   'Hàng đợi ticket, tình trạng SLA và yêu cầu mở lại.': 'Ticket queue, SLA status and reopen requests.',
   'Toàn bộ ticket, phân công và phân công lại người xử lý.': 'All tickets, assignment and reassignment.',
   'Thời hạn xử lý của mọi ticket đang mở.': 'Resolution deadlines for every open ticket.',
-  'Xem xét lý do và quyết định mở lại ticket đã đóng.': 'Review reasons and decide whether to reopen closed tickets.',
   'Người dùng, cấu hình hệ thống và nhật ký chỉ đọc.': 'Users, system settings and a read-only log.',
   'Toàn bộ ticket ở chế độ chỉ đọc.': 'All tickets in read-only mode.',
   'Tạo tài khoản, gán vai trò, khóa hoặc kích hoạt tài khoản.': 'Create accounts, assign roles, lock or activate accounts.',
