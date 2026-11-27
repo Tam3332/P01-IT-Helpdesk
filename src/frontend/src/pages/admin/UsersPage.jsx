@@ -231,8 +231,7 @@ function RoleDialog({ user, onClose, onDone }) {
 }
 
 function ResetPasswordDialog({ user, onClose, onDone }) {
-  const [pass, setPass] = useState('Demo@12345')
-  const [useDefault, setUseDefault] = useState(true)
+  const [pass, setPass] = useState('')
 
   return (
     <Modal
@@ -241,9 +240,9 @@ function ResetPasswordDialog({ user, onClose, onDone }) {
       okClass="warn"
       onClose={onClose}
       onOk={async () => {
-        const targetPass = useDefault ? 'Demo@12345' : pass.trim()
+        const targetPass = pass.trim()
         if (!targetPass) throw new Error(t('Vui lòng nhập mật khẩu.'))
-        if (targetPass.length < 6) throw new Error(t('Mật khẩu phải có ít nhất 6 ký tự.'))
+        if (targetPass.length < 8 || targetPass.length > 100) throw new Error(t('Mật khẩu phải có từ 8 đến 100 ký tự.'))
         await wrap(() => adminResetPassword(user.id, targetPass), 'Không đặt lại được mật khẩu.')
         onDone(t('Đã đặt lại mật khẩu cho {name}. Người dùng phải đổi mật khẩu khi đăng nhập.', { name: user.fullName }))
       }}
@@ -251,32 +250,17 @@ function ResetPasswordDialog({ user, onClose, onDone }) {
       <p className="muted">
         {t('Cấp lại mật khẩu cho tài khoản')} <b>{user.fullName}</b> (<code>{user.email}</code>).
       </p>
-      <div style={{ marginBottom: 12 }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-          <input
-            type="checkbox"
-            checked={useDefault}
-            onChange={(e) => {
-              setUseDefault(e.target.checked)
-              if (e.target.checked) setPass('Demo@12345')
-            }}
-          />
-          <span>{t('Dùng mật khẩu mặc định')} (<code>Demo@12345</code>)</span>
-        </label>
-      </div>
-      {!useDefault && (
-        <Field label={t('Mật khẩu tạm thời mới')} required htmlFor="rp-pass" hint={t('Tối thiểu 6 ký tự')}>
-          <input
-            className="in"
-            id="rp-pass"
-            type="text"
-            autoComplete="off"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            placeholder={t('Nhập mật khẩu tạm thời')}
-          />
-        </Field>
-      )}
+      <Field label={t('Mật khẩu tạm thời mới')} required htmlFor="rp-pass" hint={t('Từ 8 đến 100 ký tự')}>
+        <input
+          className="in"
+          id="rp-pass"
+          type="text"
+          autoComplete="off"
+          value={pass}
+          onChange={(e) => setPass(e.target.value)}
+          placeholder={t('Nhập mật khẩu tạm thời')}
+        />
+      </Field>
       <div className="banner info" style={{ marginTop: 12 }}>
         <Icon name="shield" />
         <div className="sm">
