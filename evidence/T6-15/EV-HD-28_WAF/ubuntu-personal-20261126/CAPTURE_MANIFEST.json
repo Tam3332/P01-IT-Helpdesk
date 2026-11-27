@@ -1,0 +1,23 @@
+[
+  {
+    "file": "01_38-kiem-tra-Ubuntu.png",
+    "sha256": "a806263982d7976de77e9612a1b3231dbb9b2a50cc1883c793a73dbae8aee82f",
+    "width": 1280,
+    "height": 800,
+    "source": "VirtualBox screenshotpng; original framebuffer; no image editing"
+  },
+  {
+    "file": "02_nginx-t_before_key_permission.png",
+    "sha256": "77d547b60dcabd27beb96f09c5b512775143dfd336df5429755a227a8db61655",
+    "width": 1280,
+    "height": 800,
+    "source": "VirtualBox screenshotpng; original framebuffer; no image editing"
+  },
+  {
+    "file": "03_nginx-t_after_secure_tls.png",
+    "sha256": "921438689eb3a8f03967eaf373d1076a4017154301372b19fd30d2311b00690a",
+    "width": 1280,
+    "height": 800,
+    "source": "VirtualBox screenshotpng; original framebuffer; no image editing"
+  }
+]

@@ -1,0 +1,49 @@
+P01 T6-15 - NGINX SYNTAX CHECK ON PERSONAL UBUNTU
+UTC: 2026-11-26T03:43:12.624551+00:00
+Kernel: 6.8.0-149-generic
+Config SHA256: b99e9a409f71762a432804af4d4d3d1875bd784c913f2a2d40569a61c0b33b33
+Image: owasp/modsecurity-crs@sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3
+Test scope: temporary containers; network=none; no published ports.
+Existing application, project and volumes are not changed.
+Image ID: sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3
+Image default user: nginx
+
+MODE: DetectionOnly | PL1 | inbound=5 outbound=4 | command: nginx -t
+nginx: [emerg] cannot load certificate key "/etc/nginx/ssl/server.key": BIO_new_file() failed (SSL: error:8000000D:system library::Permission denied:calling fopen(/etc/nginx/ssl/server.key, r) error:10080002:BIO routines::system lib)
+nginx: configuration file /etc/nginx/nginx.conf test failed
+ERROR DETAIL:
+
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/96-update-http3-config.sh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/97-update-ssl-client-verify-config.sh
+/docker-entrypoint.d/97-update-ssl-client-verify-config.sh: client certificate verification disabled
+/docker-entrypoint.sh: Ignoring /docker-entrypoint.d/configure-rules.v3.conf
+/docker-entrypoint.sh: Ignoring /docker-entrypoint.d/configure-rules.v4.conf
+/docker-entrypoint.sh: Configuration complete; ready for start up
+Warning: Not placing -key in cert or request since request is used
+Warning: No -copy_extensions given; ignoring any extensions in the request
+2026/11/26 03:43:15 [emerg] 1#1: cannot load certificate key "/etc/nginx/ssl/server.key": BIO_new_file() failed (SSL: error:8000000D:system library::Permission denied:calling fopen(/etc/nginx/ssl/server.key, r) error:10080002:BIO routines::system lib)
+nginx: [emerg] cannot load certificate key "/etc/nginx/ssl/server.key": BIO_new_file() failed (SSL: error:8000000D:system library::Permission denied:calling fopen(/etc/nginx/ssl/server.key, r) error:10080002:BIO routines::system lib)
+nginx: configuration file /etc/nginx/nginx.conf test failed
+ACTUAL: FAIL exit_code= 1
+
+MODE: On | PL1 | inbound=5 outbound=4 | command: nginx -t
+nginx: [emerg] cannot load certificate key "/etc/nginx/ssl/server.key": BIO_new_file() failed (SSL: error:8000000D:system library::Permission denied:calling fopen(/etc/nginx/ssl/server.key, r) error:10080002:BIO routines::system lib)
+nginx: configuration file /etc/nginx/nginx.conf test failed
+ERROR DETAIL:
+
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/96-update-http3-config.sh
+/docker-entrypoint.sh: Launching /docker-entrypoint.d/97-update-ssl-client-verify-config.sh
+/docker-entrypoint.d/97-update-ssl-client-verify-config.sh: client certificate verification disabled
+/docker-entrypoint.sh: Ignoring /docker-entrypoint.d/configure-rules.v3.conf
+/docker-entrypoint.sh: Ignoring /docker-entrypoint.d/configure-rules.v4.conf
+/docker-entrypoint.sh: Configuration complete; ready for start up
+Warning: Not placing -key in cert or request since request is used
+Warning: No -copy_extensions given; ignoring any extensions in the request
+2026/11/26 03:43:18 [emerg] 1#1: cannot load certificate key "/etc/nginx/ssl/server.key": BIO_new_file() failed (SSL: error:8000000D:system library::Permission denied:calling fopen(/etc/nginx/ssl/server.key, r) error:10080002:BIO routines::system lib)
+nginx: [emerg] cannot load certificate key "/etc/nginx/ssl/server.key": BIO_new_file() failed (SSL: error:8000000D:system library::Permission denied:calling fopen(/etc/nginx/ssl/server.key, r) error:10080002:BIO routines::system lib)
+nginx: configuration file /etc/nginx/nginx.conf test failed
+ACTUAL: FAIL exit_code= 1
+
+RESULT: SYNTAX_FAILED
+This is syntax-only. WAF block / valid-flow / UI / R3 are NOT RUN.
+Logs: /home/khiem/P01-T6-kiem-tra-Qg6ffzJW/P01-kiem-tra-Ubuntu/evidence-ubuntu

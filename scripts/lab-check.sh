@@ -4,12 +4,16 @@
 # Chụp màn hình kết quả làm bằng chứng (EV) cho T3-14. Script chỉ đọc, không sửa dữ liệu.
 PORT="${1:-443}"
 BASE="https://localhost:${PORT}"
-PASS="${DEMO_PASSWORD:-Demo@12345}"
+PASS="${DEMO_PASSWORD:-}"
+if [ -z "$PASS" ]; then
+  printf '%s\n' 'Thiếu DEMO_PASSWORD: cung cấp mật khẩu lab qua biến môi trường, không ghi vào repo hoặc ảnh.' >&2
+  exit 2
+fi
 ok() { printf '  [ OK ] %s\n' "$1"; }
 bad() { printf '  [LỖI] %s\n' "$1"; FAIL=1; }
 FAIL=0
 
-echo "1) Trạng thái container (cần 5 dòng: db, backend, frontend, gateway đều Up; db/backend/frontend healthy)"
+echo "1) Trạng thái container (db, backend, frontend, gateway đều Up; kiểm health nếu dịch vụ có healthcheck)"
 docker compose ps
 
 echo; echo "2) Cổng dự án mở ra ngoài (chỉ ${PORT}; db và backend không được publish)"
@@ -23,9 +27,11 @@ for sp in "postgres 5432" "backend 8080"; do
     *) bad "$1 (cổng $2) đang publish: $pub" ;;
   esac
 done
-pub=$(docker compose port nginx 443 2>/dev/null)
+# GATEWAY_CONTAINER_PORT hỗ trợ baseline cũ 443; WAF hiện hành nghe 8443.
+gateway_port="${GATEWAY_CONTAINER_PORT:-8443}"
+pub=$(docker compose port nginx "$gateway_port" 2>/dev/null)
 case "$pub" in
-  ""|*:0) bad "gateway không publish cổng 443" ;;
+  ""|*:0) bad "gateway không publish cổng nội bộ $gateway_port" ;;
   *) ok "gateway publish HTTPS: $pub" ;;
 esac
 if command -v ss >/dev/null 2>&1; then echo "  (tham khảo) cổng đang nghe trên cả VM:"; ss -tln | grep -E ":(${PORT}|5432|8080|80)\b" | sed 's/^/    /' || true; fi
@@ -48,7 +54,7 @@ for u in employee staff manager admin; do
     me=$(curl -ks "$BASE/api/v1/auth/me" -H "Authorization: Bearer $tok" | sed -n 's/.*"role[^"]*":"\([A-Z_]*\)".*/\1/p' | head -1)
     ok "$u@helpdesk.local đăng nhập được (vai trò: ${me:-?}); token không in ra"
   else
-    bad "$u@helpdesk.local không đăng nhập được: $(printf '%s' "$body" | cut -c1-160)"
+    bad "$u@helpdesk.local không đăng nhập được (không in body đăng nhập)"
   fi
 done
 

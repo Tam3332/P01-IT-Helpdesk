@@ -1,9 +1,13 @@
 # Triển khai P01 bằng Docker Compose (VM Ubuntu lab)
 
+## Bàn giao WAF T6 15 ngày 26 tháng 11 năm 2026
+
+Phần WAF đã có trên main qua PR #38; follow-up chuẩn bị cho Nhi review và Chính deploy theo [hướng dẫn riêng](evidence/T6-15/DEPLOY_CHINH.md). Dùng đúng SHA đã review trên project/volumes hiện hành, DetectionOnly trước rồi On sau nghiệm thu. Gateway image WAF nghe 8443 trong container; host port vẫn theo HTTPS_PORT. TLS cần bản sao đọc được bởi user image, không dùng key root 0600 trực tiếp hoặc sửa key gốc. Chỉ recreate nginx bằng `up -d --no-deps --no-build --pull never nginx`; giữ các container ứng dụng. Các phần tuần4/5 bên dưới là lịch sử triển khai cũ. Với lượt WAF không chạy `down -v` hoặc thay DB để xử lý lỗi gateway. Chưa có kết quả deploy VM nhóm cho follow-up này.
+
 ## Thành phần
 | Dịch vụ | Container | Ghi chú |
 |---|---|---|
-| postgres | p01-db | PostgreSQL 16, nạp `database/schema.sql`, `init_data.sql`, `init_demo_users.sql` lần đầu |
+| postgres | p01-db | PostgreSQL 18 theo Compose hiện hành; nạp `database/schema.sql`, `init_data.sql`, `init_demo_users.sql` lần đầu |
 | backend | p01-backend | Spring Boot (Java 21), build từ `src/backend/Dockerfile` |
 | frontend | p01-frontend | React build bằng Vite, Nginx phục vụ file tĩnh |
 | nginx | p01-gateway | Cổng duy nhất ra ngoài (443, TLS tự ký), giới hạn tốc độ, header bảo mật |
@@ -29,12 +33,16 @@ nano .env                                   # đặt POSTGRES_PASSWORD; JWT_SECR
 sh scripts/gen-self-signed-cert.sh 192.168.x.x   # IP hoặc tên của VM (để trình duyệt khớp địa chỉ)
 docker compose up -d --build
 docker compose ps                            # postgres, backend, frontend phải (healthy); nginx là Up
-sh scripts/lab-check.sh                      # kiểm tra tự động, chụp màn hình làm bằng chứng
+# Các lệnh nhập mật khẩu dưới đây chạy trong Bash, không dùng sh/dash
+read -r -s -p 'Mật khẩu lab: ' DEMO_PASSWORD; printf '\n'
+export DEMO_PASSWORD
+sh scripts/lab-check.sh                      # kiểm tra tự động, không in mật khẩu/token
+unset DEMO_PASSWORD
                                              # mục 2 chỉ xét cổng của project compose này, không tính container khác trên VM
 ```
 Mở `https://<IP-VM>/` (trình duyệt cảnh báo chứng chỉ tự ký, bấm tiếp tục).
 
-Tài khoản demo (mật khẩu `Demo@12345`, đăng nhập bằng **email**): `employee@`, `staff@`, `manager@`, `admin@` + `helpdesk.local`. Chỉ dùng ở lab; chạy thật thì bỏ dòng `init_demo_users.sql` khỏi compose.
+Tài khoản demo (đăng nhập bằng **email**; credential cố định còn xuất hiện trong mã nguồn và evidence lịch sử, theo BUG-HD-012; chưa coi secrets đã đạt): `employee@`, `staff@`, `manager@`, `admin@` + `helpdesk.local`. Chỉ dùng ở lab; chạy thật thì bỏ dòng `init_demo_users.sql` khỏi compose.
 
 ## Lệnh hay dùng
 ```bash
@@ -42,7 +50,7 @@ docker compose logs -f backend               # xem log backend
 docker compose logs --tail=50 nginx
 docker compose up -d --build backend         # build lại một dịch vụ
 docker compose down                          # dừng (giữ dữ liệu)
-docker compose down -v                       # dừng và XÓA dữ liệu (cần khi đổi schema.sql)
+# Không dùng down -v cho stack có dữ liệu; sao lưu và chạy migration đã review.
 ```
 
 ## Lỗi thường gặp
@@ -50,8 +58,8 @@ docker compose down -v                       # dừng và XÓA dữ liệu (cầ
 |---|---|
 | `POSTGRES_PASSWORD` hoặc `JWT_SECRET` báo bắt buộc | Chưa tạo `.env` hoặc còn trống giá trị |
 | nginx thoát ngay, log nói không đọc được `server.crt` | Chưa chạy `gen-self-signed-cert.sh` |
-| backend `unhealthy` | `docker compose logs backend`: thường do sai mật khẩu DB hoặc schema không khớp (đổi schema thì `down -v`) |
-| Đăng nhập 401 | Dùng email (không dùng tên tài khoản); mật khẩu `Demo@12345` |
+| backend `unhealthy` | `docker compose logs backend`: thường do sai mật khẩu DB hoặc schema không khớp; sao lưu, đối chiếu migration, không xóa volume để sửa schema |
+| Đăng nhập 401 | Dùng email (không dùng tên tài khoản); mật khẩu do nhóm cung cấp qua kênh riêng |
 | `\r: command not found` khi chạy script | File sửa trên Windows bị CRLF: `sed -i 's/\r$//' scripts/*.sh` |
 | Cổng 443 bận | Đặt `HTTPS_PORT=8443` trong `.env` rồi mở `https://<IP>:8443/` |
 
@@ -61,6 +69,39 @@ cp docker-compose.override.yml.example docker-compose.override.yml   # không co
 docker compose up -d --build postgres frontend
 ```
 Mở http://localhost:8081 (dòng `ports` này chỉ để thử, không có trong cấu hình thật).
+
+## Bản triển khai tuần 6 (T6-07)
+
+| Mục | Giá trị |
+|---|---|
+| Ngày triển khai | 26/11/2026 |
+| Mã nguồn ứng dụng | tag `v0.6-rc1` = commit `ed229a3` |
+| VM lab | `Helpdesk-Security-Lab`, Ubuntu 26.04.1 LTS |
+| Cổng và địa chỉ | HTTPS cổng `8443` (`0.0.0.0:8443->443/tcp`). Truy cập qua Tailscale `https://<IP-VM>:8443/login`; IP thật của VM không ghi trong repo. Thành viên cần được mời vào cùng mạng Tailscale; VM cần đang bật |
+| Dựng từ đầu | Thư mục `~/P01-lab-v06`, project compose `p01-lab-v06`. `.env` và chứng chỉ TLS được chép từ `~/P01-lab-v05`; không thay đổi dữ liệu/volume của project v0.5 |
+| Image thực tế | `postgres:18-alpine`, `nginx:1.27-alpine`, `p01-backend`, `p01-frontend` (build từ tag `v0.6-rc1`) |
+
+### Kết quả triển khai
+| Kiểm tra | Kết quả | Evidence |
+|---|---|---|
+| Build image | `backend` và `frontend` build thành công; quá trình build khoảng 6 phút | log `build_v06rc1.log` trên VM |
+| 4 container | `p01-db`, `p01-backend`, `p01-frontend` healthy; `p01-gateway` Up, publish cổng `8443` | `docker compose ps -a` trên VM |
+| Gateway HTTPS | `curl -k -I https://localhost:8443/` trả về `HTTP/1.1 200 OK` | `evidence/T6-07/README.md` |
+| Giao diện đăng nhập | Trang `/login` mở được qua địa chỉ Tailscale | `evidence/T6-07/README.md` |
+
+Chạy lệnh Docker Compose bằng `sudo` vì tài khoản `nhi` không thuộc nhóm `docker`.
+
+### Cách sử dụng lab chung
+- Thành viên kết nối Tailscale và truy cập `https://<IP-VM>:8443/login`; liên hệ Nhi nếu chưa được cấp quyền vào tailnet.
+- VM là môi trường dùng chung. Không tự ý `git pull`, checkout phiên bản khác hoặc chạy `docker compose up -d --build` trên VM.
+- Điều khiển dịch vụ bằng một trong các lệnh: `sudo docker compose start`, `sudo docker compose stop` hoặc `sudo docker compose restart`; xem log bằng `sudo docker compose logs --tail=100`.
+- Không chạy `docker compose down -v` vì lệnh này xóa volume dữ liệu.
+- Trình duyệt có thể cảnh báo chứng chỉ; phần xử lý/cấu hình TLS sẽ do IA phối hợp thực hiện ở bước riêng.
+
+### Phạm vi và hạn chế
+- Mốc này xác nhận việc build, khởi động container và khả năng truy cập giao diện để nhóm tiếp tục làm việc; chưa phải kết quả nghiệm thu P3 hoặc kiểm thử TLS.
+- Chứng chỉ đang dùng được kế thừa từ v0.5; chưa xác nhận tính hợp lệ/trust của chứng chỉ trên trình duyệt.
+- VM chạy trên máy cá nhân nên có thể tắt hoặc ngủ; khi đó lab không truy cập được qua Tailscale.
 
 ## Bản triển khai tuần 5 (T5-07)
 

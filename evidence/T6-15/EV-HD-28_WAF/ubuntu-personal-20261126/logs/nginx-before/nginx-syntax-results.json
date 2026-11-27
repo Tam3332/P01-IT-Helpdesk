@@ -1,0 +1,33 @@
+{
+  "task": "T6-15",
+  "scope": "personal Ubuntu; nginx syntax only",
+  "started_utc": "2026-11-26T03:43:12.624551+00:00",
+  "os": "Linux-6.8.0-149-generic-x86_64-with-glibc2.39",
+  "image": "owasp/modsecurity-crs@sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3",
+  "image_id": "sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3",
+  "image_default_user": "nginx",
+  "config_sha256": "b99e9a409f71762a432804af4d4d3d1875bd784c913f2a2d40569a61c0b33b33",
+  "compose_sha256": "904a79491435d63b8c3cd2305652fc0f066698b82018e373b2f37dd9bea09dde",
+  "ssl_source": "/home/khiem/P01-IT-Helpdesk-week4/nginx/ssl",
+  "checks": [
+    {
+      "mode": "DetectionOnly",
+      "exit_code": 1,
+      "status": "FAIL",
+      "log": "nginx-DetectionOnly.log",
+      "completed_utc": "2026-11-26T03:43:16.268659+00:00"
+    },
+    {
+      "mode": "On",
+      "exit_code": 1,
+      "status": "FAIL",
+      "log": "nginx-On.log",
+      "completed_utc": "2026-11-26T03:43:18.990888+00:00"
+    }
+  ],
+  "http_tests": "NOT_RUN",
+  "zap_scan": "NOT_RUN",
+  "group_vm_deploy": "NOT_RUN",
+  "completed_utc": "2026-11-26T03:43:18.995904+00:00",
+  "status": "SYNTAX_FAILED"
+}
