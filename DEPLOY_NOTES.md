@@ -3,7 +3,7 @@
 ## Thành phần
 | Dịch vụ | Container | Ghi chú |
 |---|---|---|
-| postgres | p01-db | PostgreSQL 16, nạp `database/schema.sql`, `init_data.sql`, `init_demo_users.sql` lần đầu |
+| postgres | p01-db | PostgreSQL 18, nạp `database/schema.sql`, `init_data.sql`, `init_demo_users.sql` lần đầu |
 | backend | p01-backend | Spring Boot (Java 21), build từ `src/backend/Dockerfile` |
 | frontend | p01-frontend | React build bằng Vite, Nginx phục vụ file tĩnh |
 | nginx | p01-gateway | Cổng duy nhất ra ngoài (443, TLS tự ký), giới hạn tốc độ, header bảo mật |
@@ -61,6 +61,39 @@ cp docker-compose.override.yml.example docker-compose.override.yml   # không co
 docker compose up -d --build postgres frontend
 ```
 Mở http://localhost:8081 (dòng `ports` này chỉ để thử, không có trong cấu hình thật).
+
+## Bản triển khai tuần 6 (T6-07)
+
+| Mục | Giá trị |
+|---|---|
+| Ngày triển khai | 26/11/2026 |
+| Mã nguồn ứng dụng | tag `v0.6-rc1` = commit `ed229a3` |
+| VM lab | `Helpdesk-Security-Lab`, Ubuntu 26.04.1 LTS |
+| Cổng và địa chỉ | HTTPS cổng `8443` (`0.0.0.0:8443->443/tcp`). Truy cập qua Tailscale `https://<IP-VM>:8443/login`; IP thật của VM không ghi trong repo. Thành viên cần được mời vào cùng mạng Tailscale; VM cần đang bật |
+| Dựng từ đầu | Thư mục `~/P01-lab-v06`, project compose `p01-lab-v06`. `.env` và chứng chỉ TLS được chép từ `~/P01-lab-v05`; không thay đổi dữ liệu/volume của project v0.5 |
+| Image thực tế | `postgres:18-alpine`, `nginx:1.27-alpine`, `p01-backend`, `p01-frontend` (build từ tag `v0.6-rc1`) |
+
+### Kết quả triển khai
+| Kiểm tra | Kết quả | Evidence |
+|---|---|---|
+| Build image | `backend` và `frontend` build thành công; quá trình build khoảng 6 phút | log `build_v06rc1.log` trên VM |
+| 4 container | `p01-db`, `p01-backend`, `p01-frontend` healthy; `p01-gateway` Up, publish cổng `8443` | `docker compose ps -a` trên VM |
+| Gateway HTTPS | `curl -k -I https://localhost:8443/` trả về `HTTP/1.1 200 OK` | `evidence/T6-07/README.md` |
+| Giao diện đăng nhập | Trang `/login` mở được qua địa chỉ Tailscale | `evidence/T6-07/README.md` |
+
+Chạy lệnh Docker Compose bằng `sudo` vì tài khoản `nhi` không thuộc nhóm `docker`.
+
+### Cách sử dụng lab chung
+- Thành viên kết nối Tailscale và truy cập `https://<IP-VM>:8443/login`; liên hệ Nhi nếu chưa được cấp quyền vào tailnet.
+- VM là môi trường dùng chung. Không tự ý `git pull`, checkout phiên bản khác hoặc chạy `docker compose up -d --build` trên VM.
+- Điều khiển dịch vụ bằng một trong các lệnh: `sudo docker compose start`, `sudo docker compose stop` hoặc `sudo docker compose restart`; xem log bằng `sudo docker compose logs --tail=100`.
+- Không chạy `docker compose down -v` vì lệnh này xóa volume dữ liệu.
+- Trình duyệt có thể cảnh báo chứng chỉ; phần xử lý/cấu hình TLS sẽ do IA phối hợp thực hiện ở bước riêng.
+
+### Phạm vi và hạn chế
+- Mốc này xác nhận việc build, khởi động container và khả năng truy cập giao diện để nhóm tiếp tục làm việc; chưa phải kết quả nghiệm thu P3 hoặc kiểm thử TLS.
+- Chứng chỉ đang dùng được kế thừa từ v0.5; chưa xác nhận tính hợp lệ/trust của chứng chỉ trên trình duyệt.
+- VM chạy trên máy cá nhân nên có thể tắt hoặc ngủ; khi đó lab không truy cập được qua Tailscale.
 
 ## Bản triển khai tuần 5 (T5-07)
 
