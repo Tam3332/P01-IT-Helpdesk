@@ -1,4 +1,4 @@
-Build: v0.4-week4  BASE=https://100.124.80.30:8443  ticket=5 attachment=2
+Build: v0.4-week4  BASE=https://<IP-VM>:8443  ticket=5 attachment=2
 PC03.2a  Employee chủ tải tệp của mình (đối chứng) expected=200 actual=200 PASS
 PC03.2b  Admin tải tệp (Separation of Duties)             expected=403 actual=403 PASS
 PC03.2c  Admin xem danh sách tệp (metadata, Read-only)     expected=200 actual=200 PASS
