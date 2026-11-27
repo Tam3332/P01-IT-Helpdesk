@@ -1,7 +1,7 @@
 # Kết quả chạy Newman – VM lab (T6-06)
 
-- Thời điểm: 27/11/2026 17:41 · Môi trường: VM lab `helpdesk-security-lab` qua Tailscale (`https://100.124.80.30:8443/api/v1`, đi qua Nginx TLS) · bản đang deploy: v0.6 (theo Nhi, deploy 26/11; commit và chế độ WAF chưa xác nhận)
-- Collection: `tests/newman/P01_API.postman_collection.json` (nhánh `cuong/t6-06-tests`) · Lệnh: `newman run P01_API.postman_collection.json -e P01_lab.postman_environment.json --env-var "baseUrl=https://100.124.80.30:8443/api/v1" --env-var "demoPassword=***" --insecure`
+- Thời điểm: 27/11/2026 17:41 · Môi trường: VM lab `helpdesk-security-lab` qua Tailscale (`https://<IP-VM>:8443/api/v1`, đi qua gateway Nginx TLS) · bản đang deploy: tag `v0.6-rc1` = `ed229a3`, triển khai 26/11 (theo `DEPLOY_NOTES.md`, T6-07); bản này chưa có WAF (PR #38) và chưa có các fix của PR #47
+- Collection: `tests/newman/P01_API.postman_collection.json` (nhánh `cuong/t6-06-tests`) · Lệnh: `newman run P01_API.postman_collection.json -e P01_lab.postman_environment.json --env-var "baseUrl=https://<IP-VM>:8443/api/v1" --env-var "demoPassword=***" --insecure`
 - **Requests 65/65 · Assertions 217/217 đạt · 0 lỗi**
 - Thời gian phản hồi: trung bình 115 ms, nhỏ nhất 64 ms, lớn nhất 498 ms, p95 353 ms; tổng thời gian chạy 68.8 s (gồm khoảng chờ 7 s giữa các lần đăng nhập để không vượt giới hạn Nginx 10 request/phút cho /auth/login)
 - Mọi request đều dưới 2.000 ms (NFR-02, sheet ghi NFR04). Đây là thời gian từng request trong luồng chức năng, không phải phép đo tải; số đo hiệu năng với 1.000 ticket ở phần đo riêng.
