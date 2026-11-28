@@ -121,7 +121,10 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
+            .headers(headers -> headers
+                // BUG-HD-011: HSTS chỉ do Nginx (TLS gateway) thêm; tắt ở backend để phản hồi không có 2 header trùng.
+                .httpStrictTransportSecurity(hsts -> hsts.disable())
+                .frameOptions(frameOptions -> frameOptions.disable()));
 
         return http.build();
     }

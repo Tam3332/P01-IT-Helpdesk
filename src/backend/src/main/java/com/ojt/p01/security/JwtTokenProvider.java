@@ -54,7 +54,8 @@ public class JwtTokenProvider {
                 .claim("username", user.getUsername())
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().getRoleName())
-                .issuedAt(now)                             // iat
+                .issuedAt(now)                             // iat (độ chính xác giây theo chuẩn JWT)
+                .claim("iatMs", now.getTime())             // iatMs: thời điểm cấp tính bằng mili-giây, để phân biệt token cũ/mới cùng giây (BUG-HD-008)
                 .expiration(expiry)                        // exp
                 .signWith(signingKey, Jwts.SIG.HS256)
                 .compact();
