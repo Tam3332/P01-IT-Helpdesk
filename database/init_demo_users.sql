@@ -1,4 +1,4 @@
--- CHỈ DÙNG CHO LAB / DEMO. Mật khẩu chung: Demo@12345 (bcrypt cost 12). Không dùng ở môi trường thật.
+-- CHỈ DÙNG CHO LAB / DEMO. Mật khẩu chung (bcrypt cost 12) lấy qua kênh nội bộ của nhóm, không ghi trong repo (BUG-HD-012). Không dùng ở môi trường thật.
 -- Nếu Backend đã có DataInitializer tự tạo tài khoản thì bỏ file này khỏi docker-compose.
 INSERT INTO users (username, email, password_hash, full_name, department, role_id) VALUES
 ('employee', 'employee@helpdesk.local', '$2b$12$Ja4UEqrtSMTxXjq1ooddVeAivE6IzkQXmwBieQ4lLOCqNWUijx9ju', 'Nguyễn Văn An', 'Kế toán', 1),

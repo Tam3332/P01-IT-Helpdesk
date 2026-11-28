@@ -6,7 +6,7 @@ Cột **Kết quả 04/11**: ✅ đạt / ❌ lỗi / ⏸ chưa test.
 Cột **Đã phát hiện**: lỗi đã biết tính đến 04/11 17:40 và ai xử lý; "Chưa phát hiện lỗi" nghĩa là chưa thấy vấn đề (có thể chưa test).
 Nguồn đối chiếu: SDD §5.1 (màn hình), §5.4 (nút theo vai trò), SRS HD01/03/05/06.
 
-## Tài khoản test (mật khẩu chung `Demo@12345`)
+## Tài khoản test (mật khẩu demo chung: lấy qua kênh nội bộ của nhóm, không ghi trong repo – BUG-HD-012)
 
 | Role | Email | Tên hiển thị | Ghi chú |
 |---|---|---|---|

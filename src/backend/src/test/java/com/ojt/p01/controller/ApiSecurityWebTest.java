@@ -152,7 +152,7 @@ class ApiSecurityWebTest {
     void login_isPublic() throws Exception {
         when(authService.login(any())).thenReturn(new LoginResponse("tok", "Bearer", 900, UserResponse.from(employee)));
         mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"employee@helpdesk.local\",\"password\":\"Demo@12345\"}"))
+                        .content("{\"email\":\"employee@helpdesk.local\",\"password\":\"Any@Pass2026\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.accessToken").value("tok"));
     }
