@@ -1,6 +1,6 @@
 # Bằng chứng T4-02 — SEC-TC-HD-06 workflow bypass + mass assignment (Nguyễn Tăng Minh Khánh)
 
-Build: tag `v0.4-week4` = commit `a378fdb`. Môi trường: VM lab của nhóm `https://100.124.80.30:8443` (truy cập qua Tailscale), ngày 12/11/2026.
+Build: tag `v0.4-week4` = commit `a378fdb`. Môi trường: VM lab của nhóm `https://<IP-VM>:8443` (truy cập qua Tailscale), ngày 12/11/2026.
 Script không in token; mật khẩu nhập qua biến môi trường (`read -s`).
 Chạy lại: `export BASE=... PW_EMP1=... PW_EMP2=... PW_STAFF=... PW_STAFF2=... PW_MGR=... PW_ADMIN=...` rồi `bash evidence/T4-02/sec_tc_hd_06.sh`.
 

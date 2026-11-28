@@ -1,4 +1,4 @@
-Build: v0.4-week4  BASE=https://100.124.80.30:8443
+Build: v0.4-week4  BASE=https://<IP-VM>:8443
 Ticket của Employee A: id=3 priority=LOW staff=2 staff2=3
 --- (1) Nhảy trạng thái bỏ bước -> 422 ---
 06.1.1   PATCH /tickets/3/status                        expected=422 actual=422 PASS

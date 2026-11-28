@@ -1,6 +1,6 @@
 # Bằng chứng T4-09 — Retest audit gap, PC-03, Access Matrix v1.1 (Nguyễn Tăng Minh Khánh)
 
-Build: tag `v0.4-week4` = commit `a378fdb`. Môi trường: VM lab của nhóm `https://100.124.80.30:8443` (Tailscale), ngày 12/11/2026.
+Build: tag `v0.4-week4` = commit `a378fdb`. Môi trường: VM lab của nhóm `https://<IP-VM>:8443` (Tailscale), ngày 12/11/2026.
 
 | EV-ID | File | Kết quả |
 |---|---|---|

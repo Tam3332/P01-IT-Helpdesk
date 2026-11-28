@@ -3,7 +3,7 @@
 # CHẠY TRÊN: máy có Tailscale (VM của Khánh). ĐÍCH: chỉ lab của nhóm. Không in token.
 # Cần export trước: BASE, PW_EMP1, PW_EMP2, PW_STAFF, PW_MGR, PW_ADMIN
 set -u
-: "${BASE:?export BASE=https://100.124.80.30:8443}"
+: "${BASE:?export BASE=https://<IP-VM>:8443}"
 OUT=evidence/T4-09; mkdir -p "$OUT"; LOG="$OUT/pc03_bosung_$(date +%Y%m%d_%H%M).txt"
 API="$BASE/api/v1"
 login() { sleep 7; curl -sk -X POST "$API/auth/login" -H 'Content-Type: application/json' -d "{\"email\":\"$1\",\"password\":\"$2\"}" | jq -r '.data.accessToken'; }
