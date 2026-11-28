@@ -2,7 +2,7 @@
 
 | Mục | Nội dung | File / vị trí | Trạng thái |
 |---|---|---|---|
-| Unit + integration test | `mvnw test` 151/151 pass, dev 25/11 (114 cũ + 37 mới: AuthServiceLoginTest 8, CommentServiceTest 8, ApiSecurityWebTest 15, SlaFallbackTest 6) | `mvn_test_151_25-11.png` | Đạt |
+| Unit + integration test | `mvnw test` 151/151 pass, dev 25/11 (114 cũ + 37 mới: AuthServiceLoginTest 8, CommentServiceTest 8, ApiSecurityWebTest 15, SlaFallbackTest 6) | `mvn_test_151_25-11.png`; bản xuất surefire 28/11 trên main 0569b47: `surefire_summary_28-11.md` (157/157, 23 lớp). JaCoCo: không làm (tùy chọn, đóng băng) | Đạt |
 | Sửa lỗi | Thiếu SLAConfig → mặc định Low 2h/48h ở tạo ticket, phân công lần đầu, duyệt mở lại (SRS §3 P2, §7); API Admin vẫn 404 | Commit 614ae92, PR #47 (merge 00be70f, 25/11) | Đã merge |
 | Sửa lỗi BUG-HD-012 (Medium) | Admin đặt lại mật khẩu: bỏ mật khẩu mặc định cố định, bắt buộc nhập 8–100 ký tự (trống → 400); unit test `UserServiceResetPasswordTest` 6 ca tái hiện lỗi | `bug_hd_012_unit_6_pass_27-11.png` (6/6), `mvn_test_157_27-11.png` (toàn bộ 157/157, dev 27/11); commit 1df7236, PR #57 (cũng nằm trong PR #58) | Backend xong, chờ merge; frontend Chính |
 | Newman | `tests/newman/` – 65 request, 217 assertion | Dev 26/11: `newman_dev_summary.md` (65/65 request, 217/217 assertion, 0 lỗi; trung bình 42 ms, lớn nhất 295 ms) + `newman_dev_26-11.png`. Lab 27/11 (v0.6-rc1 `ed229a3`) qua Tailscale + Nginx TLS: `newman_lab_summary.md` (65/65 request, 217/217 assertion, 0 lỗi; trung bình 115 ms, p95 353 ms, lớn nhất 498 ms) + `newman_lab_27-11.png` | Dev và lab đạt |
