@@ -240,4 +240,96 @@ class JwtAuthenticationFilterTest {
                 eq("TOKEN_EXPIRED_BY_CREDENTIALS_UPDATE")
         );
     }
+
+    // ---------- BUG-HD-008: biên cùng giây, dùng claim iatMs (mili-giây) ----------
+
+    @Test
+    @DisplayName("Ca 7 (BUG-HD-008): token CÓ iatMs, cấp cùng giây nhưng TRƯỚC lúc đổi -> 401, ghi Audit TOKEN_REVOKED")
+    void sameSecondTokenIssuedBeforeChange_rejected() throws Exception {
+        // Đổi mật khẩu/role/khóa lúc 10:00:00.654
+        Instant changedInstant = Instant.parse("2026-11-23T10:00:00.654Z");
+        testUser.setCredentialsUpdatedAt(changedInstant.atOffset(ZoneOffset.UTC));
+
+        // Token cấp cùng giây, lúc 10:00:00.200 (trước lúc đổi 454 ms)
+        Instant issued = Instant.parse("2026-11-23T10:00:00.200Z");
+        when(claims.getIssuedAt()).thenReturn(Date.from(issued.truncatedTo(java.time.temporal.ChronoUnit.SECONDS)));
+        when(claims.get("iatMs")).thenReturn(issued.toEpochMilli());
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication(),
+                "Token cũ cấp cùng giây trước lúc đổi phải bị 401");
+        verify(filterChain).doFilter(request, response);
+        verify(auditLogger).logWithReason(eq("TOKEN_REVOKED"), eq(10L), eq("EMPLOYEE"), eq("USER"), eq("10"),
+                eq("AUTHENTICATE"), eq("FAILURE"), eq(401), eq("TOKEN_EXPIRED_BY_CREDENTIALS_UPDATE"));
+    }
+
+    @Test
+    @DisplayName("Ca 8 (BUG-HD-008): token CÓ iatMs, cấp cùng giây nhưng SAU lúc đổi -> 200")
+    void sameSecondTokenIssuedAfterChange_accepted() throws Exception {
+        Instant changedInstant = Instant.parse("2026-11-23T10:00:00.654Z");
+        testUser.setCredentialsUpdatedAt(changedInstant.atOffset(ZoneOffset.UTC));
+
+        // Token mới cấp lúc 10:00:00.900 (cùng giây, sau lúc đổi 246 ms)
+        Instant issued = Instant.parse("2026-11-23T10:00:00.900Z");
+        when(claims.getIssuedAt()).thenReturn(Date.from(issued.truncatedTo(java.time.temporal.ChronoUnit.SECONDS)));
+        when(claims.get("iatMs")).thenReturn(issued.toEpochMilli());
+        when(claims.get("role", String.class)).thenReturn("EMPLOYEE");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication(),
+                "Token mới cấp cùng giây nhưng sau lúc đổi phải hợp lệ (200)");
+        verify(filterChain).doFilter(request, response);
+        verify(auditLogger, never()).logWithReason(any(), any(), any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Ca 9 (BUG-HD-008): token CÓ iatMs trùng đúng mili-giây của mốc -> chấp nhận (không loại nhầm token mới)")
+    void sameMillisecondAsChange_accepted() throws Exception {
+        Instant changedInstant = Instant.parse("2026-11-23T10:00:00.654Z");
+        testUser.setCredentialsUpdatedAt(changedInstant.atOffset(ZoneOffset.UTC));
+
+        when(claims.getIssuedAt()).thenReturn(Date.from(Instant.parse("2026-11-23T10:00:00Z")));
+        when(claims.get("iatMs")).thenReturn(changedInstant.toEpochMilli());
+        when(claims.get("role", String.class)).thenReturn("EMPLOYEE");
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    @DisplayName("Ca 10 (BUG-HD-008): token KHÔNG có iatMs -> chạy theo luật cũ (cắt giây): trước mốc 401, cùng giây 200")
+    void tokenWithoutIatMs_legacyRule() throws Exception {
+        Instant changedInstant = Instant.parse("2026-11-23T10:00:00.654Z");
+        testUser.setCredentialsUpdatedAt(changedInstant.atOffset(ZoneOffset.UTC));
+        when(claims.get("role", String.class)).thenReturn("EMPLOYEE");
+        when(claims.get("iatMs")).thenReturn(null);
+
+        // Trước mốc (giây 09:59:59) -> 401
+        when(claims.getIssuedAt()).thenReturn(Date.from(Instant.parse("2026-11-23T09:59:59Z")));
+        filter.doFilterInternal(request, response, filterChain);
+        assertNull(SecurityContextHolder.getContext().getAuthentication(), "Không iatMs, trước mốc: phải 401");
+
+        SecurityContextHolder.clearContext();
+
+        // Cùng giây với mốc (luật cũ cắt về giây) -> chấp nhận
+        when(claims.getIssuedAt()).thenReturn(Date.from(Instant.parse("2026-11-23T10:00:00Z")));
+        filter.doFilterInternal(request, response, filterChain);
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication(), "Không iatMs, cùng giây: theo luật cũ là 200");
+    }
+
+    @Test
+    @DisplayName("Ca 11 (BUG-HD-008): JwtTokenProvider thật cấp token có claim iatMs khớp iat (mili-giây)")
+    void provider_issuesIatMsClaim() {
+        JwtTokenProvider real = new JwtTokenProvider("khoa-bi-mat-dung-de-kiem-thu-bug-hd-008-32byte", 900_000);
+        String token = real.generateToken(testUser);
+
+        Claims c = real.getClaimsFromToken(token);
+        Object iatMs = c.get("iatMs");
+        assertTrue(iatMs instanceof Number, "Token phải có claim iatMs");
+        long ms = ((Number) iatMs).longValue();
+        assertEquals(c.getIssuedAt().getTime(), (ms / 1000) * 1000, "iat (giây) phải bằng iatMs cắt về giây");
+    }
 }

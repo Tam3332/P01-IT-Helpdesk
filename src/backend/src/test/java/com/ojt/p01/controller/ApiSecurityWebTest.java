@@ -157,6 +157,25 @@ class ApiSecurityWebTest {
                 .andExpect(jsonPath("$.data.accessToken").value("tok"));
     }
 
+    // ---------- BUG-HD-011: HSTS chỉ do Nginx (TLS gateway) thêm ----------
+
+    @Test
+    @DisplayName("BUG-HD-011: request HTTPS không token (401) → backend không tự thêm Strict-Transport-Security")
+    void hsts_notAddedByBackend_on401() throws Exception {
+        mvc.perform(get("/api/v1/auth/me").secure(true))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().doesNotExist("Strict-Transport-Security"));
+    }
+
+    @Test
+    @DisplayName("BUG-HD-011: request HTTPS đã xác thực (200) → backend không tự thêm Strict-Transport-Security")
+    void hsts_notAddedByBackend_on200() throws Exception {
+        when(authService.getCurrentUser()).thenReturn(UserResponse.from(employee));
+        mvc.perform(get("/api/v1/auth/me").secure(true).header("Authorization", bearer(employee)))
+                .andExpect(status().isOk())
+                .andExpect(header().doesNotExist("Strict-Transport-Security"));
+    }
+
     // ---------- 403: phân quyền theo SecurityConfig ----------
 
     @Test

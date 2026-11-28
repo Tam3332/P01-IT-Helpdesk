@@ -87,9 +87,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                             user.getRole() != null ? user.getRole().getRoleName() : null,
                                             "USER", String.valueOf(user.getId()), "AUTHENTICATE", "FAILURE", 401, "MISSING_IAT");
                                 } else {
-                                    // Cắt mốc về giây: iat < credentials_updated_at.truncatedTo(SECONDS) -> 401
-                                    Instant changedSec = credentialsUpdatedAt.toInstant().truncatedTo(ChronoUnit.SECONDS);
-                                    if (iatDate.toInstant().isBefore(changedSec)) {
+                                    // BUG-HD-008: token mới có claim iatMs -> so bằng mili-giây để token cũ cùng giây với
+                                    // lúc đổi bị 401, token mới cùng giây vẫn hợp lệ.
+                                    // Token cũ không có iatMs -> giữ luật cũ: iat < credentials_updated_at (cắt về giây) -> 401.
+                                    Object iatMsClaim = claims.get("iatMs");
+                                    boolean revoked;
+                                    if (iatMsClaim instanceof Number) {
+                                        revoked = ((Number) iatMsClaim).longValue() < credentialsUpdatedAt.toInstant().toEpochMilli();
+                                    } else {
+                                        Instant changedSec = credentialsUpdatedAt.toInstant().truncatedTo(ChronoUnit.SECONDS);
+                                        revoked = iatDate.toInstant().isBefore(changedSec);
+                                    }
+                                    if (revoked) {
                                         validToken = false;
                                         auditLogger.logWithReason("TOKEN_REVOKED", user.getId(),
                                                 user.getRole() != null ? user.getRole().getRoleName() : null,
