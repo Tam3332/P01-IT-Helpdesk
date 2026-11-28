@@ -70,6 +70,43 @@ docker compose up -d --build postgres frontend
 ```
 Mở http://localhost:8081 (dòng `ports` này chỉ để thử, không có trong cấu hình thật).
 
+## Bản triển khai v0.6-final (T6-07)
+
+| Mục | Giá trị |
+|---|---|
+| Ngày triển khai | 28/11/2026 |
+| Mã nguồn ứng dụng | tag `v0.6-final` = commit `701c00c9d5b6103fb014b17dc4441c92ccf4e454` |
+| VM lab | `Helpdesk-Security-Lab`; thư mục `~/P01-lab-v06`, project compose `p01-lab-v06`; HTTPS cổng `8443` |
+| Cách cập nhật | Giữ project và volume (không `down -v`). Chuyển thư mục triển khai sang đúng commit của tag, build lại `backend` và `frontend`, tạo lại hai container đó; sau đó chỉ thay container gateway |
+| Gateway | `owasp/modsecurity-crs@sha256:c95914e1855c41791e6745c2a63864a218f99e04948b64d8b31cb7b29b1ba5b3`, chế độ `DetectionOnly`, ngưỡng PL1 inbound 5 / outbound 4. Gateway nghe `8443` trong container và được publish `8443:8443` |
+| TLS cho WAF | Bản sao riêng ngoài repo (thư mục `0700`, key `0400`, crt `0444`, chủ UID/GID 101); key gốc giữ nguyên quyền để rollback |
+| Quay lui | Snapshot gateway trước thay đổi lưu riêng trên VM (ngoài repo) |
+
+### Kết quả
+| Kiểm tra | Kết quả |
+|---|---|
+| Build backend và frontend | Thành công |
+| Container | `p01-db`, `p01-backend`, `p01-frontend` healthy; `p01-gateway` chạy image WAF, publish `8443`; container giám sát tiếp tục chạy |
+| `nginx -t` | Exit 0 (đã nạp 857 luật CRS) |
+| `preflight check` (đúng SHA, cây sạch, cấu hình hợp lệ) | PASS, cả trước và sau khi thay gateway |
+| `scripts/waf/smoke.py` (DetectionOnly) | 11/11 kiểm tra PASS |
+| `scripts/lab-check.sh 8443` | Exit 0; 4 vai trò đăng nhập được; Swagger 404; API không token 401 |
+| Header qua gateway | `Strict-Transport-Security` đúng 1 dòng ở phản hồi 200, 401, 404; có `Content-Security-Policy` |
+| Backend nội bộ | `/actuator/health` trong container backend trả `{"status":"UP"}` |
+
+### Dữ liệu và tài khoản
+- Dọn dữ liệu kiểm thử của Khánh (ticket 1006 đến 1009 và tài khoản kiểm thử đã khóa); giữ ticket khác và tài khoản `audit-test`.
+- Đặt lại mật khẩu 7 tài khoản demo trên DB lab hiện có (6 tài khoản seed dùng hash trong `database/init_demo_users.sql`, và `audit-test`); phiên cũ bị thu hồi, mật khẩu cũ bị từ chối (401). Mật khẩu mới do nhóm giữ riêng, không ghi trong repo.
+
+### Sự cố gặp khi triển khai
+- `nginx -t` lần đầu thất bại (exit 2): file `nginx/nginx-waf.conf` trong thư mục triển khai có quyền `0640`, user 101 của image WAF không đọc được. Xử lý: `chmod 0644` file cấu hình (không đổi nội dung, Git không theo dõi quyền đọc).
+- `.git/index` bị chuyển chủ sở hữu sang root sau khi chạy `preflight` bằng root. Xử lý: trả quyền sở hữu `.git` về chủ thư mục triển khai.
+
+### Phạm vi và hạn chế
+- WAF chạy `DetectionOnly`; chưa chuyển sang `On`.
+- BUG-HD-009 (CSP còn `style-src 'unsafe-inline'`) là rủi ro còn lại đã được duyệt riêng cho lab v0.6-final.
+- Container giám sát chạy từ file compose khác (compose báo là orphan): không dùng `--remove-orphans`.
+
 ## Bản triển khai tuần 6 (T6-07)
 
 | Mục | Giá trị |
