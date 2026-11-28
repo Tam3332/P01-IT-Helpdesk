@@ -63,7 +63,7 @@ export default function SlaMonitorPage() {
 
   return (
     <>
-      <PageHeader title={item.label} subtitle={item.subtitle} />
+      <PageHeader title={tr(item.label)} subtitle={tr(item.subtitle)} />
       <Async state={open}>
         <div className="kpis">
           <Kpi label={tr('Bình thường')} value={count('NORMAL')} tone="ok" icon="check" />
@@ -89,7 +89,7 @@ export default function SlaMonitorPage() {
                       <td><PriorityBadge priority={t.priority} /></td>
                       <td className="nw">{t.assigneeName || ((t.currentAssigneeId ?? t.assigneeId) ? tr('Người dùng #{id}', { id: t.currentAssigneeId ?? t.assigneeId }) : t.status === 'NEW' ? tr('Chưa phân công') : '—')}</td>
                       <td className="nw num">{fmtDateTime(t.resolutionDeadline)}<div className="sm muted">{s.left > 0 ? tr('còn {d}', { d: dur(s.left) }) : tr('trễ {d}', { d: dur(s.left) })}</div></td>
-                      <td><span className={`badge ${SLA[s.key]?.badge}`}>{SLA[s.key]?.label}</span></td>
+                      <td><span className={`badge ${SLA[s.key]?.badge}`}>{tr(SLA[s.key]?.label)}</span></td>
                     </tr>
                   ))}
                 </tbody>
