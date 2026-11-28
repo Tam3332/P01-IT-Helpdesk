@@ -54,3 +54,11 @@ Nguồn: [Sheet Tuần 6](https://docs.google.com/spreadsheets/d/18NX_o1GiopEFlL
 PR #46/50 đã merge; PR #52 thay #51 do đổi tên nhánh, giữ commit 2ca3143. Chưa có review/merge cho follow-up và chưa có manifest deploy nhóm trong các nguồn đã đọc. T6-16: nguồn Sheet R17 đã có phương án lab cá nhân, 26/11 chạy đúng baseline, trễ 2 ngày so hạn 24/11; không phải VM nhóm/Kali. BEFORE đã có, AFTER và biên nhận Khánh còn chờ. Hai dòng chuyển T5-15/16 là đề xuất, chưa ghi Sheet.
 
 Ngoại lệ WAF/JSON403/log format/Actuator ở tuần đóng băng vẫn Proposed; người dùng duyệt xuất bản không thay quyết định kỹ thuật của nhóm/GV. Biên bản 14/11,21/11 và xác nhận 01/02/03 tiếp tục chưa có nguồn xác nhận, không dựng lại. Khiêm/Trí xin thông tin thực tế; chủ nhiệm/owner trả kết quả đúng build trước khi đổi Reviewed/Approved.
+
+## Quyết định và phiên bản ngày 28 tháng 11 năm 2026
+
+Các phần 25–26/11 ở trên giữ làm lịch sử. Hiện PR #52 đã merge 11df1cf, #57/#60 sửa BE/FE BUG012 đã merge, #64 self-host font đã merge 8cd144c. #61 evidence rc1, #62 i18n và #63 phần seed/docs còn Open lúc đối chiếu. Không ghi các PR đó là đã vào final.
+
+Nhận 106/106 assertions đã chạy trong PR #61 theo đúng rc1/WAF none; T6-02 In progress. BUG008 biên cùng giây còn Open/chưa Accepted; BUG012 High/Open, cần seed/rotation/AFTER; BUG009 Accepted risk bởi Khiêm 28/11 chỉ lab v0.6-final với điều kiện ở 02 §8.2; BUG010 fix merged/chờ ZAP lab; BUG011 Open/chưa Accepted.
+
+02 v1.12 Draft, 04 v2.7 Draft, 08 v2.2 Draft đã cập nhật. [Quyết định review 28/11](../T6-01/REVIEW_DECISIONS_20261128.md) ghi nguồn và checklist trước final. Biên bản/GV chưa có xác nhận mới. Không chuyển T6-08 Done, không ghi Sheet/Drive hoặc tạo tag final trong lượt cập nhật repo.
