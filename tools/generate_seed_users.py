@@ -4,7 +4,7 @@ generate_seed_users.py — Sinh file SQL seed users với BCrypt hash từ biế
 
 Cách dùng:
     # Đặt mật khẩu qua env (KHÔNG commit vào repo):
-    $env:SEED_PASSWORD = "Demo@12345"
+    $env:SEED_PASSWORD = "<mật khẩu demo của nhóm>"
     python tools/generate_seed_users.py > database/init_demo_users.sql
 
 Yêu cầu: bcrypt (pip install bcrypt)
@@ -22,7 +22,7 @@ except ImportError:
 SEED_PASSWORD = os.environ.get("SEED_PASSWORD")
 if not SEED_PASSWORD:
     print("Lỗi: Biến môi trường SEED_PASSWORD chưa được đặt.", file=sys.stderr)
-    print("Ví dụ: $env:SEED_PASSWORD = 'Demo@12345'", file=sys.stderr)
+    print("Ví dụ: $env:SEED_PASSWORD = '<mật khẩu demo của nhóm>'", file=sys.stderr)
     sys.exit(1)
 
 # Sinh BCrypt hash (cost 12)
