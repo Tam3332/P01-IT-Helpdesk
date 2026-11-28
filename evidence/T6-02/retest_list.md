@@ -6,8 +6,8 @@ Build retest: v0.6-rc1 (ed229a3) → chạy lại ca có fix trên v0.6-final.
 
 | BUG-ID | Mô tả ngắn | SEC-TC | Commit/PR fix | Có trong build | Người retest | Kết quả after |
 |---|---|---|---|---|---|---|
-| BUG-HD-008 | Thu hồi phiên khi đổi mật khẩu / đổi role / khóa tài khoản (credentials_updated_at, iat) | SEC-TC-HD-02, 05 | 590ec58 (tri/be) → PR #44, merge 96a2eb1 | v0.6-rc1 | Khánh | **PASS** trên rc1 (27/11): a/b/c/d/g đạt; e ghi nhận rủi ro biên giây; f đối chiếu unit test. EV: `screenshots/EV-HD-21_BUG-HD-008_AFTER_rc1_20261127.png` |
-| BUG-HD-012 | Mật khẩu cố định trong luồng Admin reset (backend + frontend + seed) | SEC-TC-HD-08.3 | #57 (backend, Cường) + #60 (frontend, Chính), merge 27/11 | **Chưa** (chỉ có trên main, chờ v0.6-final) | Khánh | **BEFORE xác nhận lỗi** trên rc1 (27/11). AFTER chờ v0.6-final. EV: `screenshots/EV-HD-28_BUG-HD-012_BEFORE_rc1_20261127.png` |
+| BUG-HD-008 | Thu hồi phiên khi đổi mật khẩu / đổi role / khóa tài khoản (credentials_updated_at, iat) | SEC-TC-HD-02, 05 | 590ec58 (tri/be) → PR #44, merge 96a2eb1 | v0.6-rc1 | Khánh | **Chưa đóng (Open).** Lượt 1 rc1 (27/11): PASS a/b/c/d/g; ca e (biên cùng giây) FAIL về thiết kế – **chưa Accepted** (Khiêm, 28/11). Chờ Trí/Cường sửa trước v0.6-final, retest e1/e2. EV: `screenshots/EV-HD-21_BUG-HD-008_AFTER_rc1_20261127.png` |
+| BUG-HD-012 | Mật khẩu cố định trong luồng Admin reset (backend + frontend + seed) | SEC-TC-HD-08.3 | #57 (backend, Cường) + #60 (frontend, Chính), merge 27/11 | **Chưa** (chỉ có trên main, chờ v0.6-final) | Khánh | **Mức High** (Khiêm chốt 28/11 theo evidence rc1). BEFORE xác nhận lỗi trên rc1 (27/11). Chỉ đóng khi: retest AFTER trên v0.6-final có #57/#60 **và** đã đổi mật khẩu các tài khoản bị ảnh hưởng. EV: `screenshots/EV-HD-28_BUG-HD-012_BEFORE_rc1_20261127.png` |
 | BUG-HD-003 | Audit thiếu TICKET_ASSIGNED / STATUS_CHANGED / ROLE_CHANGED | SEC-TC-HD-04 | PR #40, fix f1b4abe, merge 9f273bb | v0.6-rc1 | Hoà (T6-03) – tham khảo | Xem T6-10 (EV-HD-24, Hoà) |
 
 Ghi chú: các BUG còn lại trong 04 §4 (001, 002, 004, 005, 007) đã Closed; BUG-HD-006 thuộc functional (Trí/Chính). BUG-HD-009/010/011 (ZAP, T6-16) vẫn Open trên rc1, xem `ZAP_after_triage.md`.
@@ -19,12 +19,17 @@ Ghi chú: các BUG còn lại trong 04 §4 (001, 002, 004, 005, 007) đã Closed
 | b | Admin đổi role X → token cũ của X (login và đổi role cách ≥2 giây) | 401 | 401 (21:51:03) | PASS |
 | c | Khóa/vô hiệu hóa X → token cũ của X | 401 | 401 (21:46:26) | PASS |
 | d | Phiên của Admin sau khi đổi role người khác | 200 | 200 (21:46:01) | PASS |
-| e | Biên cùng giây (ghi hành vi thực tế) | ghi nhận | Khác giây → 401 (21:51:24); cùng giây → 200 (21:46:00) | Ghi nhận – rủi ro còn lại |
+| e | Biên cùng giây | Token cấp **trước** thao tác thu hồi phải 401, kể cả cùng giây | Khác giây → 401 (21:51:24); **cùng giây → 200 (21:46:00)** | **FAIL – chưa Accepted, bug còn Open** |
 | f | Token thiếu iat → 401 | 401 | Không ký được token trên VM | Đối chiếu unit test `JwtAuthenticationFilter` |
 | g | Admin reset-password → token cũ (bổ sung) | 401 | 401 (21:46:47) | PASS |
 
 - Lượt 21:37:54–21:43:09 **không hợp lệ**: token Admin đã hết hạn (`/auth/me` = 401) nên lệnh Admin không thực thi. Đã ghi chú trong log và chạy lại.
-- **Rủi ro còn lại (ca e):** bộ lọc so `iat < credentials_updated_at` cắt về giây, nên token cấp trong cùng giây với lúc thu hồi vẫn hợp lệ tới khi hết hạn (tối đa 15 phút). Đề xuất Khiêm quyết Accepted hoặc đổi sang so sánh `<=`.
+- **Ca e – quyết định của Khiêm (28/11):** biên cùng giây **không được Accepted**, BUG-HD-008 **chưa đóng**. Nguyên nhân: bộ lọc so `iat < credentials_updated_at` cắt về giây, nên token cấp trong cùng giây **trước** lúc thu hồi vẫn hợp lệ tới khi hết hạn (tối đa 15 phút). Trí/Cường sửa trước v0.6-final.
+- **Lưu ý khi sửa:** chỉ đổi thành `iat <= mốc` sẽ từ chối nhầm token **mới** đăng nhập ngay sau thao tác trong cùng giây (người dùng vừa đổi mật khẩu rồi đăng nhập lại bị 401). Cần phân biệt thứ tự ở mức mili giây hoặc dùng bộ đếm phiên (ví dụ claim `ver` so với `token_version` của user) thay cho so sánh thời gian.
+- **Ca retest bổ sung trên v0.6-final:**
+  - **e1:** đăng nhập lấy token T, rồi thu hồi (đổi role/khóa/reset) **trong cùng giây** → T phải **401**.
+  - **e2:** thu hồi, rồi đăng nhập lại **trong cùng giây** lấy token mới T' → T' phải **200** (không bị từ chối nhầm).
+  - Chạy mỗi ca nhiều lần (ví dụ 10 lần) và ghi `iat` cùng giờ thao tác, vì trùng giây phụ thuộc thời điểm.
 - Audit `ROLE_CHANGED`: đối chiếu `evidence/T6-10/audit/EV-HD-24_AFTER_ROLE_CHANGED_20261126.png` (Hoà).
 
 ## BUG-HD-012 BEFORE (rc1, tài khoản test X)
@@ -37,6 +42,7 @@ Ghi chú: các BUG còn lại trong 04 §4 (001, 002, 004, 005, 007) đã Closed
 
 - Lượt 012.2 lúc 21:04:48 không hợp lệ (biến rỗng).
 - Không lưu mật khẩu hay file JS vào repo; chỉ ghi tên file, mã HTTP, SHA-256 (`ed19463963bf…aa2d186`), số lần xuất hiện.
+- **Điều kiện đóng bug (Khiêm, 28/11):** AFTER đạt trên v0.6-final có #57/#60 **và** đổi mật khẩu các tài khoản bị ảnh hưởng (tài khoản demo dùng chung mật khẩu đã lộ trong lịch sử Git và các tài khoản từng bị reset trống).
 - **AFTER trên v0.6-final cần đạt:** reset trống/7 ký tự/101 ký tự → 400; Admin tự reset → 403; đăng nhập bằng chuỗi cũ không được; quét bundle + chunk = 0; gọi lại `/assets/UsersPage-m1T3_b_N.js` → 404.
 
 ## Ca chạy lại toàn bộ (không gắn BUG) – lượt 1, WAF=none
